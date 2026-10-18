@@ -23,6 +23,27 @@ async def test_demo_labels_never_call_network(monkeypatch):
     assert await actual_fetch_label(None) is None
 
 
+@pytest.mark.asyncio
+async def test_demo_label_name_fallback(monkeypatch):
+    monkeypatch.setattr(labels, 'config', replace(labels.config, demo_mode=True))
+    for ean in (None, '1234567890123'):
+        label = await actual_fetch_label(ean, 'URBANO Farinha de Arroz 1kg')
+        assert label['ean'] == '7896038350056'
+        assert label['matchedBy'] == 'name'
+        assert label['traces'] == ['en:soybeans']
+    assert await actual_fetch_label(None, 'Farinha de arroz outra marca 1kg') is None
+    assert await actual_fetch_label(None, 'Farinha de arroz integral Urbano 1kg') is None
+    known = await actual_fetch_label('7896038350056', 'Nome diferente')
+    assert known['ean'] == '7896038350056'
+    assert 'matchedBy' not in known
+
+
+@pytest.mark.asyncio
+async def test_name_fallback_is_demo_only(monkeypatch):
+    monkeypatch.setattr(labels, 'config', replace(labels.config, demo_mode=False))
+    assert await actual_fetch_label(None, 'Farinha de arroz Urbano 1 kg') is None
+
+
 def test_demo_recipe_conflicts_and_home_items():
     restrictions = [resolve_restriction({'id': 'doenca_celiaca'}), resolve_restriction({'id': 'alergia_leite'})]
     recipe = select_demo_recipe('quero lasanha', restrictions, ['Berinjela'])

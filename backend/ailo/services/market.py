@@ -285,7 +285,7 @@ async def plan_grocery_shopping(session: Session) -> dict:
             except AppError:
                 return  # Mantém a análise rápida (só pelo nome).
             # Produto industrializado: consulta o rótulo (alergênicos e "pode conter") pelo código de barras.
-            label = await fetch_label(details.get("itemEan") or item.get("itemEan"))
+            label = await fetch_label(details.get("itemEan") or item.get("itemEan"), details.get("itemName") or item.get("itemName"))
             item["itemEan"] = details.get("itemEan") or item.get("itemEan")
             ingredient = next(entry for entry in ingredients if entry["nome"] == item["ingrediente"])
             package_text = label.get("quantity") if label and label.get("found") else None

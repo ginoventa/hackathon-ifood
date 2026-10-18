@@ -67,7 +67,7 @@ async def _description_verdict(session, item: dict) -> str | None:
         details = await get_item_details(session, item["merchantId"], item["itemId"])
     except AppError:
         return None
-    label = await fetch_label(details.get("itemEan") or item.get("itemEan"))
+    label = await fetch_label(details.get("itemEan") or item.get("itemEan"), details.get("itemName") or item.get("itemName"))
     analysis = analyze_product(
         details, session.restrictions, declared_tags=session.declared_tags.get(item["itemId"], []), label=label,
     )

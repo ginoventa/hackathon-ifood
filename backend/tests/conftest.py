@@ -14,7 +14,7 @@ def no_external_labels(monkeypatch):
     """Os testes nunca consultam a Open Food Facts: rótulos vêm de FAKE_LABELS."""
     from ailo.services import labels
 
-    async def fake_fetch(ean):
+    async def fake_fetch(ean, product_name=None):
         return FAKE_LABELS.get(ean) if ean else None
 
     monkeypatch.setattr(labels, "fetch_label", fake_fetch)

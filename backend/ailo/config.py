@@ -49,7 +49,7 @@ class LlmConfig:
 class GeminiConfig:
     # Aceita API_KEY por compatibilidade com o .env original do projeto.
     api_key: str = field(default_factory=lambda: _env("GEMINI_API_KEY", _env("API_KEY")))
-    model: str = field(default_factory=lambda: _env("GEMINI_MODEL", "gemini-flash-latest"))
+    model: str = field(default_factory=lambda: _env("GEMINI_MODEL", "gemini-3.5-flash-lite"))
 
 
 @dataclass(frozen=True)

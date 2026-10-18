@@ -40,7 +40,7 @@ async def analyze_selected_item(session: Session, merchant_id: str, item_id: str
     remember_declared_tags(session, [item_id], [tag for tag, ids in tagged_ids.items() if item_id in ids])
 
     # Produto industrializado (tem código de barras): consulta o rótulo fora do iFood.
-    label = await fetch_label(product.get("itemEan"))
+    label = await fetch_label(product.get("itemEan"), product.get("itemName"))
 
     # Consulte o cardápio também quando houver declaração de ausência, mesmo em preferências.
     menu_items = None

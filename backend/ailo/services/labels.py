@@ -20,6 +20,7 @@ from copy import deepcopy
 from pathlib import Path
 
 from ..config import config
+from ..restrictions.text_matching import normalize_text
 
 import logging
 import re
@@ -56,19 +57,36 @@ def _parse(ean: str, payload: dict) -> dict:
     }
 
 
-async def fetch_label(ean: str | None) -> dict | None:
+def _name_tokens(name: str) -> set[str]:
+    text = normalize_text(name)
+    text = re.sub(r"\b\d+(?:[.,]\d+)?\s*(?:kg|mg|g|ml|l|unidades|un)\b", " ", text)
+    return set(re.findall(r"[a-z0-9]+", text)) - {"de", "da", "do", "e", "com"}
+
+
+async def fetch_label(ean: str | None, product_name: str | None = None) -> dict | None:
     """Busca o rótulo pelo código de barras.
 
     Returns:
         O rótulo (``found=True``), ``{"found": False}`` se o produto não está
         na base, ou ``None`` se não há EAN válido ou a consulta falhou.
     """
-    if not ean or not EAN_PATTERN.match(str(ean)):
-        return None
-
     if config.demo_mode:
         labels = json.loads((Path(__file__).resolve().parents[1] / "data/demo_labels.json").read_text(encoding="utf-8"))
-        return deepcopy(labels.get(str(ean), {"found": False, "ean": str(ean), "demo": True}))
+        if str(ean) in labels:
+            return deepcopy(labels[str(ean)])
+        tokens = _name_tokens(product_name or "")
+        matches = [label for label in labels.values()
+                   if tokens and tokens == _name_tokens(label.get("productName", ""))]
+        if len(matches) == 1:
+            label = deepcopy(matches[0])
+            label["matchedBy"] = "name"
+            label["sourceNote"] = (label.get("sourceNote", "") +
+                " Correspondência por nome no modo demo; o EAN do anúncio não foi confirmado.").strip()
+            return label
+        return {"found": False, "ean": str(ean), "demo": True} if ean else None
+
+    if not ean or not EAN_PATTERN.match(str(ean)):
+        return None
 
     cached = _cache.get(ean)
     if cached and cached[0] > time.time():
