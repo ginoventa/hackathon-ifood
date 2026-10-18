@@ -81,15 +81,25 @@ async def _search_options(session, args):
     if args.get("ordenarPor"):
         refinements["sort"] = args["ordenarPor"]
 
-    return await _run_search(
-        session,
-        title=f'Opções para "{args["consulta"]}"',
-        query=args["consulta"],
-        merchant_type="RESTAURANT",
-        result_kind=args.get("tipoResultado") or "ITEM",
-        refinements=refinements,
-        page_size=8,
-    )
+    search = {
+        "title": f'Opções para "{args["consulta"]}"',
+        "query": args["consulta"],
+        "merchant_type": "RESTAURANT",
+        "result_kind": args.get("tipoResultado") or "ITEM",
+        "page_size": 8,
+    }
+    output, card = await _run_search(session, refinements=refinements, **search)
+
+    # Os filtros do iFood podem esconder tudo (ex.: VEGAN para APLV). Nesse caso,
+    # busca de novo sem eles: a pré-análise e a análise completa continuam valendo.
+    if tags and not (card["data"].get("items") or card["data"].get("merchants")):
+        refinements.pop("itemRestrictions")
+        output, card = await _run_search(session, refinements=refinements, **search)
+        output["observacao"] = (
+            "Nenhum resultado com os filtros de restrição do iFood; estes resultados vieram sem filtro. "
+            "Analise cada item com analisar_produto antes de recomendar."
+        )
+    return output, card
 
 
 SEARCH_OPTIONS = ToolDefinition(

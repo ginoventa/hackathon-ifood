@@ -141,3 +141,17 @@ async def test_historico_e_mantido_entre_turnos(session):
     await run_agent_turn(session, "Oi de novo", model=llm)
     # O segundo turno recebe a conversa anterior.
     assert any("Olá!" == getattr(message, "content", None) for message in llm.received[0])
+
+
+async def test_busca_repete_sem_filtro_quando_o_filtro_do_ifood_esconde_tudo(session):
+    llm = model(
+        {"call": ("registrar_restricoes", {"restricoes": [{"id": "alergia_leite"}, {"id": "doenca_celiaca"}]})},
+        # Nenhum item do catálogo de teste tem ao mesmo tempo VEGAN e GLUTEN_FREE com "calabresa".
+        {"call": ("buscar_opcoes", {"consulta": "pizza calabresa"})},
+        {"text": "ok"},
+    )
+    result = await run_agent_turn(session, "Quero pizza de calabresa", model=llm)
+    options = next(card["data"] for card in result["cards"] if card["type"] == "options")
+    assert options["items"], "a busca deveria repetir sem os filtros do iFood"
+    assert options["filtersUsed"] == []
+    assert "sem filtro" in llm.last_tool_output()["observacao"]

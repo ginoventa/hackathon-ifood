@@ -7,7 +7,9 @@ Projeto do Hackathon SEMCOMP × iFood 2026 ("Vendendo com Agentes"). Todos os da
 ## Pré-requisitos
 
 - Python 3.11+ e [uv](https://docs.astral.sh/uv/) (gerenciador de pacotes Python).
-- Uma chave do Gemini: https://aistudio.google.com/apikey
+- Uma LLM, à escolha (`LLM_PROVIDER` no `.env`):
+  - **ChatGPT (padrão):** usa a sua assinatura do ChatGPT (ex.: Plus), sem pagar tokens de API. Faça login com `npm run login-chatgpt`.
+  - **Gemini:** chave em https://aistudio.google.com/apikey (`LLM_PROVIDER=gemini`).
 - Um **agente aprovado** no [MCP Portal do iFood](https://mcp-developer.ifood.com.br) e uma **conta de teste**:
   1. [Crie o agente](https://mcp-developer.ifood.com.br/pt-BR/docs/guides/first-steps/agent), com a Redirect URL `http://localhost:8080/callback` (ou outra; veja abaixo).
   2. Depois da aprovação, copie o **Client ID** e gere o **Client Secret** em *Credenciais de acesso*. O segredo aparece uma única vez.
@@ -17,9 +19,20 @@ Projeto do Hackathon SEMCOMP × iFood 2026 ("Vendendo com Agentes"). Todos os da
 
 ```sh
 npm run setup          # instala as dependências Python (uv sync)
-cp .env.example .env   # preencha GEMINI_API_KEY, IFOOD_CLIENT_ID e IFOOD_CLIENT_SECRET
+cp .env.example .env   # preencha IFOOD_CLIENT_ID e IFOOD_CLIENT_SECRET
+npm run login-chatgpt  # entra na conta do ChatGPT (abre o navegador)
 npm run dev            # http://localhost:5173
 ```
+
+O login do ChatGPT fica em `backend/.data/chatgpt-auth.json` (fora do git) e é renovado automaticamente. Sem navegador local, use `npm run login-chatgpt -- --device`.
+
+### ChatGPT como LLM: atenção
+
+O modo `chatgpt` usa o `_ChatOpenAICodex` do `langchain-openai`, uma integração **experimental e não oficial**: ela acessa o backend do Codex (`chatgpt.com/backend-api/codex`), e não a API pública da OpenAI.
+
+- O uso conta nos **limites do seu plano** (não é ilimitado) e pode mudar sem aviso. Cabe a quem usa respeitar os termos da OpenAI.
+- Só alguns modelos são aceitos. Numa conta Plus (out/2026): `gpt-5.6-terra` (padrão), `gpt-5.6-luna`, `gpt-5.6-sol`, `gpt-6-luna`, `gpt-6-sol`. Nomes como `gpt-5.5` são recusados. Ajuste em `CHATGPT_MODEL`.
+- Para algo estável, volte ao Gemini (`LLM_PROVIDER=gemini`) ou use a API oficial da OpenAI. Basta trocar `agent/chat_model.py`.
 
 Na interface, clique em **Conectar iFood** e entre com a conta de teste. O e-mail ou telefone dela aparece no portal, assim como o código OTP (*Gerar código*).
 
@@ -44,13 +57,13 @@ Os testes (pytest) cobrem o analisador de restrições, o login OAuth (com o end
 
 ```
 Navegador (frontend/)  ──HTTP──▶  Backend Python (backend/ailo/, FastAPI)
-                                   ├─ agent/         LangChain create_agent + Gemini (ChatGoogleGenerativeAI)
+                                   ├─ agent/         LangChain create_agent + ChatGPT (_ChatOpenAICodex) ou Gemini
                                    ├─ restrictions/  Regras determinísticas de restrições
                                    ├─ services/      Busca, análise, mercado, carrinho
                                    └─ ifood/         MCP do iFood via langchain-mcp-adapters + OAuth do agente
 ```
 
-- **Agente:** `create_agent` (pacote `langchain`) com `ChatGoogleGenerativeAI` (`langchain-google-genai`). As ferramentas do Ailo são `StructuredTool` com `response_format="content_and_artifact"`: a saída vai para a LLM e o cartão da interface viaja como artefato.
+- **Agente:** `create_agent` (pacote `langchain`) com o modelo escolhido em `LLM_PROVIDER`: `_ChatOpenAICodex` (`langchain-openai`, assinatura do ChatGPT) ou `ChatGoogleGenerativeAI` (`langchain-google-genai`). As ferramentas do Ailo são `StructuredTool` com `response_format="content_and_artifact"`: a saída vai para a LLM e o cartão da interface viaja como artefato.
 - **iFood:** o `MultiServerMCPClient` (`langchain-mcp-adapters`) conecta a `https://consumer-mcp.ifood.com.br/marketplace`. O token do agente é injetado por um `httpx.Auth`, que também o renova quando o iFood responde 401.
 - **Login:** OAuth 2.1 com PKCE, como no [guia de implementação](https://mcp-developer.ifood.com.br/pt-BR/docs/guides/authentication/implementacao). A troca do código e a renovação enviam `client_id` + `client_secret`, os tokens são rotacionados a cada renovação e revogados ao desconectar.
 - As ferramentas do iFood **não** vão direto para a LLM: os serviços do Ailo as chamam e aplicam as regras de restrição antes.
@@ -58,7 +71,7 @@ Navegador (frontend/)  ──HTTP──▶  Backend Python (backend/ailo/, FastA
 Fluxo de uma mensagem:
 
 1. O usuário escreve o que quer comer e suas restrições.
-2. O Gemini, orquestrado pelo agente do LangChain, chama ferramentas: `registrar_restricoes`, `buscar_opcoes`, `analisar_produto`, `preparar_mensagem_restaurante`, `registrar_receita`, `buscar_ingredientes_no_mercado`, `montar_carrinho`…
+2. A LLM (ChatGPT ou Gemini), orquestrada pelo agente do LangChain, chama ferramentas: `registrar_restricoes`, `buscar_opcoes`, `analisar_produto`, `preparar_mensagem_restaurante`, `registrar_receita`, `buscar_ingredientes_no_mercado`, `montar_carrinho`…
 3. As ferramentas consultam o MCP do iFood e aplicam o **analisador determinístico**. A LLM não decide sozinha se um produto é seguro.
 4. A interface mostra **cartões** com os dados verificados: opções, parecer com evidências, mensagem ao restaurante, receita, comparação de mercados e carrinho.
 5. O pedido **só é enviado** quando o usuário revisa tudo e clica em "Confirmar pedido". A LLM não tem acesso a `submitOrder`.
@@ -92,7 +105,8 @@ backend/                        Python (uv)
     api/routes.py               Rotas /api
     agent/
       agent.py                  create_agent: conversa, ferramentas e cartões
-      chat_model.py             ChatGoogleGenerativeAI (trocar de LLM = mudar só aqui)
+      chat_model.py             ChatGPT (_ChatOpenAICodex) ou Gemini (trocar de LLM = mudar só aqui)
+    login_chatgpt.py            Login na conta do ChatGPT
       system_prompt.py          Instruções do agente
       tools/                    Ferramentas por assunto (restrições, catálogo, mercado, carrinho)
     restrictions/               Motor de regras (sem IA)
@@ -120,7 +134,9 @@ docs/
 
 Veja `.env.example`. As principais:
 
-- `GEMINI_API_KEY`: chave do Gemini. `GEMINI_MODEL` tem como padrão `gemini-flash-latest`.
+- `LLM_PROVIDER`: `chatgpt` (padrão) ou `gemini`.
+- `CHATGPT_MODEL`: modelo do ChatGPT (padrão `gpt-5.6-terra`).
+- `GEMINI_API_KEY` / `GEMINI_MODEL`: só para `LLM_PROVIDER=gemini`.
 - `IFOOD_CLIENT_ID` / `IFOOD_CLIENT_SECRET`: credenciais do agente no MCP Portal.
 - `IFOOD_REDIRECT_URI`: Redirect URL cadastrada no agente.
 - `IFOOD_SCOPES`: escopos técnicos liberados para o agente (opcional).

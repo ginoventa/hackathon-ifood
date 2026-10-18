@@ -11,6 +11,7 @@ from typing import Any
 from fastapi import APIRouter, Body, Header
 
 from ..agent.agent import run_agent_turn
+from ..agent.chat_model import is_model_configured
 from ..agent.tools.base import summarize_restrictions
 from ..config import config, config_problems
 from ..errors import ValidationError
@@ -51,7 +52,8 @@ def _session_payload(session: Session) -> dict[str, Any]:
 async def status() -> dict[str, Any]:
     return {
         "ifoodConnected": await get_ifood_client().is_authenticated(),
-        "llmConfigured": bool(config.gemini.api_key),
+        "llmProvider": config.llm.provider,
+        "llmConfigured": is_model_configured(),
         "credentialsConfigured": bool(config.ifood.client_id and config.ifood.client_secret),
         "submitEnabled": config.ifood.allow_submit_order,
         "problems": config_problems(),

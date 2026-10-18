@@ -34,12 +34,22 @@ def _env_flag(name: str, default: bool) -> bool:
 
 
 @dataclass(frozen=True)
+class LlmConfig:
+    # "chatgpt": usa a assinatura do ChatGPT via OAuth (integração experimental do LangChain).
+    # "gemini": usa a API do Gemini com GEMINI_API_KEY.
+    provider: str = field(default_factory=lambda: _env("LLM_PROVIDER", "chatgpt").lower())
+    # Modelos aceitos pelo backend do Codex numa conta Plus (out/2026): gpt-5.6-terra,
+    # gpt-5.6-luna, gpt-5.6-sol, gpt-6-luna, gpt-6-sol. Nomes como "gpt-5.5" são recusados.
+    chatgpt_model: str = field(default_factory=lambda: _env("CHATGPT_MODEL", "gpt-5.6-terra"))
+    # Máximo de rodadas de ferramenta por mensagem, para evitar laços infinitos.
+    max_tool_rounds: int = field(default_factory=lambda: int(_env("AGENT_MAX_TOOL_ROUNDS", "10")))
+
+
+@dataclass(frozen=True)
 class GeminiConfig:
     # Aceita API_KEY por compatibilidade com o .env original do projeto.
     api_key: str = field(default_factory=lambda: _env("GEMINI_API_KEY", _env("API_KEY")))
     model: str = field(default_factory=lambda: _env("GEMINI_MODEL", "gemini-flash-latest"))
-    # Máximo de rodadas de ferramenta por mensagem, para evitar laços infinitos.
-    max_tool_rounds: int = field(default_factory=lambda: int(_env("AGENT_MAX_TOOL_ROUNDS", "10")))
 
 
 @dataclass(frozen=True)
@@ -66,8 +76,14 @@ class Config:
     frontend_dir: Path = REPO_ROOT / "frontend"
     # Dados locais: tokens do iFood e perfil alimentar (fora do git).
     data_dir: Path = field(default_factory=lambda: (BACKEND_ROOT / _env("DATA_DIR", ".data")).resolve())
+    llm: LlmConfig = field(default_factory=LlmConfig)
     gemini: GeminiConfig = field(default_factory=GeminiConfig)
     ifood: IfoodConfig = field(default_factory=IfoodConfig)
+
+    @property
+    def chatgpt_token_path(self) -> Path:
+        """Onde o login do ChatGPT é salvo (fora do git, junto dos demais dados locais)."""
+        return self.data_dir / "chatgpt-auth.json"
 
     @property
     def app_url(self) -> str:
@@ -81,8 +97,12 @@ config = Config()
 def config_problems() -> list[str]:
     """Lista problemas de configuração que impedem o app de funcionar."""
     problems = []
-    if not config.gemini.api_key:
+    if config.llm.provider == "gemini" and not config.gemini.api_key:
         problems.append("Defina GEMINI_API_KEY no arquivo .env (crie uma chave em https://aistudio.google.com/apikey).")
+    elif config.llm.provider == "chatgpt" and not config.chatgpt_token_path.exists():
+        problems.append("Entre na sua conta do ChatGPT: rode `npm run login-chatgpt` na raiz do projeto.")
+    elif config.llm.provider not in ("gemini", "chatgpt"):
+        problems.append('LLM_PROVIDER deve ser "chatgpt" ou "gemini".')
     if not config.ifood.client_id or not config.ifood.client_secret:
         problems.append(
             "Defina IFOOD_CLIENT_ID e IFOOD_CLIENT_SECRET no .env com as credenciais do agente "

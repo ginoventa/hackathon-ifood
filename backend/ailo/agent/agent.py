@@ -84,7 +84,7 @@ async def run_agent_turn(session: Session, message: str, *, model: BaseChatModel
         result = await agent.ainvoke(
             {"messages": inputs},
             # Cada rodada usa dois passos do grafo (modelo + ferramentas).
-            {"recursion_limit": config.gemini.max_tool_rounds * 2 + 1},
+            {"recursion_limit": config.llm.max_tool_rounds * 2 + 1},
         )
     except GraphRecursionError:
         reply = "Precisei de muitas etapas para responder. Pode detalhar um pouco mais o que você quer?"
