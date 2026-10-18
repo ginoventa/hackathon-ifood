@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
+    <meta content="#f7c9d8" name="theme-color"/>
+    <meta content="Ailo, seu assistente para descobrir o que sua fome pede." name="description"/>
+    <title>
+      Ailo • Seu assistente iFood
+    </title>
+    <link href="./ailo.svg" rel="icon" type="image/svg+xml"/>
+    <link href="./styles.css" rel="stylesheet"/>
+  </head>
+  <body>
+    <div aria-hidden="true" class="splash">
+      <img alt="" src="./ailo.svg"/>
+    </div>
+    <main class="app" data-mode="restaurants">
+      <header class="header">
+        <button aria-expanded="false" aria-label="Abrir menu" class="icon-button menu-button" id="menu-button">
+          <svg>
+            <use href="./icons.svg#menu">
+            </use>
+          </svg>
+        </button>
+        <button class="address" id="address-button">
+          <span>
+            Olá, Usuário
+          </span>
+          <strong id="address-text">
+            <span id="address-value">
+              Rua Aquidaban, 1 – São Carlos, SP
+            </span>
+            <svg>
+              <use href="./icons.svg#chevron">
+              </use>
+            </svg>
+          </strong>
+        </button>
+      </header>
+      <section aria-labelledby="welcome-title" class="welcome" id="welcome">
+        <div aria-hidden="true" class="mascot">
+          <div class="mascot-face">
+            <i>
+            </i>
+            <i>
+            </i>
+          </div>
+        </div>
+        <p class="mode-caption">
+          <svg>
+            <use href="./icons.svg#utensils" id="caption-icon">
+            </use>
+          </svg>
+          <span id="mode-caption">
+            Modo Restaurantes
+          </span>
+        </p>
+        <h1 id="welcome-title">
+          O que sua fome pede agora?
+        </h1>
+      </section>
+      <section aria-label="Conversa com o Ailo" aria-live="polite" class="conversation" hidden="" id="conversation">
+      </section>
+      <div class="bottom-area">
+        <template id="offer-icon-template">
+          <svg>
+            <use href="./icons.svg#offer">
+            </use>
+          </svg>
+        </template>
+        <div aria-label="Sugestões de pedidos" class="suggestions" id="suggestions">
+        </div>
+        <form class="composer" id="chat-form">
+          <label class="sr-only" for="prompt">
+            Peça ao Ailo
+          </label>
+          <textarea id="prompt" maxlength="2000" placeholder="Peça ao Ailo" rows="1"></textarea>
+          <div class="composer-actions">
+            <div class="mode-select-wrapper">
+              <button aria-expanded="false" class="mode-select" id="mode-button" type="button">
+                <svg>
+                  <use href="./icons.svg#utensils" id="mode-icon">
+                  </use>
+                </svg>
+                <span id="mode-label">
+                  Restaurantes
+                </span>
+              </button>
+              <div class="mode-popover" hidden="" id="mode-popover">
+                <button data-mode="restaurants" type="button">
+                  <svg>
+                    <use href="./icons.svg#utensils">
+                    </use>
+                  </svg>
+                  Restaurantes
+                  <span>
+                    Para a fome de agora
+                  </span>
+                </button>
+                <button data-mode="market" type="button">
+                  <svg>
+                    <use href="./icons.svg#cart">
+                    </use>
+                  </svg>
+                  Mercado
+                  <span>
+                    Para abastecer a semana
+                  </span>
+                </button>
+              </div>
+            </div>
+            <div class="send-actions">
+              <button aria-label="Ditar mensagem" class="mic-button" id="mic-button" type="button">
+                <svg>
+                  <use href="./icons.svg#mic">
+                  </use>
+                </svg>
+              </button>
+              <button aria-label="Falar com o Ailo" class="voice-button" id="send-button" type="submit">
+                <svg class="wave">
+                  <use href="./icons.svg#wave">
+                  </use>
+                </svg>
+                <span id="send-label">
+                </span>
+                <svg class="send-icon" hidden="">
+                  <use href="./icons.svg#arrow">
+                  </use>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </form>
+        <p class="demo-note" hidden="" id="demo-note">
+          Experiência demonstrativa · sem pedidos reais
+        </p>
+      </div>
+      <div class="overlay" hidden="" id="overlay">
+      </div>
+      <aside aria-label="Menu do Ailo" class="drawer" hidden="" id="drawer">
+        <div class="drawer-header">
+          <img alt="Ailo" src="./ailo.svg"/>
+          <button aria-label="Fechar menu" class="icon-button" id="close-menu">
+            ×
+          </button>
+        </div>
+        <h2>
+          Olá, Usuário
+          <span>
+            O que vamos descobrir hoje?
+          </span>
+        </h2>
+        <button class="drawer-item" id="new-chat">
+          <svg>
+            <use href="./icons.svg#plus">
+            </use>
+          </svg>
+          Nova conversa
+        </button>
+        <a class="drawer-item" href="./loja.html">Explorar loja</a>
+      <p class="drawer-label">
+          ESCOLHA SEU MODO
+        </p>
+        <button class="drawer-item" data-mode="restaurants">
+          <svg>
+            <use href="./icons.svg#utensils">
+            </use>
+          </svg>
+          Restaurantes
+        </button>
+        <button class="drawer-item" data-mode="market">
+          <svg>
+            <use href="./icons.svg#cart">
+            </use>
+          </svg>
+          Mercado
+        </button>
+        <p class="drawer-footer">
+          Protótipo Ailo · Hackathon iFood
+        </p>
+      </aside>
+      <dialog id="address-dialog">
+        <form method="dialog">
+          <h2>
+            Onde você quer receber?
+          </h2>
+          <label for="address-input">
+            Endereço de entrega
+          </label>
+          <input id="address-input" required="" value="Rua Aquidaban, 1 – São Carlos, SP"/>
+          <div class="dialog-actions">
+            <button formnovalidate="" value="cancel">
+              Cancelar
+            </button>
+            <button class="primary" value="save">
+              Salvar endereço
+            </button>
+          </div>
+        </form>
+      </dialog>
+      <div class="toast" hidden="" id="toast" role="status">
+      </div>
+    </main>
+    <script src="./app.js" type="module">
+    </script>
+  </body>
+</html>

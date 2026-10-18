@@ -1,0 +1,11 @@
+{
+  "name": "ailo-hackathon",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix frontend run dev --",
+    "start": "npm --prefix frontend run start --",
+    "build": "npm --prefix frontend run build",
+    "check": "npm --prefix frontend run check"
+  }
+}

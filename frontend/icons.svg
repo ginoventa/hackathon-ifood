@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <symbol id="menu" viewBox="0 0 24 24">
+      <path d="M5 6h14M5 12h14M5 18h14">
+      </path>
+    </symbol>
+    <symbol id="chevron" viewBox="0 0 24 24">
+      <path d="m7 10 5 5 5-5">
+      </path>
+    </symbol>
+    <symbol id="utensils" viewBox="0 0 24 24">
+      <path d="M4 3v6m3-6v6m3-6v6M4 7h6v3a3 3 0 0 1-6 0V7Zm3 6v8M17 21V3c4 0 4 10 0 10h-2V3">
+      </path>
+    </symbol>
+    <symbol id="cart" viewBox="0 0 24 24">
+      <path d="M3 3h3l2 13h11l2-10H7">
+      </path>
+      <circle cx="10" cy="20" r="1">
+      </circle>
+      <circle cx="18" cy="20" r="1">
+      </circle>
+    </symbol>
+    <symbol id="mic" viewBox="0 0 24 24">
+      <rect height="13" rx="3" width="6" x="9" y="2">
+      </rect>
+      <path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-3 0h6">
+      </path>
+    </symbol>
+    <symbol id="wave" viewBox="0 0 28 28">
+      <path d="M4 10v8m5-15v22m5-18v14m5-11v8m5-6v4">
+      </path>
+    </symbol>
+    <symbol id="arrow" viewBox="0 0 24 24">
+      <path d="M12 20V4m-6 6 6-6 6 6">
+      </path>
+    </symbol>
+    <symbol id="plus" viewBox="0 0 24 24">
+      <path d="M12 4v16M4 12h16">
+      </path>
+    </symbol>
+    <symbol id="offer" viewBox="0 0 24 24">
+      <path d="m9 3 4 1 4-1 1 4 3 3-3 3-1 4-4 1-4 3-2-4-4-2 1-4-1-4 4-1Z">
+      </path>
+      <path d="m9 14 6-6m-5 1h.01M14 13h.01">
+      </path>
+    </symbol>
+    <symbol id="back" viewBox="0 0 24 24">
+      <path d="m14 5-7 7 7 7" />
+    </symbol>
+    <symbol id="search" viewBox="0 0 24 24">
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="m16 16 5 5" />
+    </symbol>
+  </defs>
+</svg>

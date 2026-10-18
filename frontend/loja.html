@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1" name="viewport"/>
+    <title>
+      Burguer do Bairro • iFood
+    </title>
+    <link href="./shop.css" rel="stylesheet"/>
+    <script src="./shop.js" type="module">
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-content">
+        <a aria-label="iFood, início" class="ifood-logo" href="./loja.html">
+          <img alt="iFood" src="https://upload.wikimedia.org/wikipedia/commons/9/90/IFood_logo.svg"/>
+        </a>
+        <nav aria-label="Navegação principal">
+          <a class="active" href="./loja.html">
+            Restaurantes
+          </a>
+          <a class="ailo-link" href="./index.html">
+            <img alt="" src="./ailo.svg"/>
+            Peça ao Ailo
+          </a>
+        </nav>
+        <span class="delivery-address">
+          Entregar em
+          <strong>
+            Rua Aquidaban, 1
+          </strong>
+        </span>
+        <button aria-label="Abrir sacola" class="bag-trigger" type="button">
+          Sacola
+          <span class="bag-count">
+            0
+          </span>
+        </button>
+      </div>
+    </header>
+    <div class="mobile-store-header">
+      <a aria-label="Voltar ao Ailo" class="mobile-icon-button" href="./index.html">
+        <svg>
+          <use href="./icons.svg#back">
+          </use>
+        </svg>
+      </a>
+      <a aria-label="iFood" class="mobile-store-brand" href="./loja.html">
+        <img alt="iFood" src="https://upload.wikimedia.org/wikipedia/commons/9/90/IFood_logo.svg"/>
+      </a>
+      <button aria-label="Buscar no cardápio" class="mobile-icon-button" id="mobile-search" type="button">
+        <svg>
+          <use href="./icons.svg#search">
+          </use>
+        </svg>
+      </button>
+    </div>
+    <main class="store-layout">
+      <p class="breadcrumb">
+        <a href="./index.html">
+          Ailo
+        </a>
+        <span>
+          ›
+        </span>
+        Restaurantes
+        <span>
+          ›
+        </span>
+        Burguer do Bairro
+      </p>
+      <div class="store-cover">
+      </div>
+      <section aria-labelledby="store-name" class="store-info">
+        <div aria-hidden="true" class="store-avatar">
+          BB
+          <span>
+            BURGUER DO BAIRRO
+          </span>
+        </div>
+        <div class="store-heading">
+          <div class="store-title-row">
+            <h1 id="store-name">
+              Burguer do Bairro
+            </h1>
+            <button aria-label="Favoritar loja" aria-pressed="false" class="favorite" id="favorite" type="button">
+              ♡
+            </button>
+          </div>
+          <p class="store-meta">
+            <strong>
+              ★ 4,9
+            </strong>
+            <span>
+              •
+            </span>
+            Lanches
+            <span>
+              •
+            </span>
+            1,2 km
+          </p>
+          <p class="delivery-info">
+            35–45 min
+            <span>
+              •
+            </span>
+            <strong>
+              Entrega grátis
+            </strong>
+            <span>
+              •
+            </span>
+            Mínimo R$ 20,00
+          </p>
+        </div>
+      </section>
+      <div class="menu-toolbar">
+        <nav aria-label="Categorias do cardápio" class="categories">
+          <a class="active" href="#hamburgueres">
+            Hambúrgueres
+          </a>
+          <a href="#acompanhamentos">
+            Acompanhamentos
+          </a>
+          <a href="#opcoes-especiais">
+            Opções especiais
+          </a>
+        </nav>
+        <label class="search">
+          <span aria-hidden="true">
+            ⌕
+          </span>
+          <input aria-label="Buscar no cardápio" id="menu-search" placeholder="Buscar no cardápio" type="search"/>
+        </label>
+      </div>
+      <section class="menu-section" id="hamburgueres">
+        <h2>
+          Hambúrgueres
+        </h2>
+        <div class="product-grid" data-category="Hambúrgueres">
+        </div>
+      </section>
+      <section class="menu-section" id="acompanhamentos">
+        <h2>
+          Acompanhamentos
+        </h2>
+        <div class="product-grid" data-category="Acompanhamentos">
+        </div>
+      </section>
+      <section class="menu-section" id="opcoes-especiais">
+        <h2>
+          Opções especiais
+        </h2>
+        <div class="product-grid" data-category="Opções especiais">
+        </div>
+      </section>
+      <p class="empty-state" hidden="" id="search-empty">
+        Nenhum item encontrado. Tente outro nome.
+      </p>
+    </main>
+    <div class="mobile-bag-bar" hidden="" id="mobile-bag-bar">
+      <button class="bag-trigger" type="button">
+        <span class="mobile-bag-quantity bag-count">
+          0
+        </span>
+        <span>
+          Ver sacola
+        </span>
+        <strong id="mobile-bag-total">
+        </strong>
+      </button>
+    </div>
+    <template id="product-card-template">
+      <a class="product-card">
+        <div class="card-copy">
+          <span class="dietary-badge" hidden="">
+          </span>
+          <h3>
+          </h3>
+          <p>
+          </p>
+          <div class="card-price">
+            <strong>
+            </strong>
+            <del hidden="">
+            </del>
+          </div>
+        </div>
+        <img alt="" loading="lazy"/>
+      </a>
+    </template>
+    <dialog aria-labelledby="bag-title" class="bag-dialog" id="bag-dialog">
+      <div class="bag-heading">
+        <div>
+          <h2 id="bag-title">
+            Sacola
+          </h2>
+        </div>
+        <button aria-label="Fechar sacola" class="close-button" id="close-bag" type="button">
+          ×
+        </button>
+      </div>
+      <p class="bag-store">
+        Burguer do Bairro
+      </p>
+      <div id="bag-items">
+      </div>
+      <div class="bag-total">
+        <span>
+          Total dos produtos
+        </span>
+        <strong id="bag-total">
+        </strong>
+      </div>
+      <button class="secondary-button" id="clear-bag" type="button">
+        Esvaziar sacola
+      </button>
+    </dialog>
+  </body>
+</html>
