@@ -64,10 +64,9 @@ REGISTER_RECIPE = ToolDefinition(
                     "required": ["original", "substituto"],
                 },
             },
-            "modoDePreparo": {"type": "array", "items": {"type": "string"}},
             "cuidados": {"type": "array", "items": {"type": "string"}, "description": "Rótulos, contato cruzado na cozinha, utensílios."},
         },
-        "required": ["titulo", "ingredientes", "modoDePreparo"],
+        "required": ["titulo", "ingredientes"],
     },
     execute=_register_recipe,
 )

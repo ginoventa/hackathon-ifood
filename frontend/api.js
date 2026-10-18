@@ -77,6 +77,7 @@ export const api = {
   saveProfile: (restrictions, consent) => request('/api/profile', { method: 'PUT', body: { restrictions, consent } }),
   deleteProfile: () => request('/api/profile', { method: 'DELETE' }),
 
+  cart: (cartId) => request(`/api/carts/${encodeURIComponent(cartId)}`),
   checkout: (cartId) => request(`/api/carts/${encodeURIComponent(cartId)}/checkout`),
   submitOrder: (order) => request('/api/orders', { method: 'POST', body: order }),
   trackOrder: (orderId) => request(`/api/orders/${encodeURIComponent(orderId)}/track`),

@@ -46,6 +46,10 @@ function details(summary, children) {
 // ---------------------------------------------------------------- Restrições
 
 function renderRestrictions({ restrictions, inputs }, actions) {
+  if (!restrictions?.length) {
+    return null;
+  }
+
   const chips = el('div', { className: 'restriction-chips' }, restrictions.map((restriction) => (
     el('span', { className: 'restriction-chip' }, [
       el('strong', { text: restriction.label }),
@@ -63,7 +67,8 @@ function renderRestrictions({ restrictions, inputs }, actions) {
     save.disabled = true;
     try {
       await actions.saveProfile(inputs);
-      save.textContent = 'Perfil salvo';
+      consent.closest('label').remove();
+    save.replaceWith(el('p', { className: 'card-muted', text: 'Restrições salvas no seu perfil.' }));
     } catch (error) {
       save.disabled = false;
       actions.toast(error.message);
@@ -263,7 +268,6 @@ function renderRecipe(recipe, actions) {
       el('strong', { text: 'Substituições' }),
       list(recipe.substituicoes.map((swap) => `${swap.original} → ${swap.substituto}${swap.motivo ? ` (${swap.motivo})` : ''}`)),
     ]) : null,
-    details('Modo de preparo', [el('ol', { className: 'card-list' }, recipe.modoDePreparo.map((step) => el('li', { text: step })))]),
     recipe.cuidados.length ? el('div', { className: 'card-note warning' }, [el('strong', { text: 'Cuidados' }), list(recipe.cuidados)]) : null,
     el('div', { className: 'card-actions' }, [
       actionButton('Buscar ingredientes no mercado', () => actions.send('Pode buscar os ingredientes no mercado.', 'Buscar os ingredientes no mercado'), 'primary'),
@@ -331,7 +335,7 @@ function renderCart(cart, actions) {
     el('div', { className: 'cart-total' }, [el('span', { text: 'Total' }), el('strong', { text: formatPrice(cart.total ?? cart.subtotal) })]),
     cart.alerts.length ? el('p', { className: 'card-note warning', text: `${cart.alerts.length} alerta(s) alimentar(es) para revisar antes de finalizar.` }) : null,
     el('div', { className: 'card-actions' }, [
-      actionButton('Revisar e finalizar', () => actions.openCheckout(cart.cartId), 'primary'),
+      actionButton('Ver carrinho no iFood', () => actions.openCheckout(cart.cartId), 'primary'),
     ]),
     el('p', { className: 'card-disclaimer', text: 'Nada é enviado ao iFood sem a sua confirmação na tela de revisão.' }),
   ]);

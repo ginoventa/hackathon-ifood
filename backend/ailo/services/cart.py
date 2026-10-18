@@ -59,6 +59,7 @@ def normalize_cart(raw: dict) -> dict[str, Any]:
     merchant = cart.get("merchant") or {}
     return {
         "cartId": cart.get("cartId") or cart.get("id"),
+        "appDeeplink": cart.get("appDeeplink") or raw.get("appDeeplink"),
         "merchantId": merchant.get("merchantId") or cart.get("merchantId"),
         "merchantName": merchant.get("merchantName") or cart.get("merchantName"),
         "items": items,
@@ -148,6 +149,17 @@ async def create_cart(session: Session, merchant_id: str, items: list[dict]) -> 
     item_ids = [item["itemId"] for item in items]
     session.carts[cart["cartId"]] = {"merchantId": cart["merchantId"], "itemIds": item_ids}
     return {**cart, "alerts": dietary_alerts_for(session, item_ids)}
+
+
+async def get_cart_preview(session: Session, cart_id: str) -> dict:
+    """Consulta somente os itens do carrinho e seu link oficial para o app iFood."""
+    entry = _require_own_cart(session, cart_id)
+    raw = await get_ifood_client().call_tool("getCart", {"cartId": cart_id})
+    return {
+        "cart": normalize_cart(raw),
+        "alerts": dietary_alerts_for(session, entry["itemIds"]),
+        "address": session.address,
+    }
 
 
 async def get_checkout_options(session: Session, cart_id: str) -> dict:

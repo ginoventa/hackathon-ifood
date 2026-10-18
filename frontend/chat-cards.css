@@ -816,3 +816,23 @@ dialog input[type="checkbox"] {
     flex-basis: 180px;
   }
 }
+
+.ifood-cart-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  text-decoration: none;
+  background: #ea1d2c;
+  color: #fff;
+}
+
+.cart-preview-items li {
+  padding: 16px 0;
+}
+
+.cart-preview-items small {
+  display: block;
+  color: #717171;
+  margin-top: 6px;
+}

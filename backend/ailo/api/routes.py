@@ -19,7 +19,7 @@ from ..ifood.client import get_ifood_client
 from ..profiles import delete_profile, read_profile, read_profile_restrictions, save_profile
 from ..restrictions.catalog import list_restriction_options, resolve_restriction
 from ..services.account import ensure_account_context, list_addresses, select_address
-from ..services.cart import get_checkout_options, submit_order, track_order
+from ..services.cart import get_cart_preview, get_checkout_options, submit_order, track_order
 from ..sessions import Session, get_session, reset_conversation
 
 router = APIRouter(prefix="/api")
@@ -140,6 +140,9 @@ async def chat(body: dict = Body(...), session_id: str | None = SessionHeader) -
 
     session.busy = True
     try:
+        if not session.restrictions:
+            session.restrictions = read_profile_restrictions()
+            session.restriction_inputs = read_profile()["restrictions"]
         await ensure_account_context(session)
         result = await run_agent_turn(session, message)
         return {**result, "restrictions": summarize_restrictions(session.restrictions)}
@@ -180,6 +183,11 @@ async def remove_profile() -> dict[str, bool]:
 
 
 # ------------------------------------------------------------- Revisão e pedido
+
+
+@router.get("/carts/{cart_id}")
+async def cart_preview(cart_id: str, session_id: str | None = SessionHeader) -> dict[str, Any]:
+    return await get_cart_preview(get_session(session_id), cart_id)
 
 
 @router.get("/carts/{cart_id}/checkout")
