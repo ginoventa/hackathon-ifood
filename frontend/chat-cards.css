@@ -15,8 +15,11 @@
 }
 
 .connect-banner {
-  margin: 22px auto 0;
-  max-width: 380px;
+  position: relative;
+  z-index: 4;
+  margin: 0 25px;
+  max-width: 520px;
+  align-self: center;
   background: #fff;
   border: 1px solid #f7c9d8;
   border-radius: 20px;

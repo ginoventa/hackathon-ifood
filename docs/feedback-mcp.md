@@ -15,10 +15,14 @@ Pontos observados durante o desenvolvimento do Ailo, com o MCP `consumer-mcp.ifo
 ## Autenticação
 
 8. **A descoberta OAuth só funciona por `openid-configuration`.** `https://id.ifood.com.br/.well-known/oauth-authorization-server` responde 400, enquanto `/.well-known/openid-configuration` funciona. Clientes MCP que seguem a especificação tentam primeiro o endpoint OAuth.
-9. **Não há registro dinâmico de cliente** (`registration_endpoint` ausente). É preciso um `client_id` pré-registrado, com retorno fixo em `http://localhost:8080/callback`. Isso conflita com outros programas que usam a porta 8080.
+9. **Não há registro dinâmico de cliente** (`registration_endpoint` ausente). Cada time precisa cadastrar um agente, esperar a aprovação e copiar Client ID e Client Secret. Só então é possível criar a conta de teste.
+10. **A documentação diverge entre páginas.** O `llms-full.txt` cita `auth.ifood.com` e `dev-auth.ifood.com.br` e diz que clientes públicos não precisam de `client_secret`. Já o guia de Implementação usa `id.ifood.com.br` e exige `client_secret` na troca e na renovação. Também há escopos `user:read`/`discovery:read` num lugar e `mcp.*` em outro.
+11. **A Redirect URL padrão das ferramentas (`http://localhost:8080/callback`) conflita com outros programas** na mesma porta, como o login de MCP de outro cliente aberto ao mesmo tempo.
+12. **O erro de login é pouco explicativo.** Quando o agente não envia `client_secret`, o usuário de teste só percebe que "não consegue logar". Uma mensagem como "cliente requer autenticação" ajudaria.
 
 ## Ergonomia das ferramentas
 
-10. **Os esquemas usam `"##default"` como valor padrão** em vários campos (`createCart`, `updateCartItem`). Isso confunde LLMs e validadores de JSON Schema.
-11. **Tipos como `["string", "null"]` e `format: uuid`** não são aceitos por todos os provedores de function calling (ex.: Gemini). Tivemos de reescrever as declarações à mão.
-12. **Os `agentHints` são úteis** (ex.: escolha do endereço por histórico de uso). Vale manter e expandir.
+13. **Os esquemas usam `"##default"` como valor padrão** em vários campos (`createCart`, `updateCartItem`). Isso confunde LLMs e validadores de JSON Schema.
+14. **Tipos como `["string", "null"]` e `format: uuid`** não são aceitos por todos os provedores de function calling (ex.: Gemini). Tivemos de reescrever as declarações à mão.
+15. **Pedidos de teste pagos não são reembolsados.** O sandbox poderia oferecer um meio de pagamento simulado, para testar o `submitOrder` sem risco.
+16. **Os `agentHints` são úteis** (ex.: escolha do endereço por histórico de uso). Vale manter e expandir.

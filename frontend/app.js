@@ -371,7 +371,7 @@ async function connectIfood() {
   try {
     const { authorizationUrl } = await api.loginIfood();
     window.open(authorizationUrl, '_blank', 'noopener');
-    toast('Entre na sua conta do iFood na nova aba. Depois volte aqui.');
+    toast('Entre na sua conta do iFood na nova aba (na conta de teste, o código OTP aparece no MCP Portal). Depois volte aqui.');
   } catch (error) {
     toast(error.message);
   }
@@ -380,10 +380,6 @@ async function connectIfood() {
 $('#connect-button').onclick = connectIfood;
 
 $('#ifood-connection').onclick = async () => {
-  if (status?.ifoodMode === 'mock') {
-    toast('Modo demonstração: os dados do iFood são simulados.');
-    return;
-  }
   if (!status?.ifoodConnected) {
     connectIfood();
     return;
@@ -406,22 +402,19 @@ async function loadAccount() {
     return;
   }
 
-  $('#ifood-connection-label').textContent = status.ifoodMode === 'mock'
-    ? 'iFood: modo demonstração'
-    : (status.ifoodConnected ? 'Desconectar conta iFood' : 'Conectar conta iFood');
-  $('#drawer-footer').textContent = status.ifoodMode === 'mock'
-    ? 'Modo demonstração · dados simulados'
-    : 'Protótipo Ailo · Hackathon iFood';
-  if (status.ifoodMode === 'mock') {
-    $('#demo-note').textContent = 'Modo demonstração · dados e pedidos simulados';
-  }
+  $('#ifood-connection-label').textContent = status.ifoodConnected ? 'Desconectar conta iFood' : 'Conectar conta iFood';
   if (status.problems.length) {
     toast(status.problems[0]);
   }
 
-  if (status.ifoodMode === 'live' && !status.ifoodConnected) {
+  if (!status.ifoodConnected) {
+    // Sem as credenciais do agente, o login não funciona: avisa o que falta.
+    $('#connect-text').textContent = status.credentialsConfigured
+      ? 'Conecte sua conta do iFood para buscar opções perto de você.'
+      : 'Configure IFOOD_CLIENT_ID e IFOOD_CLIENT_SECRET do seu agente no arquivo .env e reinicie o servidor.';
+    $('#connect-button').hidden = !status.credentialsConfigured;
     showConnectBanner(true);
-    showAddress(null);
+    $('#address-value').textContent = 'Conecte o iFood para ver seus endereços';
     return;
   }
   showConnectBanner(false);
@@ -444,7 +437,7 @@ async function loadAccount() {
 
 // Ao voltar do login do iFood (em outra aba), recarrega a conta.
 window.addEventListener('focus', () => {
-  if (status?.ifoodMode === 'live' && !status.ifoodConnected) {
+  if (status && !status.ifoodConnected) {
     loadAccount();
   }
 });

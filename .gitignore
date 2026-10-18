@@ -5,3 +5,7 @@ node_modules/
 dist/
 # Dados locais do backend (tokens do iFood e perfil alimentar)
 .data*/
+# Python
+.venv/
+__pycache__/
+.pytest_cache/

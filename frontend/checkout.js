@@ -61,7 +61,7 @@ function alertsSection(alerts) {
 }
 
 /** Tela de sucesso, com acompanhamento periódico do pedido. */
-function showOrderPlaced(order, isDemo) {
+function showOrderPlaced(order) {
   const status = el('p', { className: 'order-status', text: ORDER_STATUS[order.status] ?? order.status ?? 'Pedido enviado' });
 
   const refresh = async () => {
@@ -77,7 +77,7 @@ function showOrderPlaced(order, isDemo) {
 
   body.replaceChildren(el('div', { className: 'checkout-state success' }, [
     el('span', { className: 'success-icon' }, [icon('check')]),
-    el('h2', { text: isDemo ? 'Pedido simulado registrado' : 'Pedido enviado ao iFood!' }),
+    el('h2', { text: 'Pedido enviado ao iFood!' }),
     status,
     el('p', { className: 'card-muted', text: `Número do pedido: ${order.orderId}` }),
     order.message ? el('p', { className: 'card-muted', text: order.message }) : null,
@@ -93,7 +93,7 @@ function showOrderPlaced(order, isDemo) {
 
 /** Monta o formulário de revisão a partir dos dados da API. */
 function renderReview(cartId, data) {
-  const { cart, alerts, address, deliveryMethods, paymentMethods, submitEnabled, mode } = data;
+  const { cart, alerts, address, deliveryMethods, paymentMethods, submitEnabled } = data;
 
   const delivery = radioGroup('delivery', 'Como receber', deliveryMethods.map((method) => ({
     value: method.deliveryMethodId,
@@ -122,7 +122,7 @@ function renderReview(cartId, data) {
       el('h2', { text: 'Revise seu pedido' }),
       el('button', { className: 'icon-button', text: '×', attrs: { type: 'button', 'aria-label': 'Fechar revisão', value: 'close' } }),
     ]),
-    mode === 'mock' ? el('p', { className: 'card-note', text: 'Modo demonstração: o pedido é simulado e não chega a nenhum estabelecimento.' }) : null,
+    el('p', { className: 'card-note warning', text: 'Este pedido será enviado ao iFood. Em contas de teste, evite pagar via PIX: pedidos de teste pagos não são reembolsados.' }),
     el('section', { className: 'checkout-section' }, [
       el('h3', { text: cart.merchantName ?? 'Itens' }),
       el('ul', { className: 'market-items' }, cart.items.map((item) => el('li', {}, [
@@ -183,7 +183,7 @@ function renderReview(cartId, data) {
         userConfirmed: true,
         alertsAcknowledged: acknowledge.checked,
       });
-      showOrderPlaced(order, mode === 'mock');
+      showOrderPlaced(order);
     } catch (requestError) {
       error.textContent = requestError.message;
       error.hidden = false;

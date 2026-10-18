@@ -1,17 +1,15 @@
 {
   "name": "ailo-hackathon",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "description": "Ailo: assistente do iFood para pessoas com restrições alimentares (Hackathon SEMCOMP × iFood).",
   "scripts": {
-    "setup": "npm --prefix backend install",
-    "dev": "npm --prefix backend run dev",
-    "start": "npm --prefix backend run start",
-    "demo": "IFOOD_MODE=mock npm --prefix backend run dev",
-    "login": "npm --prefix backend run login",
-    "test": "npm --prefix backend test",
+    "setup": "cd backend && uv sync",
+    "dev": "cd backend && uv run python -m ailo.main",
+    "start": "cd backend && uv run python -m ailo.main",
+    "login": "cd backend && uv run python -m ailo.login",
+    "test": "cd backend && uv run pytest",
     "check": "npm --prefix frontend run check",
-    "build": "npm --prefix frontend run build",
-    "frontend": "npm --prefix frontend run dev --"
+    "build": "npm --prefix frontend run build"
   }
 }

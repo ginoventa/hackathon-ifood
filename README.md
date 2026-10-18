@@ -2,27 +2,35 @@
 
 Agente de IA que ajuda pessoas com **alergias, intolerâncias, doença celíaca e preferências alimentares** a pedir comida no iFood. O Ailo investiga cardápios, reconhece incertezas, explica riscos e oferece caminhos alternativos: consultar o restaurante, escolher outro produto ou preparar em casa com ingredientes do mercado.
 
-Projeto do Hackathon SEMCOMP × iFood 2026 ("Vendendo com Agentes").
+Projeto do Hackathon SEMCOMP × iFood 2026 ("Vendendo com Agentes"). Todos os dados vêm do **MCP do iFood**; não há modo de demonstração.
+
+## Pré-requisitos
+
+- Python 3.11+ e [uv](https://docs.astral.sh/uv/) (gerenciador de pacotes Python).
+- Uma chave do Gemini: https://aistudio.google.com/apikey
+- Um **agente aprovado** no [MCP Portal do iFood](https://mcp-developer.ifood.com.br) e uma **conta de teste**:
+  1. [Crie o agente](https://mcp-developer.ifood.com.br/pt-BR/docs/guides/first-steps/agent), com a Redirect URL `http://localhost:8080/callback` (ou outra; veja abaixo).
+  2. Depois da aprovação, copie o **Client ID** e gere o **Client Secret** em *Credenciais de acesso*. O segredo aparece uma única vez.
+  3. [Crie uma conta de teste](https://mcp-developer.ifood.com.br/pt-BR/docs/guides/first-steps/test-account). O login dela usa o OTP exibido no próprio portal.
 
 ## Como rodar
 
-Requisitos: Node.js 20 ou superior.
-
 ```sh
-npm run setup          # instala as dependências do backend
-cp .env.example .env   # depois preencha GEMINI_API_KEY
+npm run setup          # instala as dependências Python (uv sync)
+cp .env.example .env   # preencha GEMINI_API_KEY, IFOOD_CLIENT_ID e IFOOD_CLIENT_SECRET
 npm run dev            # http://localhost:5173
 ```
 
-Na primeira vez, clique em **Conectar iFood** na tela inicial (ou rode `npm run login`) e entre na sua conta. O login usa OAuth com PKCE; os tokens ficam em `backend/.data/`, fora do git.
+Na interface, clique em **Conectar iFood** e entre com a conta de teste. O e-mail ou telefone dela aparece no portal, assim como o código OTP (*Gerar código*).
 
-### Modo demonstração (sem conta do iFood)
+### Redirect URL
 
-```sh
-npm run demo
-```
+`IFOOD_REDIRECT_URI` precisa ser **exatamente** a Redirect URL cadastrada no agente.
 
-Esse modo usa dados simulados de restaurantes e mercados de São Carlos (`backend/src/ifood/mock/`). Os pedidos também são simulados. A chave do Gemini continua necessária para conversar.
+- `http://localhost:8080/callback` (padrão): durante o login, o Ailo abre um servidor temporário na porta 8080. Feche outros programas que usem essa porta, como o login de MCP do Claude Code.
+- `http://localhost:5173/callback`: o retorno cai no próprio servidor do Ailo. Cadastre essa URL no agente para usar essa opção.
+
+Também é possível logar pelo terminal com `npm run login`.
 
 ### Testes
 
@@ -30,21 +38,28 @@ Esse modo usa dados simulados de restaurantes e mercados de São Carlos (`backen
 npm test
 ```
 
-Os testes cobrem o analisador de restrições e os dois fluxos completos do agente. No lugar do Gemini entra um "modelo falso" com roteiro fixo, então eles rodam sem rede e sem custo.
+Os testes (pytest) cobrem o analisador de restrições, o login OAuth (com o endpoint de token simulado) e os fluxos completos do agente. Neles, um cliente falso do iFood e um chat model falso do LangChain substituem os serviços reais (`backend/tests/fakes.py`), então rodam sem rede e sem custo. Esses dados fictícios existem **só nos testes**.
 
 ## Como funciona
 
 ```
-Navegador (frontend/)  ──HTTP──▶  Backend Node (backend/src/)
-                                   ├─ agent/        Gemini + ferramentas (tool calling)
-                                   ├─ restrictions/ Regras determinísticas de restrições
-                                   ├─ services/     Busca, análise, mercado, carrinho
-                                   └─ ifood/        MCP do iFood (OAuth) ou dados simulados
+Navegador (frontend/)  ──HTTP──▶  Backend Python (backend/ailo/, FastAPI)
+                                   ├─ agent/         LangChain create_agent + Gemini (ChatGoogleGenerativeAI)
+                                   ├─ restrictions/  Regras determinísticas de restrições
+                                   ├─ services/      Busca, análise, mercado, carrinho
+                                   └─ ifood/         MCP do iFood via langchain-mcp-adapters + OAuth do agente
 ```
 
+- **Agente:** `create_agent` (pacote `langchain`) com `ChatGoogleGenerativeAI` (`langchain-google-genai`). As ferramentas do Ailo são `StructuredTool` com `response_format="content_and_artifact"`: a saída vai para a LLM e o cartão da interface viaja como artefato.
+- **iFood:** o `MultiServerMCPClient` (`langchain-mcp-adapters`) conecta a `https://consumer-mcp.ifood.com.br/marketplace`. O token do agente é injetado por um `httpx.Auth`, que também o renova quando o iFood responde 401.
+- **Login:** OAuth 2.1 com PKCE, como no [guia de implementação](https://mcp-developer.ifood.com.br/pt-BR/docs/guides/authentication/implementacao). A troca do código e a renovação enviam `client_id` + `client_secret`, os tokens são rotacionados a cada renovação e revogados ao desconectar.
+- As ferramentas do iFood **não** vão direto para a LLM: os serviços do Ailo as chamam e aplicam as regras de restrição antes.
+
+Fluxo de uma mensagem:
+
 1. O usuário escreve o que quer comer e suas restrições.
-2. O **Gemini** interpreta a mensagem e chama ferramentas: `registrar_restricoes`, `buscar_opcoes`, `analisar_produto`, `preparar_mensagem_restaurante`, `registrar_receita`, `buscar_ingredientes_no_mercado`, `montar_carrinho`…
-3. As ferramentas consultam o **MCP do iFood** e aplicam o **analisador determinístico**. A LLM não decide sozinha se um produto é seguro.
+2. O Gemini, orquestrado pelo agente do LangChain, chama ferramentas: `registrar_restricoes`, `buscar_opcoes`, `analisar_produto`, `preparar_mensagem_restaurante`, `registrar_receita`, `buscar_ingredientes_no_mercado`, `montar_carrinho`…
+3. As ferramentas consultam o MCP do iFood e aplicam o **analisador determinístico**. A LLM não decide sozinha se um produto é seguro.
 4. A interface mostra **cartões** com os dados verificados: opções, parecer com evidências, mensagem ao restaurante, receita, comparação de mercados e carrinho.
 5. O pedido **só é enviado** quando o usuário revisa tudo e clica em "Confirmar pedido". A LLM não tem acesso a `submitOrder`.
 
@@ -52,72 +67,78 @@ Navegador (frontend/)  ──HTTP──▶  Backend Node (backend/src/)
 
 | Regra da proposta | Onde |
 | --- | --- |
-| Diferenciar alergia, intolerância, celíaca e preferência (rigor diferente) | `restrictions/catalog.js` |
-| Não afirmar segurança pela ausência de um termo | `analyzer.js` → `INFORMACAO_INSUFICIENTE` para alergias sem evidência positiva |
-| Alergênico em outro item do cardápio = possível contato cruzado, não prova | `analyzer.js` → `analyzeCrossContact` |
-| "Sem lactose" não serve para APLV | `catalog.js` → `claimIsInsufficient` |
+| Diferenciar alergia, intolerância, celíaca e preferência (rigor diferente) | `restrictions/catalog.py` |
+| Não afirmar segurança pela ausência de um termo | `analyzer.py` → `INFORMACAO_INSUFICIENTE` para alergias sem evidência positiva |
+| Alergênico em outro item do cardápio = possível contato cruzado, não prova | `analyzer.py` → `_analyze_cross_contact` |
+| "Sem lactose" não serve para APLV | `catalog.py` → `insufficient_claims` |
 | Informar a origem de cada evidência | Cada achado tem `where` e `source` |
-| Receita da IA validada por regras | `analyzeRecipeIngredients`: receita com conflito é recusada |
-| Itens com conflito não entram no carrinho | `services/cartService.js` |
-| Confirmação do restaurante é evidência adicional, não certificação | `recordEstablishmentConfirmation`: não anula `CONFLITO` |
+| Receita da IA validada por regras | `analyze_recipe_ingredients`: receita com conflito é recusada |
+| Itens com conflito não entram no carrinho | `services/cart.py` |
+| Confirmação do restaurante é evidência adicional, não certificação | `record_establishment_confirmation`: não anula `CONFLITO` |
 | Compra só com confirmação explícita | Rota `POST /api/orders` + ciência dos alertas |
-| Perfil alimentar só com autorização | `profiles/profileStore.js` exige `consent: true` |
+| Perfil alimentar só com autorização | `profiles.py` exige `consent=True` |
 
 ## Estrutura de pastas
 
 ```
-backend/
-  src/
-    server.js                 Entrada: API + arquivos da interface
-    config.js                 Variáveis de ambiente
-    agent/                    Agente (Gemini)
-      agent.js                Laço de conversa e execução de ferramentas
-      geminiClient.js         Adaptador do SDK @google/genai
-      systemPrompt.js         Instruções do agente
-      tools/                  Ferramentas por assunto (restrições, catálogo, mercado, carrinho)
-    restrictions/             Motor de regras (sem IA)
-      catalog.js              Restrições, termos e etiquetas do iFood
-      analyzer.js             Parecer de produtos e receitas
-      clarificationMessage.js Mensagem para o restaurante
-      textMatching.js         Normalização e busca de termos com negação ("sem leite")
-    services/                 Regras de negócio usadas pelas ferramentas e rotas
-    ifood/                    Cliente MCP real (OAuth) e cliente simulado
-    sessions/                 Contexto da conversa por aba
-    profiles/                 Perfil alimentar persistido com consentimento
-    http/                     Roteador, arquivos estáticos e rotas /api
-  test/                       Testes (node:test)
+backend/                        Python (uv)
+  pyproject.toml                Dependências: FastAPI, LangChain, langchain-google-genai, langchain-mcp-adapters
+  ailo/
+    main.py                     Entrada: API + arquivos da interface
+    config.py                   Variáveis de ambiente (.env)
+    errors.py, storage.py       Erros padronizados e persistência local
+    sessions.py, profiles.py    Contexto da conversa e perfil alimentar
+    login.py                    Login pelo terminal
+    api/routes.py               Rotas /api
+    agent/
+      agent.py                  create_agent: conversa, ferramentas e cartões
+      chat_model.py             ChatGoogleGenerativeAI (trocar de LLM = mudar só aqui)
+      system_prompt.py          Instruções do agente
+      tools/                    Ferramentas por assunto (restrições, catálogo, mercado, carrinho)
+    restrictions/               Motor de regras (sem IA)
+      catalog.py                Restrições, termos e etiquetas do iFood
+      analyzer.py               Parecer de produtos e receitas
+      clarification.py          Mensagem para o restaurante
+      text_matching.py          Normalização e busca de termos com negação ("sem leite")
+    services/                   Regras de negócio usadas pelas ferramentas e rotas
+    ifood/
+      oauth.py                  Login OAuth 2.1 + PKCE do agente
+      client.py                 MCP do iFood via LangChain
+  tests/                        pytest (com cliente e modelo falsos)
 frontend/
-  index.html, app.js          Conversa com o Ailo
-  chat-cards.js/.css          Cartões da conversa
-  checkout.js                 Revisão e confirmação do pedido
-  perfil.html/.js/.css        Perfil alimentar
-  api.js, format.js           Cliente da API e utilitários
-  loja.html, produto.html…    Loja ilustrativa (protótipo original)
+  index.html, app.js            Conversa com o Ailo
+  chat-cards.js/.css            Cartões da conversa
+  checkout.js                   Revisão e confirmação do pedido
+  perfil.html/.js/.css          Perfil alimentar
+  api.js, format.js             Cliente da API e utilitários
+  loja.html, produto.html…      Loja ilustrativa (protótipo original)
 docs/
-  feedback-mcp.md             Entregável 06: dores reais com o MCP do iFood
+  feedback-mcp.md               Entregável 06: dores reais com o MCP do iFood
 ```
 
 ## Variáveis de ambiente
 
 Veja `.env.example`. As principais:
 
-- `GEMINI_API_KEY`: chave do Gemini (https://aistudio.google.com/apikey). `API_KEY` também é aceita.
-- `GEMINI_MODEL`: padrão `gemini-flash-latest`.
-- `IFOOD_MODE`: `live` (MCP real) ou `mock` (demonstração).
-- `ALLOW_SUBMIT_ORDER`: `true` permite enviar pedidos reais após a confirmação do usuário.
+- `GEMINI_API_KEY`: chave do Gemini. `GEMINI_MODEL` tem como padrão `gemini-flash-latest`.
+- `IFOOD_CLIENT_ID` / `IFOOD_CLIENT_SECRET`: credenciais do agente no MCP Portal.
+- `IFOOD_REDIRECT_URI`: Redirect URL cadastrada no agente.
+- `IFOOD_SCOPES`: escopos técnicos liberados para o agente (opcional).
+- `ALLOW_SUBMIT_ORDER`: `true` permite enviar o pedido após a confirmação do usuário. Pedidos de teste pagos (ex.: via PIX) **não são reembolsados**.
 
 ## API
 
 | Método | Rota | Uso |
 | --- | --- | --- |
-| GET | `/api/status` | Modo do iFood, conexão e configuração |
+| GET | `/api/status` | Conexão com o iFood e configuração |
 | POST | `/api/auth/ifood/login` | Inicia o login OAuth (retorna a URL) |
+| POST | `/api/auth/ifood/logout` | Revoga os tokens e desconecta |
 | GET | `/api/session` | Usuário, endereço e restrições da sessão |
 | POST | `/api/chat` | Mensagem ao agente → `{ reply, cards, restrictions }` |
 | GET/PUT/DELETE | `/api/profile` | Perfil alimentar (PUT exige `consent: true`) |
-| GET | `/api/carts/:cartId/checkout` | Dados da tela de revisão |
+| GET | `/api/carts/{cartId}/checkout` | Dados da tela de revisão |
 | POST | `/api/orders` | Envia o pedido (exige `userConfirmed: true`) |
-| GET | `/api/orders/:orderId/track` | Acompanhamento |
+| GET | `/api/orders/{orderId}/track` | Acompanhamento |
 
 Todas as rotas usam o cabeçalho `X-Session-Id`, gerado por aba no navegador.
 
@@ -125,5 +146,5 @@ Todas as rotas usam o cabeçalho `X-Session-Id`, gerado por aba no navegador.
 
 - O MCP do iFood não traz lista de ingredientes nem alergênicos estruturados. A análise usa nome, descrição e adicionais, e por isso alergias graves quase sempre terminam em "informação insuficiente" ou "possível risco". Isso é intencional.
 - A busca de contato cruzado lê até 75 itens do cardápio, só pelo nome (a listagem do MCP não traz descrições).
-- Sessões ficam em memória: reiniciar o servidor apaga as conversas. O perfil alimentar e o login persistem.
-- O formato da resposta de carrinho do MCP real não foi validado com um carrinho real (a criação de carrinho de teste foi bloqueada durante o desenvolvimento). `normalizeCart` aceita variações de nomes de campos.
+- Sessões ficam em memória: reiniciar o servidor apaga as conversas. O perfil alimentar e o login persistem em `backend/.data/`.
+- O formato da resposta de carrinho do MCP ainda não foi validado com um carrinho real. `normalize_cart` aceita variações de nomes de campos.
