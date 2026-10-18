@@ -53,11 +53,11 @@ def summarize_analysis_for_model(analysis: dict) -> dict[str, Any]:
                 "evidencias": [
                     f"{finding['kind']}: {', '.join(finding['terms'])} ({finding['where']}; fonte: {finding['source']})"
                     for finding in result["findings"]
+                    if finding["kind"] not in {"ADICIONAL", "ETIQUETA_IFOOD"}
                 ],
             }
             for result in analysis["restrictions"]
         ],
-        "adicionaisAEvitar": analysis["addOnsToAvoid"],
         "informacoesAusentes": analysis["missingInfo"],
         "alternativas": analysis["alternatives"],
         "adicionaisObrigatorios": [

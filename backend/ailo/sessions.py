@@ -40,6 +40,8 @@ class Session:
     user: dict[str, Any] | None = None
     # Etiquetas itemRestrictions do iFood por item (vindas de buscas filtradas).
     declared_tags: dict[str, list[str]] = field(default_factory=dict)
+    # Produtos descartados ao solicitar outra opção (loja, item).
+    excluded_items: set[tuple[str, str]] = field(default_factory=set)
     # Últimas análises por item.
     analyses: dict[str, dict] = field(default_factory=dict)
     # Respostas dos estabelecimentos informadas pelo usuário.

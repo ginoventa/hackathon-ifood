@@ -3,26 +3,43 @@
 from __future__ import annotations
 
 import json
+from dataclasses import asdict
 
 from ...errors import ValidationError
+from ...profiles import read_profile, read_profile_restrictions
 from ...restrictions.catalog import CUSTOM_RESTRICTION_ID, RESTRICTIONS, RestrictionType, resolve_restriction
 from ...services.analysis import analyze_selected_item, clarification_for, record_establishment_confirmation
 from .base import ToolDefinition, summarize_analysis_for_model, summarize_restrictions
 
 
+def _restriction_signature(restrictions):
+    return sorted(json.dumps(asdict(item), sort_keys=True, ensure_ascii=False) for item in restrictions)
+
+
 async def _register_restrictions(session, args):
     inputs = args.get("restricoes") or []
+    if not inputs:
+        return {"restricoesAtivas": summarize_restrictions(session.restrictions)}, None
+
     resolved = [resolve_restriction(item) for item in inputs]
     invalid = [item for item, restriction in zip(inputs, resolved) if restriction is None]
     if invalid:
         raise ValidationError(f"Restrições inválidas: {json.dumps(invalid, ensure_ascii=False)}. Restrições personalizadas precisam de nome e termos.")
 
+    if _restriction_signature(resolved) == _restriction_signature(session.restrictions):
+        return {"restricoesAtivas": summarize_restrictions(resolved)}, None
+
+    profile_saved = bool(read_profile().get("consentAt")) and (
+        _restriction_signature(resolved) == _restriction_signature(read_profile_restrictions())
+    )
     session.restrictions = resolved
     session.restriction_inputs = inputs
     # Análises antigas foram feitas com outras restrições e deixam de valer.
     session.analyses.clear()
     summary = summarize_restrictions(resolved)
-    return {"restricoesAtivas": summary}, {"type": "restrictions", "data": {"restrictions": summary, "inputs": inputs}}
+    output = {"restricoesAtivas": summary, "jaSalvasNoPerfil": profile_saved}
+    card = None if profile_saved else {"type": "restrictions", "data": {"restrictions": summary, "inputs": inputs}}
+    return output, card
 
 
 REGISTER_RESTRICTIONS = ToolDefinition(

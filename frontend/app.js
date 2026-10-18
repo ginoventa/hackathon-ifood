@@ -15,6 +15,7 @@ let mode = 'restaurants';
 let toastTimer;
 let isSending = false;
 let status = null;
+const conversationCards = new Map();
 
 /** Textos e sugestões de cada modo. As sugestões já trazem uma restrição de exemplo. */
 const config = {
@@ -226,7 +227,7 @@ function addMessage(text, role) {
 
 /** Ações disponíveis para os botões dos cartões. */
 const cardActions = {
-  send: (message, display) => sendMessage(message, display),
+  send: (message, display, excludeItem) => sendMessage(message, display, excludeItem),
   fillComposer,
   openCheckout,
   toast,
@@ -251,12 +252,29 @@ function startChatLayout() {
   app.classList.add('chatting');
 }
 
+/** Atualiza cartões existentes em vez de repetir o mesmo bloco na conversa. */
+function conversationCardKey({ type, data }) {
+  if (type === 'restrictions' || type === 'recipe' || type === 'market') {
+    return type;
+  }
+  if (type === 'analysis' || type === 'clarification') {
+    return `${type}:${data.merchantId || data.merchantName}:${data.itemId || data.itemName}`;
+  }
+  if (type === 'cart') {
+    return `${type}:${data.cartId}`;
+  }
+  if (type === 'options') {
+    return `${type}:${JSON.stringify(data.items.map((item) => [item.merchantId, item.itemId]).sort())}`;
+  }
+  return `${type}:${JSON.stringify(data)}`;
+}
+
 /**
  * Envia uma mensagem ao agente.
  * @param {string} text Texto enviado ao backend (pode conter identificadores).
  * @param {string} [display] Texto mostrado na conversa, quando diferente do enviado.
  */
-async function sendMessage(text, display = text) {
+async function sendMessage(text, display = text, excludeItem) {
   if (!text.trim() || isSending) {
     return;
   }
@@ -271,13 +289,20 @@ async function sendMessage(text, display = text) {
   pending.classList.add('pending');
 
   try {
-    const response = await api.sendMessage(text.trim(), mode);
+    const response = await api.sendMessage(text.trim(), mode, excludeItem);
     pending.classList.remove('pending');
     pending.textContent = response.reply;
     for (const cardData of response.cards) {
       const element = renderCard(cardData, cardActions);
       if (element) {
-        $('#conversation').append(element);
+        const key = conversationCardKey(cardData);
+        const previous = conversationCards.get(key);
+        if (previous?.isConnected) {
+          previous.replaceWith(element);
+        } else {
+          $('#conversation').append(element);
+        }
+        conversationCards.set(key, element);
       }
     }
     showRestrictions(response.restrictions);
@@ -305,6 +330,7 @@ $('#chat-form').onsubmit = event => {
 
 $('#new-chat').onclick = async () => {
   $('#conversation').replaceChildren();
+  conversationCards.clear();
   $('#conversation').hidden = true;
   $('#welcome').hidden = false;
   $('#suggestions').hidden = false;

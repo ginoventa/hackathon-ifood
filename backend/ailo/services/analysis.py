@@ -10,7 +10,7 @@ import logging
 from datetime import date
 
 from ..errors import AppError, ValidationError
-from ..restrictions.analyzer import KIND_RESTAURANT, analyze_product
+from ..restrictions.analyzer import KIND_RESTAURANT, analyze_product, has_absence_claim, is_packaged_product
 from ..restrictions.catalog import Rigor
 from ..restrictions.clarification import build_clarification_message
 from ..sessions import Session
@@ -30,9 +30,14 @@ async def analyze_selected_item(session: Session, merchant_id: str, item_id: str
     _require_restrictions(session)
     product = await get_item_details(session, merchant_id, item_id)
 
-    # Restrições de rigor alto exigem olhar o restante do cardápio (contato cruzado).
+    # Consulte o cardápio também quando houver declaração de ausência, mesmo em preferências.
     menu_items = None
-    if kind == KIND_RESTAURANT and any(restriction.rigor == Rigor.HIGH for restriction in session.restrictions):
+    declared_tags = session.declared_tags.get(item_id, [])
+    needs_menu = any(
+        restriction.rigor == Rigor.HIGH or has_absence_claim(product, restriction, declared_tags)
+        for restriction in session.restrictions
+    )
+    if not is_packaged_product(product, kind) and needs_menu:
         try:
             menu_items = await get_menu_items(session, merchant_id)
         except AppError as error:

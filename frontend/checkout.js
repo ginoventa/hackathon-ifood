@@ -200,18 +200,119 @@ function renderReview(cartId, data) {
   body.replaceChildren(form);
 }
 
-/**
- * Abre a revisão do pedido de um carrinho.
- * @param {string} cartId
- */
+/** Aceita somente links oficiais do iFood devolvidos pelo MCP. */
+export function safeIfoodCartUrl(value) {
+  if (typeof value !== 'string' || !value.trim()) {
+    return null;
+  }
+
+  try {
+    const url = new URL(value);
+    const officialHost = ['ifood.com.br', 'ifood-sandbox.com.br'].some((domain) => (
+      url.hostname === domain || url.hostname.endsWith(`.${domain}`)
+    ));
+
+    if (url.username || url.password) {
+      return null;
+    }
+
+    return url.protocol === 'ifood:' || (url.protocol === 'https:' && officialHost)
+      ? url.href
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Mostra a lista efetivamente adicionada ao carrinho no iFood. */
+function renderCartPreview(cartId, { cart, alerts, address }) {
+  const close = el('button', {
+    className: 'icon-button',
+    text: '×',
+    attrs: { type: 'button', 'aria-label': 'Fechar carrinho' },
+  });
+  close.addEventListener('click', () => dialog.close());
+  const link = safeIfoodCartUrl(cart.appDeeplink);
+  const review = el('button', {
+    className: 'card-button secondary',
+    text: 'Revisar entrega e pagamento aqui',
+    attrs: { type: 'button' },
+  });
+  review.addEventListener('click', async () => {
+    showMessage('Carregando revisão…', 'Consultando entrega e pagamento.');
+    try {
+      renderReview(cartId, await api.checkout(cartId));
+    } catch (error) {
+      showMessage('Não foi possível abrir a revisão', error.message);
+    }
+  });
+
+  body.replaceChildren(el('section', { className: 'checkout-form cart-preview' }, [
+    el('header', { className: 'checkout-header' }, [
+      el('div', {}, [
+        el('p', { className: 'card-kicker', text: 'Sua sacola no iFood' }),
+        el('h2', { text: cart.merchantName || 'Carrinho' }),
+      ]),
+      close,
+    ]),
+    cart.items.length
+      ? el('ul', { className: 'market-items cart-preview-items' }, cart.items.map((item) => (
+        el('li', {}, [
+          el('div', {}, [
+            el('strong', { text: `${item.quantity}× ${item.name}` }),
+            item.options?.length ? el('small', { text: item.options.join(', ') }) : null,
+            item.customerNote ? el('small', { text: item.customerNote }) : null,
+          ]),
+          el('span', { text: formatPrice(item.totalPrice) }),
+        ])
+      )))
+      : el('p', { className: 'card-muted', text: 'Este carrinho está vazio.' }),
+    el('div', { className: 'cart-total' }, [
+      el('span', { text: 'Subtotal dos produtos' }),
+      el('strong', { text: formatPrice(cart.subtotal) }),
+    ]),
+    cart.deliveryFee != null ? el('div', { className: 'cart-total' }, [
+      el('span', { text: 'Entrega' }),
+      el('span', { text: formatPrice(cart.deliveryFee) }),
+    ]) : null,
+    el('div', { className: 'cart-total' }, [
+      el('strong', { text: 'Total' }),
+      el('strong', { text: formatPrice(cart.total ?? cart.subtotal) }),
+    ]),
+    address?.formattedAddress ? el('p', { className: 'card-muted', text: address.formattedAddress }) : null,
+    alerts?.length ? alertsSection(alerts) : null,
+    link && cart.items.length ? el('a', {
+      className: 'card-button primary ifood-cart-link',
+      text: 'Abrir carrinho no iFood',
+      attrs: { href: link, target: '_blank', rel: 'noopener noreferrer' },
+    }) : el('p', {
+      className: 'card-muted',
+      text: cart.items.length
+        ? 'O iFood não disponibilizou um link para este carrinho. Você pode revisar o pedido aqui.'
+        : 'Adicione produtos antes de continuar.',
+    }),
+    cart.items.length ? review : null,
+  ]));
+}
+
+/** Abre a janela do carrinho, consultando os itens atuais no iFood. */
 export async function openCheckout(cartId) {
   clearInterval(trackTimer);
-  showMessage('Carregando seu carrinho…', 'Buscando formas de entrega e pagamento no iFood.');
-  dialog.showModal();
+  showMessage('Carregando seu carrinho…', 'Consultando os produtos adicionados no iFood.');
+  if (!dialog.open) {
+    dialog.showModal();
+  }
   try {
-    renderReview(cartId, await api.checkout(cartId));
+    renderCartPreview(cartId, await api.cart(cartId));
   } catch (error) {
-    showMessage('Não foi possível abrir a revisão', error.message);
+    showMessage('Não foi possível abrir o carrinho', error.message);
+    const close = el('button', {
+      className: 'card-button',
+      text: 'Fechar',
+      attrs: { type: 'button' },
+    });
+    close.addEventListener('click', () => dialog.close());
+    body.firstElementChild.append(close);
   }
 }
 
