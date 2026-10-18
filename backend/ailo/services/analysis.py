@@ -11,8 +11,8 @@ import logging
 from datetime import date
 
 from ..errors import AppError, ValidationError
-from ..restrictions.analyzer import KIND_MARKET, KIND_RESTAURANT, analyze_product, has_absence_claim, is_packaged_product
-from ..restrictions.catalog import Rigor, to_ifood_item_restrictions
+from ..restrictions.analyzer import KIND_MARKET, KIND_RESTAURANT, analyze_product, is_packaged_product
+from ..restrictions.catalog import to_ifood_item_restrictions
 from ..restrictions.clarification import build_clarification_message
 from ..sessions import Session, remember_declared_tags
 from .account import first_name
@@ -42,13 +42,9 @@ async def analyze_selected_item(session: Session, merchant_id: str, item_id: str
     # Produto industrializado (tem código de barras): consulta o rótulo fora do iFood.
     label = await fetch_label(product.get("itemEan"), product.get("itemName"))
 
-    # Consulte o cardápio também quando houver declaração de ausência, mesmo em preferências.
+    # O cardápio só serve para avaliar contato cruzado, que só importa em algumas restrições.
     menu_items = None
-    declared_tags = session.declared_tags.get(item_id, [])
-    needs_menu = any(
-        restriction.rigor == Rigor.HIGH or has_absence_claim(product, restriction, declared_tags)
-        for restriction in session.restrictions
-    )
+    needs_menu = any(restriction.checks_cross_contact for restriction in session.restrictions)
     if not is_packaged_product(product, kind) and needs_menu:
         try:
             menu_items = [

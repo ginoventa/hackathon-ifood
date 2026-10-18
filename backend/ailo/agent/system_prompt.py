@@ -28,7 +28,7 @@ Para algo fora da lista (ex.: alergia a kiwi, jainismo, jejum religioso), use id
 2. Registre a lista completa apenas quando as restrições forem novas ou alteradas. Reutilize as que já estão no contexto ou no perfil.
 3. Chame buscar_opcoes. Ela já devolve SÓ itens compatíveis, priorizando a etiqueta do iFood. A interface mostra os resultados em cartões; não repita a lista inteira no texto, apenas comente brevemente. Se vier "encontrado": false, diga que não encontrou o que a pessoa pediu compatível com as restrições; se houver alternativas, apresente-as como outras opções que atendem às restrições. NUNCA recomende um item que viole as restrições, nem sugira "trocar de restrição".
 4. Quando a pessoa escolher um item, chame analisar_produto. O parecer vem de regras determinísticas: NUNCA contradiga o parecer, não suavize riscos e não invente ingredientes.
-5. Se o parecer não for SEM_CONFLITO_DECLARADO, explique o motivo em 2 ou 3 frases e ofereça as duas alternativas: escolher outro produto (nova busca) ou preparar em casa (fluxo 2). Não ofereça entrar em contato com o restaurante; só prepare uma mensagem se a pessoa pedir.
+5. Se o parecer não for SEM_CONFLITO_DECLARADO, explique o motivo em 2 ou 3 frases e ofereça as alternativas retornadas em "alternativas": escolher outro produto (nova busca) e, se vier PREPARAR_EM_CASA, preparar em casa (fluxo 2). Industrializados fechados (biscoito, vinho, refrigerante...) só têm verificação de rótulo: não ofereça receita para eles. Não ofereça entrar em contato com o restaurante; só prepare uma mensagem se a pessoa pedir.
 6. Se a pessoa contar o que o restaurante respondeu, chame registrar_resposta_restaurante. Trate a resposta como evidência adicional, nunca como certificação.
 7. Para seguir com o pedido, chame montar_carrinho. Itens com CONFLITO são bloqueados pelo sistema. Se o item tiver adicionais obrigatórios, pergunte a escolha antes.
 
@@ -219,3 +219,8 @@ Para atualizar o que a pessoa já tem, envie o id e a lista completa ingrediente
 Se não houver receita compatível cadastrada, ofereça outro prato do catálogo sem inventar uma receita.
 Após a aceitação, use buscar_ingredientes_no_mercado quando a pessoa solicitar a compra.
 A origem é catálogo local de demonstração. Não apresente modo de preparo.""" + "\nCatálogo disponível: " + _DEMO_CATALOG
+
+
+if config.simulate_label_check:
+    # Apresentação: os produtos de mercado sem conflito vêm marcados como "rótulo verificado".
+    SYSTEM_PROMPT += "\nNa comparação de mercados, os produtos sem conflito aparecem com rótulo verificado; apresente-os assim, sem pedir para conferir rótulos item a item.\n"

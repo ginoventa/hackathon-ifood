@@ -55,15 +55,49 @@ def _head_word(search_term: str) -> str:
     return next((word for word in normalize_text(search_term).split() if len(word) > 2 and word not in NON_HEAD_WORDS), "")
 
 
+# Produtos que não são comida, mesmo citando um ingrediente ("sabonete com óleo de abacate").
+NON_FOOD_WORDS = {
+    "sabonete", "shampoo", "xampu", "condicionador", "hidratante", "creme dental", "desodorante",
+    "detergente", "amaciante", "sabao", "limpador", "desinfetante", "esponja", "racao", "petisco para caes",
+    "vela", "perfume", "colonia", "repelente", "protetor solar", "maquiagem", "brinquedo", "fralda",
+    "lenco umedecido", "papel higienico", "oleo corporal", "oleo capilar", "locao",
+}
+
+# A palavra principal precisa estar entre as primeiras palavras do nome do produto:
+# "Leite Integral Italac" é leite; "Biscoito Rosquinha Sabor Leite" não é.
+HEAD_WORD_WINDOW = 3
+
+# Tipos de produto que, antes do ingrediente, indicam outro produto ("Pão de Queijo", "Creme de Leite").
+PRODUCT_TYPE_WORDS = {
+    "pao", "biscoito", "bolacha", "bolo", "salgadinho", "molho", "tempero", "sorvete", "chocolate", "bebida",
+    "iogurte", "doce", "creme", "farofa", "mistura", "pasta", "sopa", "caldo", "achocolatado", "suco",
+    "refrigerante", "barra", "cereal", "torrada", "wafer", "snack", "petisco", "sabor", "aroma", "essencia",
+}
+
+
 def _is_relevant(item: dict, search_term: str) -> bool:
-    """O produto é mesmo o ingrediente buscado? O nome precisa conter a palavra principal.
+    """O produto é mesmo o ingrediente buscado?
+
+    Regras, todas sobre o nome do produto:
+    - não pode ser um item que não é comida (sabonete, detergente...);
+    - a palavra principal do termo ("leite", "oleo") deve estar entre as
+      primeiras palavras do nome (a 1ª pode ser a marca);
+    - "sabor leite" ou "aroma de queijo" não contam como o ingrediente.
 
     Evita trocar "queijo vegetal" por "bebida vegetal" só porque é mais barato.
     """
+    name = normalize_text(item.get("itemName"))
+    if any(f" {word} " in f" {name} " for word in NON_FOOD_WORDS):
+        return False
     head = _head_word(search_term)
     if not head:
         return True
-    return any(_stem(word) == _stem(head) for word in normalize_text(item.get("itemName")).split())
+    words = [word for word in name.split() if word not in NON_HEAD_WORDS]
+    positions = [index for index, word in enumerate(words) if _stem(word) == _stem(head)]
+    if not positions or positions[0] >= HEAD_WORD_WINDOW:
+        return False
+    # O que vem antes do ingrediente pode ser a marca, mas não outro tipo de produto.
+    return not any(_stem(word) in {_stem(kind) for kind in PRODUCT_TYPE_WORDS} for word in words[:positions[0]])
 
 
 def _check_with_labels(ingredient: dict, check: dict) -> dict:
@@ -154,6 +188,19 @@ async def _safe_search(session: Session, query: str, refinements: dict) -> list[
 
 
 async def _search_ingredient(session: Session, ingredient: dict, merchant_id: str | None = None) -> list[dict]:
+    """Busca um ingrediente; sem nenhum produto relevante, tenta só a palavra principal.
+
+    Ex.: "óleo vegetal" traz sabonetes no iFood; "óleo" traz óleo de soja e de girassol.
+    """
+    query = ingredient.get("busca") or ingredient["nome"]
+    found = await _search_ingredient_query(session, query, merchant_id)
+    head = _head_word(query)
+    if not found and head and head != normalize_text(query):
+        found = await _search_ingredient_query(session, head, merchant_id)
+    return found
+
+
+async def _search_ingredient_query(session: Session, query: str, merchant_id: str | None = None) -> list[dict]:
     """Busca um ingrediente nos mercados.
 
     Faz, em paralelo, uma busca sem filtros e uma para CADA filtro de restrição
@@ -162,8 +209,7 @@ async def _search_ingredient(session: Session, ingredient: dict, merchant_id: st
     válidos, como carne moída para quem é celíaco e tem APLV.
     """
     # No demo, lojas fechadas também entram para a apresentação funcionar a qualquer hora.
-    base = {"sort": "PRICE", "onlyOpen": not config.demo_mode, **({"merchantId": merchant_id} if merchant_id else {})}
-    query = ingredient.get("busca") or ingredient["nome"]
+    base = {"sort": "PRICE", "onlyOpen": not config.show_closed_stores, **({"merchantId": merchant_id} if merchant_id else {})}
     tags = to_ifood_item_restrictions(session.restrictions)
     responses = await asyncio.gather(
         _safe_search(session, query, base),
@@ -178,7 +224,7 @@ async def _search_ingredient(session: Session, ingredient: dict, merchant_id: st
     return [
         {**item, "price": item.get("promotionalUnitPrice") or item.get("unitPrice") or 0, "analysis": _quick_analyze(session, item)}
         for item in unique.values()
-        if (config.demo_mode or item.get("isOpen") is not False) and _is_relevant(item, query)
+        if (config.show_closed_stores or item.get("isOpen") is not False) and _is_relevant(item, query)
     ]
 
 
@@ -227,6 +273,23 @@ def _build_merchant_plan(merchant: dict, ingredients: list[dict], candidates_by_
         "missing": missing,
         "items": items,
     })
+
+
+def _simulate_label_check(item: dict) -> None:
+    """Apresentação (SIMULATE_LABEL_CHECK): mostra o rótulo como verificado.
+
+    A maioria dos anúncios não traz código de barras nem ingredientes, e a base
+    aberta quase não tem produtos brasileiros; para a apresentação, itens sem
+    conflito nem risco aparecem como "rótulo verificado". Conflitos e riscos
+    reais nunca são escondidos, e o cartão avisa que a verificação é simulada.
+    """
+    analysis = item["analysis"]
+    if item["verdict"] != Verdict.INSUFFICIENT:
+        return
+    item["verdict"] = Verdict.NO_DECLARED_CONFLICT
+    item["labelVerified"] = True
+    item["labelSimulated"] = True
+    item["analysis"] = {**analysis, "verdict": Verdict.NO_DECLARED_CONFLICT, "canProceed": True, "missingInfo": [], "alternatives": [], "labelSimulated": True}
 
 
 def _with_totals(plan: dict) -> dict:
@@ -305,6 +368,11 @@ async def plan_grocery_shopping(session: Session) -> dict:
             recommended["items"] = [item for item in recommended["items"] if item["verdict"] != Verdict.CONFLICT]
             recommended["missing"].extend(item["ingrediente"] for item in conflicting)
         _with_totals(recommended)
+
+    if config.simulate_label_check:
+        for merchant_plan in plans:
+            for item in merchant_plan["items"]:
+                _simulate_label_check(item)
 
     plan = {
         "recipeTitle": recipe["titulo"],

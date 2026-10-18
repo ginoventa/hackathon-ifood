@@ -64,6 +64,18 @@ function setMode(next) {
   updateSend();
 }
 
+/** Pedidos para cozinhar em casa ("quero preparar em casa", "fazer em casa"). */
+const HOME_COOKING_PATTERN = /\b(prepar\w*|fazer|fa[cç]o|cozinh\w*)\s[^.?!]*\bem casa\b|\breceita\b/i;
+
+/** Passa para o modo Mercado quando a conversa vai para o preparo em casa. */
+function switchToMarket() {
+  if (mode === 'market') {
+    return;
+  }
+  setMode('market');
+  toast('Modo Mercado: vamos montar a lista de ingredientes.');
+}
+
 function closePopover() {
   $('#mode-popover').hidden = true;
   $('#mode-button').setAttribute('aria-expanded', 'false');
@@ -282,6 +294,10 @@ async function sendMessage(text, display = text, excludeItem, clarification) {
     return;
   }
   isSending = true;
+  // Pedido de preparo em casa: o modo lá embaixo muda para Mercado antes de enviar.
+  if (HOME_COOKING_PATTERN.test(text)) {
+    switchToMarket();
+  }
   startChatLayout();
   addMessage(display.trim(), 'user');
   $('#prompt').value = '';
@@ -295,6 +311,10 @@ async function sendMessage(text, display = text, excludeItem, clarification) {
     const response = await api.sendMessage(text.trim(), mode, excludeItem, clarification);
     pending.classList.remove('pending');
     pending.textContent = response.reply;
+    // O agente entrou no fluxo de mercado (receita ou comparação de mercados).
+    if (response.cards.some((cardData) => ['recipe', 'market'].includes(cardData.type))) {
+      switchToMarket();
+    }
     for (const cardData of response.cards) {
       const element = renderCard(cardData, cardActions);
       if (element) {

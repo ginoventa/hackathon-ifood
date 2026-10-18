@@ -5,6 +5,7 @@ import pytest
 from ailo.services.labels import fetch_label as actual_fetch_label
 from ailo.services import labels
 from ailo.services.recipes import select_demo_recipe
+from ailo.restrictions.analyzer import Verdict
 from ailo.restrictions.catalog import resolve_restriction
 from ailo.agent.tools import market
 from ailo.sessions import Session
@@ -41,7 +42,13 @@ async def test_demo_label_name_fallback(monkeypatch):
 @pytest.mark.asyncio
 async def test_name_fallback_is_demo_only(monkeypatch):
     monkeypatch.setattr(labels, 'config', replace(labels.config, demo_mode=False))
-    assert await actual_fetch_label(None, 'Farinha de arroz Urbano 1 kg') is None
+
+    async def by_name(name):
+        return {'found': False, 'ean': None}
+
+    # Fora do demo, o catálogo local não é usado: o nome vai para a Open Food Facts.
+    monkeypatch.setattr(labels, '_fetch_label_by_name', by_name)
+    assert await actual_fetch_label(None, 'Farinha de arroz Urbano 1 kg') == {'found': False, 'ean': None}
 
 
 def test_demo_recipe_conflicts_and_home_items():
@@ -297,3 +304,23 @@ def test_pizza_sem_gluten_tem_rotulos_verificados_e_sem_risco():
     # Industrializados têm rótulo de referência verificado; nada fica como "confira o rótulo".
     assert not any(item['verificacao']['needsLabelCheck'] for item in recipe['ingredientes'])
     assert 'modoDePreparo' not in recipe
+
+
+def test_demo_market_shows_insufficient_items_as_verified_but_keeps_risks():
+    from ailo.services.market import _simulate_label_check
+
+    insufficient = {'verdict': Verdict.INSUFFICIENT, 'analysis': {'verdict': Verdict.INSUFFICIENT, 'missingInfo': ['x']}}
+    risky = {'verdict': Verdict.RISK, 'analysis': {'verdict': Verdict.RISK, 'missingInfo': ['x']}}
+    _simulate_label_check(insufficient)
+    _simulate_label_check(risky)
+    assert insufficient['labelVerified'] and insufficient['analysis']['verdict'] == Verdict.NO_DECLARED_CONFLICT
+    assert risky['verdict'] == Verdict.RISK and 'labelVerified' not in risky
+
+
+def test_label_by_name_requires_same_brand():
+    hits = [
+        {'code': '7896016500268', 'product_name': 'Polvilho Azedo'},
+        {'code': '12212781', 'product_name': 'Biscoito oreo', 'brands': ['Oreo']},
+    ]
+    assert labels._best_name_match('Polvilho Azedo Amafil Pacote 500g', hits) is None
+    assert labels._best_name_match('Biscoito Recheado Oreo 90g', hits) == '12212781'

@@ -31,6 +31,10 @@ logger = logging.getLogger(__name__)
 SERVER_NAME = "ifood"
 
 
+# Pausa antes de repetir uma chamada que falhou por erro interno do iFood.
+INTERNAL_RETRY_DELAY_SECONDS = 1.5
+
+
 class IfoodClient(Protocol):
     """Interface usada pelo resto do sistema (permite um cliente falso nos testes)."""
 
@@ -146,7 +150,16 @@ class LiveIfoodClient:
         # Chamada no formato "tool call" para receber a ToolMessage com o artefato estruturado.
         tool_call = {"type": "tool_call", "id": str(uuid.uuid4()), "name": name, "args": args}
         try:
-            message = await tool.ainvoke(tool_call)
+            try:
+                message = await tool.ainvoke(tool_call)
+            except ToolException as error:
+                # Falha interna intermitente do iFood ("code": "INTERNAL"): tenta mais uma vez
+                # após uma pausa. Nunca repete o envio do pedido, para não duplicá-lo.
+                if name == "submitOrder" or '"INTERNAL"' not in str(error):
+                    raise
+                logger.warning("Falha interna do iFood em %s; nova tentativa em %.1fs.", name, INTERNAL_RETRY_DELAY_SECONDS)
+                await asyncio.sleep(INTERNAL_RETRY_DELAY_SECONDS)
+                message = await tool.ainvoke({**tool_call, "id": str(uuid.uuid4())})
         except ToolException as error:
             # Erro de negócio do iFood (isError=True), com a mensagem do servidor.
             raise IfoodToolError(name, str(error) or "erro desconhecido") from error

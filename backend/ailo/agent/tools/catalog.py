@@ -156,8 +156,8 @@ async def _search_options(session, args):
     query = args["consulta"]
     use_filters = args.get("priorizarComFiltrosDoIfood", True) is not False
     tags = to_ifood_item_restrictions(session.restrictions) if use_filters else []
-    # No demo, sempre inclui lojas fechadas, mesmo que o modelo peça apenasAbertos.
-    refinements: dict = {"onlyOpen": not config.demo_mode and args.get("apenasAbertos", True) is True}
+    # No demo ou com INCLUDE_CLOSED_STORES, sempre inclui lojas fechadas, mesmo que o modelo peça apenasAbertos.
+    refinements: dict = {"onlyOpen": not config.show_closed_stores and args.get("apenasAbertos", True) is True}
     if args.get("precoMaximo"):
         refinements["maxItemPrice"] = args["precoMaximo"]
     if args.get("ordenarPor"):

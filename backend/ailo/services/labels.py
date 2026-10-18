@@ -42,6 +42,11 @@ _cache: dict[str, tuple[float, dict | None]] = {}
 
 EAN_PATTERN = re.compile(r"^\d{8,14}$")
 
+# Busca textual da Open Food Facts (a busca antiga, cgi/search.pl, fica indisponível com frequência).
+SEARCH_URL = "https://search.openfoodfacts.org/search"
+SEARCH_PAGE_SIZE = 10
+_name_cache: dict[str, tuple[float, str | None]] = {}
+
 
 def _parse(ean: str, payload: dict) -> dict:
     product = payload.get("product") or {}
@@ -86,7 +91,8 @@ async def fetch_label(ean: str | None, product_name: str | None = None) -> dict 
         return {"found": False, "ean": str(ean), "demo": True} if ean else None
 
     if not ean or not EAN_PATTERN.match(str(ean)):
-        return None
+        # O iFood raramente informa o EAN: procura o produto pelo nome.
+        return await _fetch_label_by_name(product_name) if product_name else None
 
     cached = _cache.get(ean)
     if cached and cached[0] > time.time():
@@ -102,4 +108,58 @@ async def fetch_label(ean: str | None, product_name: str | None = None) -> dict 
 
     label = _parse(ean, payload) if payload.get("status") == 1 else {"found": False, "ean": ean}
     _cache[ean] = (time.time() + CACHE_TTL_SECONDS, label)
+    return label
+
+
+def _best_name_match(product_name: str, hits: list[dict]) -> str | None:
+    """EAN do resultado que corresponde ao produto do iFood.
+
+    Todas as palavras do nome encontrado e a marca precisam aparecer no nome do
+    anúncio. Entre os aceitos,
+    vence o com mais palavras em comum (o mais específico).
+    """
+    wanted = _name_tokens(product_name)
+    best, best_score = None, 0
+    for hit in hits:
+        tokens = _name_tokens(hit.get("product_name") or "")
+        brands = [_name_tokens(brand) for brand in hit.get("brands") or []]
+        if not tokens or not tokens <= wanted:
+            continue
+        # Sem marca igual, o rótulo pode ser de outro fabricante: não serve.
+        if not any(brand and brand <= wanted for brand in brands):
+            continue
+        score = len(tokens)
+        if score > best_score and EAN_PATTERN.match(str(hit.get("code") or "")):
+            best, best_score = str(hit["code"]), score
+    return best
+
+
+async def _fetch_label_by_name(product_name: str) -> dict | None:
+    """Rótulo de um produto sem EAN, localizado pelo nome na Open Food Facts."""
+    key = normalize_text(product_name)
+    cached = _name_cache.get(key)
+    if cached and cached[0] > time.time():
+        ean = cached[1]
+    else:
+        try:
+            async with httpx.AsyncClient(timeout=TIMEOUT_SECONDS, headers={"User-Agent": USER_AGENT}) as client:
+                response = await client.get(SEARCH_URL, params={
+                    "q": product_name, "page_size": SEARCH_PAGE_SIZE, "fields": "code,product_name,brands",
+                })
+            ean = _best_name_match(product_name, response.json().get("hits") or [])
+        except (httpx.HTTPError, ValueError) as error:
+            logger.warning("Não foi possível buscar o rótulo de %r pelo nome: %s", product_name, error)
+            return None
+        _name_cache[key] = (time.time() + CACHE_TTL_SECONDS, ean)
+    if not ean:
+        return {"found": False, "ean": None}
+
+    label = await fetch_label(ean)
+    if label and label.get("found"):
+        label = {
+            **label,
+            "matchedBy": "name",
+            "sourceNote": "Produto localizado pelo nome (o anúncio do iFood não traz o código de barras); "
+            "confira se a embalagem é a mesma. Base colaborativa.",
+        }
     return label

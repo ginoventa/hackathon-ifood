@@ -351,12 +351,24 @@ def _explain(restriction: Restriction, verdict: str, findings: list[dict]) -> st
     return f"Nenhum conflito com {label} nas informações disponíveis. Isso não é uma garantia de segurança."
 
 
+# Sinais de produto industrializado fechado no nome: embalagem, volume ou categoria típica
+# ("Vinho Tinto 750ml", "Biscoito Bauducco", "Coca-Cola Lata"). Gramatura sozinha não
+# basta, porque pratos também a informam ("Pizza Marguerita 200g").
+PACKAGED_NAME_PATTERN = re.compile(
+    r"\b(garrafa|lata|long neck|pacote|caixinha|sache|pote|embalagem|lacrad[oa]|\d+(?:[.,]\d+)?\s?(?:ml|l|litros?)"
+    r"|biscoito|bolacha|wafer|salgadinho|refrigerante|vinho|cerveja|espumante|energetico|achocolatado|chocolate em barra)\b",
+)
+
+
 def is_packaged_product(product: dict, kind: str) -> bool:
-    """Produtos de mercado e itens explicitamente embalados não usam o preparo da loja como evidência."""
+    """Produtos de mercado e industrializados fechados não usam o preparo da loja como evidência.
+
+    Para eles vale o rótulo (alergênicos e "pode conter"), não o contato cruzado na cozinha.
+    """
     return kind == KIND_MARKET or bool(product.get("itemEan")) or any(
         product.get(field) is True
         for field in ("industrializado", "isIndustrialized", "isPackaged", "sealedPackage")
-    )
+    ) or bool(PACKAGED_NAME_PATTERN.search(normalize_text(product.get("itemName"))))
 
 
 def has_absence_claim(product: dict, restriction: Restriction, declared_tags: list[str]) -> bool:
@@ -427,7 +439,7 @@ def _analyze_restriction(product: dict, restriction: Restriction, context: dict)
             findings.append(_finding(FindingKind.CROSS_CONTACT, present, 'aviso "pode conter" no anúncio', source_label))
     packaged = is_packaged_product(product, context["kind"])
     shared = None if packaged else SHARED_PREPARATION_PATTERN.search(full_text)
-    if shared and restriction.rigor != Rigor.LOW:
+    if shared and restriction.checks_cross_contact:
         findings.append(_finding(
             FindingKind.CROSS_CONTACT, [shared.group(0).lower()], "preparo compartilhado declarado pelo estabelecimento", source_label,
         ))
@@ -447,9 +459,11 @@ def _analyze_restriction(product: dict, restriction: Restriction, context: dict)
             note=confirmation["summary"],
         ))
 
-    # 6. Contato cruzado pelo cardápio: só para restrições de rigor alto em restaurantes.
+    # 6. Contato cruzado pelo cardápio (restaurantes): só para restrições em que traços
+    #    importam (alergias, doença celíaca, religiosas). Vegetariano, vegano e intolerâncias
+    #    só precisam que o próprio item não tenha a substância.
     cross_contact = None
-    if not packaged and (restriction.rigor == Rigor.HIGH or has_valid_claim or insufficient_claims):
+    if not packaged and restriction.checks_cross_contact:
         menu_items = context.get("menu_items")
         if menu_items is not None:
             cross_contact = _analyze_cross_contact(product, restriction, menu_items)
@@ -467,7 +481,7 @@ def _analyze_restriction(product: dict, restriction: Restriction, context: dict)
         # Item etiquetado/declarado "sem" que também é vendido em versão com a substância
         # (ex.: "Massa Tradicional" na mesma pizza): a cozinha manipula as duas.
         option_sources = [finding for finding in findings if finding["kind"] == FindingKind.ADD_ON]
-        if has_valid_claim and option_sources and restriction.rigor != Rigor.LOW:
+        if has_valid_claim and option_sources:
             findings.append(_finding(
                 FindingKind.CROSS_CONTACT,
                 list(dict.fromkeys(term for finding in option_sources for term in finding["terms"]))[:6],
@@ -575,7 +589,12 @@ def analyze_product(
         "restrictions": results,
         "addOnsToAvoid": list(add_ons.values()),
         "missingInfo": list(dict.fromkeys(info for result in results for info in result["missingInfo"])),
-        "alternatives": [] if can_proceed else list(ALTERNATIVES),
+        # Industrializado fechado não tem "receita": a saída é outro produto.
+        "packaged": is_packaged_product(product, kind),
+        "alternatives": [] if can_proceed else [
+            alternative for alternative in ALTERNATIVES
+            if not (alternative == "PREPARAR_EM_CASA" and is_packaged_product(product, kind))
+        ],
         "disclaimer": DISCLAIMER,
         "analyzedAt": datetime.now(timezone.utc).isoformat(),
     }

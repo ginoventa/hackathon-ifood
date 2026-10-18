@@ -91,3 +91,18 @@ def test_cart_fills_missing_item_price_from_prices_seen_in_ifood():
     assert cart["items"][0]["unitPrice"] == 12.5 and cart["items"][0]["totalPrice"] == 25
     # O total continua sendo o devolvido pelo iFood.
     assert cart["total"] == 30
+
+
+@pytest.mark.parametrize('name, query, expected', [
+    ('Biscoito Rosquinha Vegano Sabor Leite Sem Glúten Vitao 60g', 'Leite', False),
+    ('Sabonete Vegetal Nutrição da Natureza com Óleo de Abacate', 'Óleo vegetal', False),
+    ('Pão de Queijo Forno de Minas', 'Queijo', False),
+    ('Creme de Leite Nestlé', 'Leite', False),
+    ('Italac Leite Integral 1L', 'Leite', True),
+    ('Óleo de Soja Liza 900ml', 'Óleo vegetal', True),
+    ('Queijo Minas Meia Cura Cruzília', 'Queijo meia-cura ralado', True),
+])
+def test_market_search_keeps_only_the_ingredient_itself(name, query, expected):
+    from ailo.services.market import _is_relevant
+
+    assert _is_relevant({'itemName': name}, query) is expected

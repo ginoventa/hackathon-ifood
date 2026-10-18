@@ -9,11 +9,15 @@ from ailo.services import analysis as analysis_service
 from ailo.sessions import Session
 
 
-@pytest.mark.parametrize("restriction_id,name", [
-    ("intolerancia_lactose", "Burger sem lactose"),
-    ("vegetariano", "Burger vegetariano"),
+@pytest.mark.parametrize("restriction_id,name,consults_menu", [
+    # Intolerância e preferência: basta o item não ter a substância.
+    ("intolerancia_lactose", "Burger sem lactose", False),
+    ("vegetariano", "Burger vegetariano", False),
+    # Alergia, doença celíaca e religiosas: traços importam (contato cruzado).
+    ("alergia_frutos_mar", "Burger de grão-de-bico", True),
+    ("religiao_sem_porco", "Burger sem porco", True),
 ])
-async def test_absence_claim_consults_menu_for_non_high_restrictions(monkeypatch, restriction_id, name):
+async def test_menu_is_consulted_only_when_cross_contact_matters(monkeypatch, restriction_id, name, consults_menu):
     session = Session(id="test-absence-menu")
     session.restrictions = [resolve_restriction({"id": restriction_id})]
     calls = []
@@ -28,8 +32,21 @@ async def test_absence_claim_consults_menu_for_non_high_restrictions(monkeypatch
     monkeypatch.setattr(analysis_service, "get_item_details", item_details)
     monkeypatch.setattr(analysis_service, "get_menu_items", menu_items)
     result = await analysis_service.analyze_selected_item(session, "store", "chosen")
-    assert len(calls) == 1
+    assert len(calls) == (1 if consults_menu else 0)
     assert not any("restante do cardápio" in text for text in result["missingInfo"])
+
+
+def test_celiac_and_vegetarian_cross_contact_only_for_gluten():
+    product = {"itemId": "p", "itemName": "Risoto de cogumelos sem glúten", "itemDescription": "Arroz arbóreo, cogumelos e azeite."}
+    menu = [{"itemId": "a", "itemName": "Bife à parmegiana", "itemDescription": "carne empanada com farinha de trigo"},
+            {"itemId": "b", "itemName": "Picanha grelhada", "itemDescription": "carne bovina"}]
+    restrictions = [resolve_restriction({"id": "doenca_celiaca"}), resolve_restriction({"id": "vegetariano"})]
+    results = {r["restrictionId"]: r for r in analyze_product(product, restrictions, menu_items=menu)["restrictions"]}
+    # Glúten: a parmegiana é possível fonte de contato cruzado.
+    assert results["doenca_celiaca"]["crossContact"]["itemsWithSubstance"] == 1
+    # Vegetariano: carne em outros pratos não importa.
+    assert results["vegetariano"]["crossContact"] is None
+    assert not any(f["kind"] == FindingKind.CROSS_CONTACT for f in results["vegetariano"]["findings"])
 
 
 def test_packaged_item_does_not_infer_contact_from_store_preparation():
@@ -90,3 +107,17 @@ async def test_other_product_excludes_chosen_item_from_cards_and_model(monkeypat
     output, card = await catalog_tools._search_options(session, {"consulta": "burger"})
     assert [item["itemId"] for item in output["itens"]] == ["other"]
     assert [item["itemId"] for item in card["data"]["items"]] == ["other"]
+
+
+@pytest.mark.parametrize("name,packaged", [
+    ("Biscoito Bauducco Cookies Chocolate 100g", True),
+    ("Vinho Tinto Casillero del Diablo 750ml", True),
+    ("Coca-Cola Lata 350ml", True),
+    ("Pizza Marguerita 200g", False),
+    ("Lasanha à bolonhesa", False),
+])
+def test_sealed_industrialized_product_has_no_recipe_option(name, packaged):
+    result = analyze_product({"itemId": "x", "itemName": name}, [resolve_restriction({"id": "doenca_celiaca"})])
+    assert result["packaged"] is packaged
+    if not result["canProceed"]:
+        assert ("PREPARAR_EM_CASA" in result["alternatives"]) is not packaged

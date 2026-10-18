@@ -51,6 +51,9 @@ class Rigor:
     LOW = "BAIXO"
 
 
+# Tipos de restrição em que traços (contato cruzado) importam.
+CROSS_CONTACT_TYPES = frozenset({RestrictionType.ALLERGY, RestrictionType.CELIAC, RestrictionType.RELIGIOUS})
+
 RIGOR_BY_TYPE = {
     RestrictionType.ALLERGY: Rigor.HIGH,
     RestrictionType.CELIAC: Rigor.HIGH,
@@ -86,6 +89,17 @@ class Restriction:
     @property
     def rigor(self) -> str:
         return RIGOR_BY_TYPE[self.type]
+
+    @property
+    def checks_cross_contact(self) -> bool:
+        """Se traços da substância importam (contato cruzado com outros itens da loja).
+
+        - Alergias e doença celíaca: sim, mínimas quantidades causam reação.
+        - Religiosas (sem porco, halal, kosher): sim, ex.: frito na mesma banha ou óleo.
+        - Intolerâncias (lactose, frutose, sensibilidade ao glúten) e preferências
+          (vegetariano, vegano): não, basta o item não ter a substância.
+        """
+        return self.type in CROSS_CONTACT_TYPES
 
     @property
     def effective_core_terms(self) -> tuple[str, ...]:

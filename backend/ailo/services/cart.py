@@ -57,7 +57,7 @@ def normalize_cart(raw: dict) -> dict[str, Any]:
         for item in cart.get("items") or cart.get("cartItems") or []
     ]
     totals = cart.get("totals") or cart.get("summary") or cart.get("prices") or cart
-    subtotal = _pick_number(totals, ["subtotal", "itemsTotal", "subTotal", "itemsAmount"])
+    subtotal = _pick_number(totals, ["subtotal", "subtotalAmount", "itemsTotal", "subTotal", "itemsAmount"])
     merchant = cart.get("merchant") or {}
     return {
         "cartId": cart.get("cartId") or cart.get("id"),
@@ -286,7 +286,6 @@ async def track_order(session: Session, order_id: str) -> dict:
         raise ValidationError("Pedido não encontrado nesta conversa.")
     result = await get_ifood_client().call_tool("trackOrder", {"orderId": order_id})
     status = result.get("status") or result.get("currentStatus") or (result.get("data") or {}).get("status")
-    # Segundo a documentação, o status vem como objeto { code, description }.
     if isinstance(status, dict):
         status = status.get("code") or status.get("description")
     return {"orderId": order_id, "status": status, "events": result.get("events") or result.get("statusEvents") or []}

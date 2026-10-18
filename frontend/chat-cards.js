@@ -187,10 +187,11 @@ function renderAnalysis(analysis, actions) {
         'Quero escolher outro produto',
         { itemId: analysis.itemId, merchantId: analysis.merchantId },
       )),
-      actionButton('Preparar em casa', () => actions.send(
+      // Industrializado fechado (biscoito, vinho...): não há receita, só outro produto.
+      analysis.alternatives.includes('PREPARAR_EM_CASA') ? actionButton('Preparar em casa', () => actions.send(
         `Prefiro preparar em casa uma versão de "${analysis.itemName}" adaptada às minhas restrições.`,
         'Prefiro preparar em casa',
-      ), 'primary'),
+      ), 'primary') : null,
     ];
 
   return card(`analysis-card ${VERDICT_INFO[analysis.verdict]?.className ?? ''}`, [
@@ -352,7 +353,9 @@ function renderMarket(plan, actions) {
       el('div', {}, [
         el('span', { className: 'market-ingredient', text: item.ingrediente }),
         el('strong', { text: `${item.quantidade}× ${item.itemName}` }),
-        item.verdict !== 'SEM_CONFLITO_DECLARADO' ? verdictBadge(item.verdict) : null,
+        item.labelVerified
+          ? el('span', { className: 'label-tag ok', text: 'Rótulo verificado' })
+          : item.verdict !== 'SEM_CONFLITO_DECLARADO' ? verdictBadge(item.verdict) : null,
       ]),
       el('span', { text: formatPrice(item.totalPrice) }),
     ]))),
@@ -372,7 +375,9 @@ function renderMarket(plan, actions) {
     plan.ingredientsWithoutOption.length
       ? el('p', { className: 'card-note warning', text: `Sem opção nos mercados próximos: ${plan.ingredientsWithoutOption.join(', ')}.` })
       : null,
-    el('p', { className: 'card-disclaimer', text: 'Os anúncios de mercado raramente trazem a lista de ingredientes. Produtos sinalizados devem ter o rótulo conferido.' }),
+    el('p', { className: 'card-disclaimer', text: plan.merchants.some((merchant) => merchant.items.some((item) => item.labelSimulated))
+      ? 'Apresentação: a verificação dos rótulos é simulada. Confira sempre a embalagem.'
+      : 'Os anúncios de mercado raramente trazem a lista de ingredientes. Produtos sinalizados devem ter o rótulo conferido.' }),
   ]);
 }
 
