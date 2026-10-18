@@ -11,6 +11,7 @@ import re
 from datetime import datetime, timezone
 from typing import Any
 
+from ..config import config
 from ..errors import AppError, ValidationError
 from ..restrictions.analyzer import KIND_MARKET, Verdict, analyze_product, analyze_recipe_ingredients
 from ..restrictions.catalog import to_ifood_item_restrictions
@@ -138,7 +139,8 @@ async def _search_ingredient(session: Session, ingredient: dict, merchant_id: st
     porque o iFood os aplica juntos (E lógico), o que esconderia produtos
     válidos, como carne moída para quem é celíaco e tem APLV.
     """
-    base = {"sort": "PRICE", **({"merchantId": merchant_id} if merchant_id else {})}
+    # No demo, lojas fechadas também entram para a apresentação funcionar a qualquer hora.
+    base = {"sort": "PRICE", "onlyOpen": not config.demo_mode, **({"merchantId": merchant_id} if merchant_id else {})}
     query = ingredient.get("busca") or ingredient["nome"]
     tags = to_ifood_item_restrictions(session.restrictions)
     responses = await asyncio.gather(
@@ -154,7 +156,7 @@ async def _search_ingredient(session: Session, ingredient: dict, merchant_id: st
     return [
         {**item, "price": item.get("promotionalUnitPrice") or item.get("unitPrice") or 0, "analysis": _quick_analyze(session, item)}
         for item in unique.values()
-        if item.get("isOpen") is not False and _is_relevant(item, query)
+        if (config.demo_mode or item.get("isOpen") is not False) and _is_relevant(item, query)
     ]
 
 
