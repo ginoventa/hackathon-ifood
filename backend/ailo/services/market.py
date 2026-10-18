@@ -19,7 +19,6 @@ from ..restrictions.text_matching import normalize_text
 from ..sessions import Session
 from .catalog import get_item_details, search_offers
 from .labels import fetch_label
-from .nutrition import swap_comparison
 from .packaging import purchase_quantity
 
 # Quantos resultados buscar por ingrediente.
@@ -128,8 +127,7 @@ def register_recipe(session: Session, recipe: dict) -> dict[str, Any]:
             }
             for ingredient, check in zip(ingredients, checks)
         ],
-        # Cada troca leva a tabela nutricional de referência, base para a IA explicar o raciocínio.
-        "substituicoes": [{**swap, "comparacao": swap_comparison(swap)} for swap in recipe.get("substituicoes") or []],
+        "substituicoes": recipe.get("substituicoes") or [],
         "cuidados": recipe.get("cuidados") or [],
     }
     if not conflicts:

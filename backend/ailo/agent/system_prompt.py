@@ -156,11 +156,9 @@ para compra. Informe substituições, cuidados e ingredientes já disponíveis
 em casa quando conhecidos. Marque industrializados que exigem conferir rótulo.
 Não inclua modo de preparo.
 Retorno: aceita e conflitos ou ingredientes que exigem verificar rótulo.
-Após a aceitação, explique o raciocínio de cada troca em substituicoes, em 2 ou
-3 frases: por que o original não serve para as restrições, como o substituto se
-compara pela comparacao (tabelaNutricionalPor100g; cite diferenças relevantes
-com os números retornados e a fonteNutricional) e o efeito culinário. Se não
-houver tabela, diga que ela não está disponível; nunca invente números.
+Após a aceitação, explique cada troca em substituicoes em 1 ou 2 frases: qual
+substância o original contém, por que o substituto não a contém e o efeito
+culinário. Lembre de conferir o rótulo dos industrializados.
 Se recusada, substitua os ingredientes incompatíveis e registre novamente;
 não apresente a versão rejeitada como válida. Após a aceitação, pergunte sobre
 itens já disponíveis em casa somente se ainda necessário; se a pessoa já

@@ -247,41 +247,6 @@ function renderClarification({ itemName, merchantName, text }, actions) {
 
 // ------------------------------------------------------------ Receita/mercado
 
-/** Linhas da tabela nutricional (por 100 g) usadas na comparação das trocas. */
-const NUTRIENTS = [
-  ['energiaKcal', 'Energia', 'kcal'],
-  ['carboidratosG', 'Carboidratos', 'g'],
-  ['proteinasG', 'Proteínas', 'g'],
-  ['gordurasTotaisG', 'Gorduras totais', 'g'],
-  ['fibrasG', 'Fibras', 'g'],
-  ['sodioMg', 'Sódio', 'mg'],
-];
-
-/** Valor nutricional formatado ou "—" quando não há dado. */
-function nutrientValue(table, key, unit) {
-  const value = table?.[key];
-  return typeof value === 'number' ? `${value.toLocaleString('pt-BR')} ${unit}` : '—';
-}
-
-/** Tabela nutricional (referência TACO) do original e do substituto de uma troca. */
-function swapComparison({ original, substituto }) {
-  const hasTable = original.tabelaNutricionalPor100g || substituto.tabelaNutricionalPor100g;
-  const sources = [...new Set([original.fonteNutricional, substituto.fonteNutricional].filter(Boolean))];
-  return details('Tabela nutricional', [
-    hasTable ? el('table', { className: 'nutrition-table' }, [
-      el('thead', {}, [el('tr', {}, [
-        el('th', { text: 'Por 100 g' }), el('th', { text: original.nome }), el('th', { text: substituto.nome }),
-      ])]),
-      el('tbody', {}, NUTRIENTS.map(([key, label, unit]) => el('tr', {}, [
-        el('td', { text: label }),
-        el('td', { text: nutrientValue(original.tabelaNutricionalPor100g, key, unit) }),
-        el('td', { text: nutrientValue(substituto.tabelaNutricionalPor100g, key, unit) }),
-      ]))),
-    ]) : el('p', { className: 'card-muted', text: 'Tabela nutricional não disponível para esta troca.' }),
-    ...sources.map((source) => el('p', { className: 'card-disclaimer', text: source })),
-  ]);
-}
-
 function renderRecipe(recipe, actions) {
   const ingredients = el('ul', { className: 'ingredient-list' }, recipe.ingredientes.map((ingredient) => {
     const check = ingredient.verificacao;
@@ -310,10 +275,7 @@ function renderRecipe(recipe, actions) {
     ingredients,
     recipe.substituicoes.length ? el('div', { className: 'card-note' }, [
       el('strong', { text: 'Substituições' }),
-      ...recipe.substituicoes.map((swap) => el('div', { className: 'swap' }, [
-        el('p', { text: `${swap.original} → ${swap.substituto}` }),
-        swap.comparacao ? swapComparison(swap.comparacao) : null,
-      ])),
+      list(recipe.substituicoes.map((swap) => `${swap.original} → ${swap.substituto}${swap.motivo ? ` (${swap.motivo})` : ''}`)),
     ]) : null,
     recipe.cuidados.length ? el('div', { className: 'card-note warning' }, [el('strong', { text: 'Cuidados' }), list(recipe.cuidados)]) : null,
     el('div', { className: 'card-actions' }, [

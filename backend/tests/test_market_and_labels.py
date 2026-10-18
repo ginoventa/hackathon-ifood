@@ -50,7 +50,7 @@ def test_package_quantity_uses_size_published_in_offer_name():
 
 
 @pytest.mark.asyncio
-async def test_agent_recipe_is_registered_with_nutrition_comparison():
+async def test_agent_recipe_is_registered_with_its_swaps():
     session = Session(id='real-recipe')
     session.restrictions = [resolve_restriction({'id': 'doenca_celiaca'})]
     result, card = await market._register_recipe(session, {
@@ -60,9 +60,7 @@ async def test_agent_recipe_is_registered_with_nutrition_comparison():
     })
     assert result['aceita'] is True
     assert card['data']['titulo'] == 'Pizza sem glúten'
-    comparison = result['substituicoes'][0]['comparacao']
-    assert comparison['original']['tabelaNutricionalPor100g']['proteinasG'] == 9.8
-    assert comparison['substituto']['tabelaNutricionalPor100g']['proteinasG'] == 1.3
+    assert result['substituicoes'] == [{'original': 'Farinha de trigo', 'substituto': 'Farinha de arroz', 'motivo': 'Sem glúten.'}]
 
 
 def test_market_shows_insufficient_items_as_verified_but_keeps_risks():

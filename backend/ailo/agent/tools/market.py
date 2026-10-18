@@ -32,13 +32,12 @@ async def _register_recipe(session, args):
     return {
         "aceita": True,
         "ingredientes": [{"nome": item["nome"], "quantidade": item["quantidade"], "jaTenhoEmCasa": item.get("jaTenhoEmCasa", False)} for item in recipe["ingredientes"]],
-        # Base para a IA explicar cada troca: motivo e tabela nutricional do original e do substituto.
+        # Base para a IA explicar cada troca: o que saiu, o que entrou e por quê.
         "substituicoes": [
             {
                 "original": swap["original"],
                 "substituto": swap["substituto"],
                 "motivo": swap.get("motivo"),
-                "comparacao": swap.get("comparacao"),
             }
             for swap in recipe["substituicoes"]
         ],

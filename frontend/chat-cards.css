@@ -901,14 +901,6 @@ dialog input[type="checkbox"] {
     gap: 8px;
   }
 
-  .nutrition-table {
-    font-size: 11px;
-  }
-  .nutrition-table th,
-  .nutrition-table td {
-    padding: 4px 3px;
-  }
-
   /* Revisão do pedido como "folha" que sobe da parte de baixo da tela. */
   .checkout-dialog {
     width: 100vw;
@@ -965,27 +957,4 @@ dialog input[type="checkbox"] {
   display: block;
   color: #717171;
   margin-top: 6px;
-}
-
-/* Comparação nutricional das trocas da receita */
-.swap + .swap {
-  margin-top: 10px;
-}
-
-.nutrition-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-  margin: 8px 0;
-}
-
-.nutrition-table th,
-.nutrition-table td {
-  text-align: left;
-  padding: 4px 6px;
-  border-bottom: 1px solid #ececec;
-}
-
-.nutrition-table th {
-  font-weight: 700;
 }
