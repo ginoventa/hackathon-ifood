@@ -9,6 +9,9 @@ import asyncio
 from typing import Any
 
 from fastapi import APIRouter, Body, Header
+from langchain_core.messages import HumanMessage, AIMessage
+
+from ..services.analysis import clarification_for
 
 from ..agent.agent import run_agent_turn
 from ..agent.chat_model import is_model_configured
@@ -145,6 +148,22 @@ async def chat(body: dict = Body(...), session_id: str | None = SessionHeader) -
         if not session.restrictions:
             session.restrictions = read_profile_restrictions()
             session.restriction_inputs = read_profile()["restrictions"]
+        clarification = body.get("clarification")
+        if clarification is not None:
+            if not isinstance(clarification, dict):
+                raise ValidationError("Consulta ao restaurante inválida.")
+            item_id = clarification.get("itemId")
+            merchant_id = clarification.get("merchantId")
+            if not isinstance(item_id, str) or not isinstance(merchant_id, str):
+                raise ValidationError("Informe o produto e o restaurante da consulta.")
+            analysis = session.analyses.get(item_id)
+            if not analysis or analysis.get("merchantId") != merchant_id:
+                raise ValidationError("Analise novamente este produto antes de consultar o restaurante.")
+            data = clarification_for(session, item_id)
+            reply = "Preparei as perguntas sobre este produto para você enviar ao restaurante."
+            session.history.extend([HumanMessage(content=message), AIMessage(content=reply + "\n" + data["text"])])
+            return {"reply": reply, "cards": [{"type": "clarification", "data": data}],
+                    "restrictions": summarize_restrictions(session.restrictions)}
         await ensure_account_context(session)
         result = await run_agent_turn(session, message)
         return {**result, "restrictions": summarize_restrictions(session.restrictions)}

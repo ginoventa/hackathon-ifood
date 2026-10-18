@@ -52,7 +52,7 @@ def test_catalog_adapts_combined_restrictions(recipe_id):
     restrictions = [resolve_restriction({'id': name}) for name in
                     ['doenca_celiaca', 'alergia_leite', 'alergia_ovo', 'alergia_castanhas', 'vegano']]
     recipe = select_demo_recipe(recipe_id, restrictions)
-    if recipe_id in ('pao_queijo', 'pizza', 'coxinha', 'bolo_chocolate', 'cookie'):
+    if recipe_id in ('pao_queijo',):
         assert recipe is None
         return
     assert recipe is not None, recipe_id

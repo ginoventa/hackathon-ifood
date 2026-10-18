@@ -38,6 +38,7 @@ DISPLAY_RANK = {
 
 # Quantos itens sem etiqueta têm a descrição conferida em cada busca.
 DEEP_CHECK_LIMIT = 6
+MAX_OPTIONS = 3
 
 # Nomes amigáveis das etiquetas do iFood.
 TAG_LABELS = {"GLUTEN_FREE": "Sem glúten", "LAC_FREE": "Sem lactose", "VEGAN": "Vegano", "VEGETARIAN": "Vegetariano"}
@@ -77,7 +78,7 @@ async def _compatible_items(session, items: list[dict], tags: list[str]) -> list
     """Filtra e ordena os resultados: só ficam itens sem conflito com as restrições."""
     visible = [item for item in items if (item["merchantId"], item["itemId"]) not in session.excluded_items]
     if not session.restrictions:
-        return [{**item, "quickVerdict": None, "ifoodTag": False} for item in visible]
+        return [{**item, "quickVerdict": None, "ifoodTag": False} for item in visible[:MAX_OPTIONS]]
 
     tagged, untagged = [], []
     for item in visible:
@@ -89,7 +90,7 @@ async def _compatible_items(session, items: list[dict], tags: list[str]) -> list
 
     # Regra 1: havendo itens com a etiqueta do iFood, só eles são recomendados.
     if tagged:
-        return sorted(tagged, key=lambda item: DISPLAY_RANK.get(item["quickVerdict"], 1))
+        return sorted(tagged, key=lambda item: DISPLAY_RANK.get(item["quickVerdict"], 1))[:MAX_OPTIONS]
 
     # Regra 2: sem etiqueta, confere a descrição (e o rótulo) de cada candidato.
     candidates = untagged[:DEEP_CHECK_LIMIT]
@@ -99,7 +100,7 @@ async def _compatible_items(session, items: list[dict], tags: list[str]) -> list
         if verdict == Verdict.CONFLICT:
             continue
         checked.append({**item, "quickVerdict": verdict or item["quickVerdict"], "descriptionChecked": verdict is not None})
-    return sorted(checked, key=lambda item: DISPLAY_RANK.get(item["quickVerdict"], 1))
+    return sorted(checked, key=lambda item: DISPLAY_RANK.get(item["quickVerdict"], 1))[:MAX_OPTIONS]
 
 
 def _items_output(items: list[dict]) -> list[dict]:
@@ -127,19 +128,21 @@ def _options_card(title: str, items: list[dict], tags: list[str], *, alternative
 
 async def _search_compatible(session, *, query: str, base_refinements: dict, tags: list[str], merchant_type: str = "RESTAURANT", page_size: int = 8) -> list[dict]:
     """Busca o pedido priorizando a etiqueta do iFood e devolve só itens compatíveis."""
+    tagged_items: list[dict] = []
     if tags:
         tagged = await search_offers(
             session, query=query, merchant_type=merchant_type, result_kind="ITEM", page_size=page_size,
             refinements={**base_refinements, "itemRestrictions": tags},
         )
-        items = await _compatible_items(session, tagged["items"], tags)
-        if items:
-            return items
+        tagged_items = await _compatible_items(session, tagged["items"], tags)
 
     plain = await search_offers(
         session, query=query, merchant_type=merchant_type, result_kind="ITEM", page_size=page_size, refinements=base_refinements,
     )
-    return await _compatible_items(session, plain["items"], tags)
+    general_items = await _compatible_items(session, plain["items"], tags)
+    tagged_ids = {(item["merchantId"], item["itemId"]) for item in tagged_items}
+    general_items = [item for item in general_items if (item["merchantId"], item["itemId"]) not in tagged_ids]
+    return (tagged_items + general_items)[:MAX_OPTIONS]
 
 
 async def _search_merchants(session, query: str, refinements: dict):

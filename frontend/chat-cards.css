@@ -354,7 +354,7 @@
 }
 
 .option-item {
-  flex: 0 0 210px;
+  flex: 0 0 min(260px, calc(100% - 32px));
   scroll-snap-align: start;
   border: 1px solid #ececec;
   border-radius: 20px;
@@ -844,7 +844,7 @@ dialog input[type="checkbox"] {
     padding: 2px 16px 8px;
   }
   .option-item {
-    flex-basis: 180px;
+    flex-basis: calc(100% - 8px);
   }
 }
 

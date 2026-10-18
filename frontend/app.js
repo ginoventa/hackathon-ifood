@@ -17,19 +17,19 @@ let isSending = false;
 let status = null;
 const conversationCards = new Map();
 
-/** Textos e sugestões de cada modo. As sugestões já trazem uma restrição de exemplo. */
+/** Textos e sugestões de cada modo, com pedidos gerais e restrições de exemplo. */
 const config = {
   restaurants: {
     label: 'Restaurantes',
     icon: 'utensils',
     title: 'O que sua fome pede agora?',
-    suggestions: ['Sou celíaca e quero pizza', 'Lasanha sem leite (APLV)', 'Jantar vegano', 'Alergia a amendoim: o que pedir?']
+    suggestions: ['Quero uma pizza', 'Sou celíaca e quero pizza', 'Lasanha sem leite (APLV)']
   },
   market: {
     label: 'Mercado',
     icon: 'cart',
     title: 'Bora cozinhar algo do seu jeito?',
-    suggestions: ['Lasanha sem leite e sem glúten', 'Bolo sem ovo', 'Strogonoff sem lactose']
+    suggestions: ['Quero fazer pizza em casa', 'Lasanha sem leite e sem glúten', 'Bolo sem ovo']
   }
 };
 
@@ -58,6 +58,7 @@ function setMode(next) {
     button.onclick = () => sendMessage(label);
     return button;
   }));
+  $('#suggestions').scrollLeft = 0;
   closePopover();
   closeMenu();
   updateSend();
@@ -228,6 +229,7 @@ function addMessage(text, role) {
 /** Ações disponíveis para os botões dos cartões. */
 const cardActions = {
   send: (message, display, excludeItem) => sendMessage(message, display, excludeItem),
+  consultRestaurant: (itemId, merchantId) => sendMessage('Quero consultar o restaurante', 'Consultar o restaurante', undefined, { itemId, merchantId }),
   fillComposer,
   openCheckout,
   toast,
@@ -274,7 +276,7 @@ function conversationCardKey({ type, data }) {
  * @param {string} text Texto enviado ao backend (pode conter identificadores).
  * @param {string} [display] Texto mostrado na conversa, quando diferente do enviado.
  */
-async function sendMessage(text, display = text, excludeItem) {
+async function sendMessage(text, display = text, excludeItem, clarification) {
   if (!text.trim() || isSending) {
     return;
   }
@@ -289,7 +291,7 @@ async function sendMessage(text, display = text, excludeItem) {
   pending.classList.add('pending');
 
   try {
-    const response = await api.sendMessage(text.trim(), mode, excludeItem);
+    const response = await api.sendMessage(text.trim(), mode, excludeItem, clarification);
     pending.classList.remove('pending');
     pending.textContent = response.reply;
     for (const cardData of response.cards) {

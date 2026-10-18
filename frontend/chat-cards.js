@@ -144,19 +144,6 @@ function renderMerchants({ title, merchants }, actions) {
 
 // ------------------------------------------------------------------ Análise
 
-/** Nome amigável de cada tipo de evidência do analisador. */
-const FINDING_LABELS = {
-  INGREDIENTE: 'Ingrediente incompatível',
-  INGREDIENTE_INCERTO: 'Pode conter',
-  ADICIONAL: 'Ingrediente de adicional',
-  CONTRADICAO: 'Informação contraditória',
-  DECLARACAO_DE_AUSENCIA: 'Declaração de ausência',
-  DECLARACAO_INSUFICIENTE: 'Declaração que não basta',
-  POSSIVEL_CONTATO_CRUZADO: 'Possível contato cruzado',
-  CONFIRMACAO_DO_ESTABELECIMENTO: 'Resposta do estabelecimento',
-  ROTULO_SEM_A_SUBSTANCIA: 'Rótulo consultado',
-};
-
 /** Nomes amigáveis das etiquetas do iFood. */
 const IFOOD_TAG_LABELS = { GLUTEN_FREE: 'Sem glúten', LAC_FREE: 'Sem lactose', VEGAN: 'Vegano', VEGETARIAN: 'Vegetariano' };
 
@@ -178,16 +165,7 @@ function renderAnalysis(analysis, actions) {
       verdictBadge(result.verdict),
     ]),
     el('p', { text: result.explanation }),
-    result.findings.some((finding) => !['ETIQUETA_IFOOD', 'ADICIONAL'].includes(finding.kind)) ? details('Evidências', [
-      el('ul', { className: 'evidence-list' }, result.findings.filter((finding) => !['ETIQUETA_IFOOD', 'ADICIONAL'].includes(finding.kind)).map((finding) => el('li', {}, [
-        el('strong', { text: FINDING_LABELS[finding.kind] ?? finding.kind }),
-        el('span', { text: [finding.terms.join(', '), finding.note].filter(Boolean).join(' — ') }),
-        el('small', { text: `${finding.where} · Fonte: ${finding.source}` }),
-      ]))),
-      result.crossContact?.examples?.length
-        ? el('p', { className: 'card-muted', text: `Exemplos no cardápio: ${result.crossContact.examples.map((example) => example.itemName).join(', ')}.` })
-        : null,
-    ]) : null,
+
   ]));
 
   const buttons = analysis.canProceed
@@ -196,7 +174,7 @@ function renderAnalysis(analysis, actions) {
       'Quero seguir com o pedido',
     ), 'primary')]
     : [
-      actionButton('Consultar o restaurante', () => actions.send(`Quero consultar o restaurante sobre este item. ${ids}`, 'Quero consultar o restaurante')),
+      actionButton('Consultar o restaurante', () => actions.consultRestaurant(analysis.itemId, analysis.merchantId)),
       actionButton('Escolher outro produto', () => actions.send(
         `Quero outro produto compatível, diferente de "${analysis.itemName}".`,
         'Quero escolher outro produto',
@@ -226,9 +204,6 @@ function renderAnalysis(analysis, actions) {
     ...restrictionBlocks,
     analysis.missingInfo.length ? el('div', { className: 'card-note' }, [el('strong', { text: 'O que ainda não sabemos' }), list(analysis.missingInfo)]) : null,
     el('div', { className: 'card-actions' }, buttons),
-    !analysis.canProceed
-      ? actionButton('O restaurante me respondeu', () => actions.fillComposer('O restaurante respondeu que '), 'link')
-      : null,
     el('p', { className: 'card-disclaimer', text: analysis.disclaimer }),
   ]);
 }
@@ -247,10 +222,10 @@ function renderClarification({ itemName, merchantName, text }, actions) {
   return card('clarification-card', [
     el('p', { className: 'card-kicker' }, [icon('chat'), `Mensagem para ${merchantName}`]),
     el('p', { className: 'card-muted', text: `Sobre: ${itemName}` }),
+    el('p', { className: 'card-muted', text: 'Copie as perguntas e envie ao restaurante pelo canal de contato disponível no iFood.' }),
     el('pre', { className: 'clarification-text', text }),
     el('div', { className: 'card-actions' }, [
       copy,
-      actionButton('O restaurante me respondeu', () => actions.fillComposer('O restaurante respondeu que ')),
     ]),
     el('p', { className: 'card-disclaimer', text: 'A resposta do restaurante é uma evidência adicional, não uma certificação de segurança.' }),
   ]);
@@ -259,18 +234,6 @@ function renderClarification({ itemName, merchantName, text }, actions) {
 // ------------------------------------------------------------ Receita/mercado
 
 function renderRecipe(recipe, actions) {
-  const labelEvidence = (assessment) => {
-    if (!assessment) return '';
-    const names = { milk: 'leite', gluten: 'glúten', soybeans: 'soja', nuts: 'castanhas', eggs: 'ovos', peanuts: 'amendoim' };
-    const tagName = (tag) => names[tag.split(':').pop()] || tag.split(':').pop();
-    return assessment.rotulos?.length
-      ? assessment.rotulos.map((label) => `${label.nome}: ${[
-        label.contem.length ? `contém ${label.contem.map(tagName).join(', ')}` : '',
-        label.podeConter.length ? `pode conter ${label.podeConter.map(tagName).join(', ')}` : '',
-        !label.contem.length && !label.podeConter.length ? 'sem avisos publicados na fonte; conferir embalagem' : '',
-      ].filter(Boolean).join('; ')}`).join(' · ')
-      : 'Sem rótulo de referência cadastrado; análise pelos ingredientes informados.';
-  };
   const ingredients = el('ul', { className: 'ingredient-list' }, recipe.ingredientes.map((ingredient) => {
     const check = ingredient.verificacao;
     const tags = [];
@@ -302,10 +265,9 @@ function renderRecipe(recipe, actions) {
       el('strong', { text: 'Substituições' }),
       list(recipe.substituicoes.map((swap) => [
         `${swap.original} → ${swap.substituto}${swap.motivo ? ` (${swap.motivo})` : ''}`,
-        swap.evidenciasOriginal ? `Original: ${labelEvidence(swap.evidenciasOriginal)}` : '',
-        swap.evidenciasSubstituto ? `Substituto: ${labelEvidence(swap.evidenciasSubstituto)}` : '',
       ].filter(Boolean).join(' — '))),
     ]) : null,
+    recipe.modoDePreparo?.length ? el('div', {}, [el('h4', { text: 'Modo de preparo' }), el('ol', { className: 'card-list' }, recipe.modoDePreparo.map((step) => el('li', { text: step })))]) : null,
     recipe.cuidados.length ? el('div', { className: 'card-note warning' }, [el('strong', { text: 'Cuidados' }), list(recipe.cuidados)]) : null,
     el('div', { className: 'card-actions' }, [
       actionButton('Buscar ingredientes no mercado', () => actions.send('Pode buscar os ingredientes no mercado.', 'Buscar os ingredientes no mercado'), 'primary'),

@@ -3197,6 +3197,660 @@
             }
           }
         ]
+      },
+      {
+        "id": "base_sem_gluten",
+        "titulo": "Bolo de chocolate — massa sem glúten",
+        "ingredientes": [
+          {
+            "nome": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "quantidade": "200 g",
+            "busca": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 200.0,
+              "unidade": "g"
+            },
+            "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+          },
+          {
+            "nome": "Leite integral",
+            "quantidade": "250 ml",
+            "busca": "Leite integral",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "produtosReferencia": [
+              "7898215151708"
+            ],
+            "quantidadeNecessaria": {
+              "valor": 250.0,
+              "unidade": "ml"
+            }
+          },
+          {
+            "nome": "Ovo",
+            "quantidade": "2 unidades",
+            "busca": "Ovo",
+            "quantidadeCompra": 1,
+            "industrializado": false
+          },
+          {
+            "nome": "Manteiga",
+            "quantidade": "80 g",
+            "busca": "Manteiga",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 80.0,
+              "unidade": "g"
+            }
+          },
+          {
+            "nome": "Cacau em pó",
+            "quantidade": "40 g",
+            "busca": "Cacau em pó",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 40.0,
+              "unidade": "g"
+            }
+          },
+          {
+            "nome": "Açúcar",
+            "quantidade": "120 g",
+            "busca": "Açúcar",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 120.0,
+              "unidade": "g"
+            }
+          },
+          {
+            "nome": "Fermento químico sem glúten",
+            "quantidade": "10 g",
+            "busca": "Fermento químico sem glúten",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 10.0,
+              "unidade": "g"
+            }
+          }
+        ],
+        "substituicoes": [
+          {
+            "original": "Farinha de trigo",
+            "substituto": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "motivo": "Alternativa sem trigo; confira a declaração de glúten e os demais alergênicos no rótulo.",
+            "ingredienteOriginal": {
+              "nome": "Farinha de trigo",
+              "quantidade": "200 g",
+              "busca": "Farinha de trigo",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "produtosReferencia": [
+                "7896005202074"
+              ],
+              "quantidadeNecessaria": {
+                "valor": 200.0,
+                "unidade": "g"
+              }
+            },
+            "ingredienteSubstituto": {
+              "nome": "Mistura de farinhas de arroz e polvilho sem glúten",
+              "quantidade": "200 g",
+              "busca": "Mistura de farinhas de arroz e polvilho sem glúten",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 200.0,
+                "unidade": "g"
+              },
+              "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+            }
+          }
+        ]
+      },
+      {
+        "id": "sem_ovo_sem_gluten",
+        "titulo": "Bolo de chocolate — versão adaptada — massa sem glúten",
+        "ingredientes": [
+          {
+            "nome": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "quantidade": "200 g",
+            "busca": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 200.0,
+              "unidade": "g"
+            },
+            "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+          },
+          {
+            "nome": "Leite integral",
+            "quantidade": "250 ml",
+            "busca": "Leite integral",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "produtosReferencia": [
+              "7898215151708"
+            ],
+            "quantidadeNecessaria": {
+              "valor": 250.0,
+              "unidade": "ml"
+            }
+          },
+          {
+            "nome": "Linhaça dourada moída",
+            "quantidade": "20 g + 60 ml de água",
+            "busca": "Linhaça dourada moída",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "produtosReferencia": [
+              "7896283005268"
+            ],
+            "quantidadeNecessaria": {
+              "valor": 20,
+              "unidade": "g"
+            },
+            "observacao": "Comprar a linhaça em grãos e triturar; a água é de uso doméstico."
+          },
+          {
+            "nome": "Manteiga",
+            "quantidade": "80 g",
+            "busca": "Manteiga",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 80.0,
+              "unidade": "g"
+            }
+          },
+          {
+            "nome": "Cacau em pó",
+            "quantidade": "40 g",
+            "busca": "Cacau em pó",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 40.0,
+              "unidade": "g"
+            }
+          },
+          {
+            "nome": "Açúcar",
+            "quantidade": "120 g",
+            "busca": "Açúcar",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 120.0,
+              "unidade": "g"
+            }
+          },
+          {
+            "nome": "Fermento químico sem glúten",
+            "quantidade": "10 g",
+            "busca": "Fermento químico sem glúten",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 10.0,
+              "unidade": "g"
+            }
+          }
+        ],
+        "substituicoes": [
+          {
+            "original": "Ovo",
+            "substituto": "Linhaça dourada moída",
+            "motivo": "A linhaça hidratada ajuda a dar liga no lugar do ovo; o resultado tende a ficar mais denso.",
+            "ingredienteOriginal": {
+              "nome": "Ovo",
+              "quantidade": "2 unidades",
+              "busca": "Ovo",
+              "quantidadeCompra": 1,
+              "industrializado": false
+            },
+            "ingredienteSubstituto": {
+              "nome": "Linhaça dourada moída",
+              "quantidade": "20 g + 60 ml de água",
+              "busca": "Linhaça dourada moída",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "produtosReferencia": [
+                "7896283005268"
+              ],
+              "quantidadeNecessaria": {
+                "valor": 20,
+                "unidade": "g"
+              },
+              "observacao": "Comprar a linhaça em grãos e triturar; a água é de uso doméstico."
+            }
+          },
+          {
+            "original": "Farinha de trigo",
+            "substituto": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "motivo": "Alternativa sem trigo; confira a declaração de glúten e os demais alergênicos no rótulo.",
+            "ingredienteOriginal": {
+              "nome": "Farinha de trigo",
+              "quantidade": "200 g",
+              "busca": "Farinha de trigo",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "produtosReferencia": [
+                "7896005202074"
+              ],
+              "quantidadeNecessaria": {
+                "valor": 200.0,
+                "unidade": "g"
+              }
+            },
+            "ingredienteSubstituto": {
+              "nome": "Mistura de farinhas de arroz e polvilho sem glúten",
+              "quantidade": "200 g",
+              "busca": "Mistura de farinhas de arroz e polvilho sem glúten",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 200.0,
+                "unidade": "g"
+              },
+              "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+            }
+          }
+        ]
+      },
+      {
+        "id": "sem_leite_sem_gluten",
+        "titulo": "Bolo de chocolate — versão adaptada — massa sem glúten",
+        "ingredientes": [
+          {
+            "nome": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "quantidade": "200 g",
+            "busca": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 200.0,
+              "unidade": "g"
+            },
+            "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+          },
+          {
+            "nome": "Bebida de arroz sem glúten",
+            "quantidade": "250 ml",
+            "busca": "Bebida de arroz sem glúten",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "produtosReferencia": [
+              "7896084700294"
+            ],
+            "quantidadeNecessaria": {
+              "valor": 250.0,
+              "unidade": "ml"
+            }
+          },
+          {
+            "nome": "Ovo",
+            "quantidade": "2 unidades",
+            "busca": "Ovo",
+            "quantidadeCompra": 1,
+            "industrializado": false
+          },
+          {
+            "nome": "Óleo de girassol",
+            "quantidade": "60 ml",
+            "busca": "Óleo de girassol",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 60,
+              "unidade": "ml"
+            }
+          },
+          {
+            "nome": "Cacau em pó",
+            "quantidade": "40 g",
+            "busca": "Cacau em pó",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 40.0,
+              "unidade": "g"
+            }
+          },
+          {
+            "nome": "Açúcar",
+            "quantidade": "120 g",
+            "busca": "Açúcar",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 120.0,
+              "unidade": "g"
+            }
+          },
+          {
+            "nome": "Fermento químico sem glúten",
+            "quantidade": "10 g",
+            "busca": "Fermento químico sem glúten",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 10.0,
+              "unidade": "g"
+            }
+          }
+        ],
+        "substituicoes": [
+          {
+            "original": "Leite integral",
+            "substituto": "Bebida de arroz sem glúten",
+            "motivo": "Substitui o leite na hidratação, sem usar leite zero lactose, que ainda contém proteína do leite.",
+            "ingredienteOriginal": {
+              "nome": "Leite integral",
+              "quantidade": "250 ml",
+              "busca": "Leite integral",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "produtosReferencia": [
+                "7898215151708"
+              ],
+              "quantidadeNecessaria": {
+                "valor": 250.0,
+                "unidade": "ml"
+              }
+            },
+            "ingredienteSubstituto": {
+              "nome": "Bebida de arroz sem glúten",
+              "quantidade": "250 ml",
+              "busca": "Bebida de arroz sem glúten",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "produtosReferencia": [
+                "7896084700294"
+              ],
+              "quantidadeNecessaria": {
+                "valor": 250.0,
+                "unidade": "ml"
+              }
+            }
+          },
+          {
+            "original": "Manteiga",
+            "substituto": "Óleo de girassol",
+            "motivo": "Fornece gordura à receita sem usar manteiga ou derivados do leite.",
+            "ingredienteOriginal": {
+              "nome": "Manteiga",
+              "quantidade": "80 g",
+              "busca": "Manteiga",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 80.0,
+                "unidade": "g"
+              }
+            },
+            "ingredienteSubstituto": {
+              "nome": "Óleo de girassol",
+              "quantidade": "60 ml",
+              "busca": "Óleo de girassol",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 60,
+                "unidade": "ml"
+              }
+            }
+          },
+          {
+            "original": "Farinha de trigo",
+            "substituto": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "motivo": "Alternativa sem trigo; confira a declaração de glúten e os demais alergênicos no rótulo.",
+            "ingredienteOriginal": {
+              "nome": "Farinha de trigo",
+              "quantidade": "200 g",
+              "busca": "Farinha de trigo",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "produtosReferencia": [
+                "7896005202074"
+              ],
+              "quantidadeNecessaria": {
+                "valor": 200.0,
+                "unidade": "g"
+              }
+            },
+            "ingredienteSubstituto": {
+              "nome": "Mistura de farinhas de arroz e polvilho sem glúten",
+              "quantidade": "200 g",
+              "busca": "Mistura de farinhas de arroz e polvilho sem glúten",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 200.0,
+                "unidade": "g"
+              },
+              "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+            }
+          }
+        ]
+      },
+      {
+        "id": "vegetal_sem_gluten",
+        "titulo": "Bolo de chocolate — versão adaptada — massa sem glúten",
+        "ingredientes": [
+          {
+            "nome": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "quantidade": "200 g",
+            "busca": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 200.0,
+              "unidade": "g"
+            },
+            "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+          },
+          {
+            "nome": "Bebida de arroz sem glúten",
+            "quantidade": "250 ml",
+            "busca": "Bebida de arroz sem glúten",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "produtosReferencia": [
+              "7896084700294"
+            ],
+            "quantidadeNecessaria": {
+              "valor": 250.0,
+              "unidade": "ml"
+            }
+          },
+          {
+            "nome": "Linhaça dourada moída",
+            "quantidade": "20 g + 60 ml de água",
+            "busca": "Linhaça dourada moída",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "produtosReferencia": [
+              "7896283005268"
+            ],
+            "quantidadeNecessaria": {
+              "valor": 20,
+              "unidade": "g"
+            },
+            "observacao": "Comprar a linhaça em grãos e triturar; a água é de uso doméstico."
+          },
+          {
+            "nome": "Óleo de girassol",
+            "quantidade": "60 ml",
+            "busca": "Óleo de girassol",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 60,
+              "unidade": "ml"
+            }
+          },
+          {
+            "nome": "Cacau em pó",
+            "quantidade": "40 g",
+            "busca": "Cacau em pó",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 40.0,
+              "unidade": "g"
+            }
+          },
+          {
+            "nome": "Açúcar",
+            "quantidade": "120 g",
+            "busca": "Açúcar",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 120.0,
+              "unidade": "g"
+            }
+          },
+          {
+            "nome": "Fermento químico sem glúten",
+            "quantidade": "10 g",
+            "busca": "Fermento químico sem glúten",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 10.0,
+              "unidade": "g"
+            }
+          }
+        ],
+        "substituicoes": [
+          {
+            "original": "Leite integral",
+            "substituto": "Bebida de arroz sem glúten",
+            "motivo": "Substitui o leite na hidratação, sem usar leite zero lactose, que ainda contém proteína do leite.",
+            "ingredienteOriginal": {
+              "nome": "Leite integral",
+              "quantidade": "250 ml",
+              "busca": "Leite integral",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "produtosReferencia": [
+                "7898215151708"
+              ],
+              "quantidadeNecessaria": {
+                "valor": 250.0,
+                "unidade": "ml"
+              }
+            },
+            "ingredienteSubstituto": {
+              "nome": "Bebida de arroz sem glúten",
+              "quantidade": "250 ml",
+              "busca": "Bebida de arroz sem glúten",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "produtosReferencia": [
+                "7896084700294"
+              ],
+              "quantidadeNecessaria": {
+                "valor": 250.0,
+                "unidade": "ml"
+              }
+            }
+          },
+          {
+            "original": "Ovo",
+            "substituto": "Linhaça dourada moída",
+            "motivo": "A linhaça hidratada ajuda a dar liga no lugar do ovo; o resultado tende a ficar mais denso.",
+            "ingredienteOriginal": {
+              "nome": "Ovo",
+              "quantidade": "2 unidades",
+              "busca": "Ovo",
+              "quantidadeCompra": 1,
+              "industrializado": false
+            },
+            "ingredienteSubstituto": {
+              "nome": "Linhaça dourada moída",
+              "quantidade": "20 g + 60 ml de água",
+              "busca": "Linhaça dourada moída",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "produtosReferencia": [
+                "7896283005268"
+              ],
+              "quantidadeNecessaria": {
+                "valor": 20,
+                "unidade": "g"
+              },
+              "observacao": "Comprar a linhaça em grãos e triturar; a água é de uso doméstico."
+            }
+          },
+          {
+            "original": "Manteiga",
+            "substituto": "Óleo de girassol",
+            "motivo": "Fornece gordura à receita sem usar manteiga ou derivados do leite.",
+            "ingredienteOriginal": {
+              "nome": "Manteiga",
+              "quantidade": "80 g",
+              "busca": "Manteiga",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 80.0,
+                "unidade": "g"
+              }
+            },
+            "ingredienteSubstituto": {
+              "nome": "Óleo de girassol",
+              "quantidade": "60 ml",
+              "busca": "Óleo de girassol",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 60,
+                "unidade": "ml"
+              }
+            }
+          },
+          {
+            "original": "Farinha de trigo",
+            "substituto": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "motivo": "Alternativa sem trigo; confira a declaração de glúten e os demais alergênicos no rótulo.",
+            "ingredienteOriginal": {
+              "nome": "Farinha de trigo",
+              "quantidade": "200 g",
+              "busca": "Farinha de trigo",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "produtosReferencia": [
+                "7896005202074"
+              ],
+              "quantidadeNecessaria": {
+                "valor": 200.0,
+                "unidade": "g"
+              }
+            },
+            "ingredienteSubstituto": {
+              "nome": "Mistura de farinhas de arroz e polvilho sem glúten",
+              "quantidade": "200 g",
+              "busca": "Mistura de farinhas de arroz e polvilho sem glúten",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 200.0,
+                "unidade": "g"
+              },
+              "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+            }
+          }
+        ]
       }
     ],
     "politicaAdaptacao": "Versões completas pré-cadastradas. Selecionar uma versão compatível sem combinar trocas em tempo de execução."
@@ -3369,10 +4023,13 @@
     "titulo": "Pizza de queijo e tomate",
     "termos": [
       "pizza",
-      "marguerita"
+      "marguerita",
+      "pizza caseira",
+      "pizza margherita",
+      "pizza marguerita"
     ],
     "porcoes": 4,
-    "tempoMinutos": 60,
+    "tempoMinutos": 80,
     "ingredientes": [
       {
         "nome": "Farinha de trigo",
@@ -3708,9 +4365,322 @@
             }
           }
         ]
+      },
+      {
+        "id": "base_sem_gluten",
+        "titulo": "Pizza de queijo e tomate — massa sem glúten",
+        "ingredientes": [
+          {
+            "nome": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "quantidade": "200 g",
+            "busca": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 200.0,
+              "unidade": "g"
+            },
+            "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+          },
+          {
+            "nome": "Queijo muçarela",
+            "quantidade": "150 g",
+            "busca": "Queijo muçarela",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 150.0,
+              "unidade": "g"
+            }
+          },
+          {
+            "nome": "Tomate",
+            "quantidade": "3 unidades",
+            "busca": "Tomate",
+            "quantidadeCompra": 1,
+            "industrializado": false
+          },
+          {
+            "nome": "Fermento biológico seco",
+            "quantidade": "5 g",
+            "busca": "Fermento biológico seco",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 5.0,
+              "unidade": "g"
+            }
+          },
+          {
+            "nome": "Água",
+            "quantidade": "150 ml",
+            "busca": "Água",
+            "quantidadeCompra": 1,
+            "industrializado": false,
+            "quantidadeNecessaria": {
+              "valor": 150.0,
+              "unidade": "ml"
+            }
+          },
+          {
+            "nome": "Azeite de oliva",
+            "quantidade": "2 colheres de sopa",
+            "busca": "Azeite de oliva",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "produtosReferencia": [
+              "5601252106103"
+            ],
+            "quantidadeNecessaria": {
+              "valor": 30,
+              "unidade": "ml"
+            }
+          },
+          {
+            "nome": "Sal",
+            "quantidade": "a gosto",
+            "busca": "Sal",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "produtosReferencia": [
+              "7896035210001"
+            ]
+          }
+        ],
+        "substituicoes": [
+          {
+            "original": "Farinha de trigo",
+            "substituto": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "motivo": "Alternativa sem trigo; confira a declaração de glúten e os demais alergênicos no rótulo.",
+            "ingredienteOriginal": {
+              "nome": "Farinha de trigo",
+              "quantidade": "200 g",
+              "busca": "Farinha de trigo",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "produtosReferencia": [
+                "7896005202074"
+              ],
+              "quantidadeNecessaria": {
+                "valor": 200.0,
+                "unidade": "g"
+              }
+            },
+            "ingredienteSubstituto": {
+              "nome": "Mistura de farinhas de arroz e polvilho sem glúten",
+              "quantidade": "200 g",
+              "busca": "Mistura de farinhas de arroz e polvilho sem glúten",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 200.0,
+                "unidade": "g"
+              },
+              "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+            }
+          }
+        ]
+      },
+      {
+        "id": "sem_leite_sem_gluten",
+        "titulo": "Pizza de queijo e tomate — versão adaptada — massa sem glúten",
+        "ingredientes": [
+          {
+            "nome": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "quantidade": "200 g",
+            "busca": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 200.0,
+              "unidade": "g"
+            },
+            "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+          },
+          {
+            "nome": "Creme de mandioca",
+            "quantidade": "150 g",
+            "busca": "Creme de mandioca",
+            "quantidadeCompra": 1,
+            "industrializado": false,
+            "quantidadeNecessaria": {
+              "valor": 150.0,
+              "unidade": "g"
+            },
+            "componentes": [
+              {
+                "nome": "Mandioca",
+                "quantidade": "150 g",
+                "busca": "Mandioca",
+                "industrializado": false,
+                "quantidadeCompra": 1,
+                "quantidadeNecessaria": {
+                  "valor": 150.0,
+                  "unidade": "g"
+                }
+              },
+              {
+                "nome": "Água",
+                "quantidade": "75 ml",
+                "busca": "Água",
+                "industrializado": false,
+                "quantidadeCompra": 1,
+                "quantidadeNecessaria": {
+                  "valor": 75.0,
+                  "unidade": "ml"
+                }
+              }
+            ],
+            "observacao": "Preparação caseira: os componentes entram na lista de compras no lugar de um creme pronto."
+          },
+          {
+            "nome": "Tomate",
+            "quantidade": "3 unidades",
+            "busca": "Tomate",
+            "quantidadeCompra": 1,
+            "industrializado": false
+          },
+          {
+            "nome": "Fermento biológico seco",
+            "quantidade": "5 g",
+            "busca": "Fermento biológico seco",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 5.0,
+              "unidade": "g"
+            }
+          },
+          {
+            "nome": "Água",
+            "quantidade": "150 ml",
+            "busca": "Água",
+            "quantidadeCompra": 1,
+            "industrializado": false,
+            "quantidadeNecessaria": {
+              "valor": 150.0,
+              "unidade": "ml"
+            }
+          },
+          {
+            "nome": "Azeite de oliva",
+            "quantidade": "2 colheres de sopa",
+            "busca": "Azeite de oliva",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "produtosReferencia": [
+              "5601252106103"
+            ],
+            "quantidadeNecessaria": {
+              "valor": 30,
+              "unidade": "ml"
+            }
+          },
+          {
+            "nome": "Sal",
+            "quantidade": "a gosto",
+            "busca": "Sal",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "produtosReferencia": [
+              "7896035210001"
+            ]
+          }
+        ],
+        "substituicoes": [
+          {
+            "original": "Queijo muçarela",
+            "substituto": "Creme de mandioca",
+            "motivo": "Acrescenta cremosidade no lugar do queijo; não reproduz a elasticidade nem o sabor do queijo.",
+            "ingredienteOriginal": {
+              "nome": "Queijo muçarela",
+              "quantidade": "150 g",
+              "busca": "Queijo muçarela",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 150.0,
+                "unidade": "g"
+              }
+            },
+            "ingredienteSubstituto": {
+              "nome": "Creme de mandioca",
+              "quantidade": "150 g",
+              "busca": "Creme de mandioca",
+              "quantidadeCompra": 1,
+              "industrializado": false,
+              "quantidadeNecessaria": {
+                "valor": 150.0,
+                "unidade": "g"
+              },
+              "componentes": [
+                {
+                  "nome": "Mandioca",
+                  "quantidade": "150 g",
+                  "busca": "Mandioca",
+                  "industrializado": false,
+                  "quantidadeCompra": 1,
+                  "quantidadeNecessaria": {
+                    "valor": 150.0,
+                    "unidade": "g"
+                  }
+                },
+                {
+                  "nome": "Água",
+                  "quantidade": "75 ml",
+                  "busca": "Água",
+                  "industrializado": false,
+                  "quantidadeCompra": 1,
+                  "quantidadeNecessaria": {
+                    "valor": 75.0,
+                    "unidade": "ml"
+                  }
+                }
+              ],
+              "observacao": "Preparação caseira: os componentes entram na lista de compras no lugar de um creme pronto."
+            }
+          },
+          {
+            "original": "Farinha de trigo",
+            "substituto": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "motivo": "Alternativa sem trigo; confira a declaração de glúten e os demais alergênicos no rótulo.",
+            "ingredienteOriginal": {
+              "nome": "Farinha de trigo",
+              "quantidade": "200 g",
+              "busca": "Farinha de trigo",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "produtosReferencia": [
+                "7896005202074"
+              ],
+              "quantidadeNecessaria": {
+                "valor": 200.0,
+                "unidade": "g"
+              }
+            },
+            "ingredienteSubstituto": {
+              "nome": "Mistura de farinhas de arroz e polvilho sem glúten",
+              "quantidade": "200 g",
+              "busca": "Mistura de farinhas de arroz e polvilho sem glúten",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 200.0,
+                "unidade": "g"
+              },
+              "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+            }
+          }
+        ]
       }
     ],
-    "politicaAdaptacao": "Versões completas pré-cadastradas. Selecionar uma versão compatível sem combinar trocas em tempo de execução."
+    "politicaAdaptacao": "Versões completas pré-cadastradas. Selecionar uma versão compatível sem combinar trocas em tempo de execução.",
+    "modoDePreparo": [
+      "Misture a farinha (ou mistura sem glúten indicada para pizza), o fermento, o sal, a água aos poucos e o azeite até formar uma massa moldável. Ajuste a água conforme a mistura usada.",
+      "Cubra e deixe crescer por cerca de 40 minutos. Abra em uma forma untada; a massa sem glúten pode ser espalhada com as mãos úmidas.",
+      "Pré-asse a massa a 220 °C por 10 a 15 minutos. Acrescente o tomate e o queijo ou creme de mandioca da versão selecionada.",
+      "Volte ao forno por 10 a 15 minutos, até a massa assar e a cobertura aquecer. Use forma e utensílios separados quando necessário."
+    ]
   },
   {
     "id": "coxinha",
@@ -4258,6 +5228,631 @@
                 }
               ],
               "observacao": "Preparação caseira: os componentes entram na lista de compras no lugar de um creme pronto."
+            }
+          }
+        ]
+      },
+      {
+        "id": "base_sem_gluten",
+        "titulo": "Coxinha de frango — massa sem glúten",
+        "ingredientes": [
+          {
+            "nome": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "quantidade": "200 g",
+            "busca": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 200.0,
+              "unidade": "g"
+            },
+            "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+          },
+          {
+            "nome": "Frango",
+            "quantidade": "300 g",
+            "busca": "Frango",
+            "quantidadeCompra": 1,
+            "industrializado": false,
+            "quantidadeNecessaria": {
+              "valor": 300.0,
+              "unidade": "g"
+            }
+          },
+          {
+            "nome": "Requeijão",
+            "quantidade": "100 g",
+            "busca": "Requeijão",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 100.0,
+              "unidade": "g"
+            }
+          },
+          {
+            "nome": "Farinha de mandioca",
+            "quantidade": "100 g",
+            "busca": "Farinha de mandioca",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 100.0,
+              "unidade": "g"
+            },
+            "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+          },
+          {
+            "nome": "Água",
+            "quantidade": "300 ml",
+            "busca": "Água",
+            "quantidadeCompra": 1,
+            "industrializado": false,
+            "quantidadeNecessaria": {
+              "valor": 300.0,
+              "unidade": "ml"
+            }
+          },
+          {
+            "nome": "Azeite de oliva",
+            "quantidade": "2 colheres de sopa",
+            "busca": "Azeite de oliva",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "produtosReferencia": [
+              "5601252106103"
+            ],
+            "quantidadeNecessaria": {
+              "valor": 30,
+              "unidade": "ml"
+            }
+          },
+          {
+            "nome": "Sal",
+            "quantidade": "a gosto",
+            "busca": "Sal",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "produtosReferencia": [
+              "7896035210001"
+            ]
+          }
+        ],
+        "substituicoes": [
+          {
+            "original": "Farinha de trigo",
+            "substituto": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "motivo": "Alternativa sem trigo; confira a declaração de glúten e os demais alergênicos no rótulo.",
+            "ingredienteOriginal": {
+              "nome": "Farinha de trigo",
+              "quantidade": "200 g",
+              "busca": "Farinha de trigo",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "produtosReferencia": [
+                "7896005202074"
+              ],
+              "quantidadeNecessaria": {
+                "valor": 200.0,
+                "unidade": "g"
+              }
+            },
+            "ingredienteSubstituto": {
+              "nome": "Mistura de farinhas de arroz e polvilho sem glúten",
+              "quantidade": "200 g",
+              "busca": "Mistura de farinhas de arroz e polvilho sem glúten",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 200.0,
+                "unidade": "g"
+              },
+              "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+            }
+          },
+          {
+            "original": "Farinha de rosca",
+            "substituto": "Farinha de mandioca",
+            "motivo": "Alternativa sem trigo; confira a declaração de glúten e os demais alergênicos no rótulo.",
+            "ingredienteOriginal": {
+              "nome": "Farinha de rosca",
+              "quantidade": "100 g",
+              "busca": "Farinha de rosca",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 100.0,
+                "unidade": "g"
+              }
+            },
+            "ingredienteSubstituto": {
+              "nome": "Farinha de mandioca",
+              "quantidade": "100 g",
+              "busca": "Farinha de mandioca",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 100.0,
+                "unidade": "g"
+              },
+              "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+            }
+          }
+        ]
+      },
+      {
+        "id": "sem_leite_sem_gluten",
+        "titulo": "Coxinha de frango — versão adaptada — massa sem glúten",
+        "ingredientes": [
+          {
+            "nome": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "quantidade": "200 g",
+            "busca": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 200.0,
+              "unidade": "g"
+            },
+            "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+          },
+          {
+            "nome": "Frango",
+            "quantidade": "300 g",
+            "busca": "Frango",
+            "quantidadeCompra": 1,
+            "industrializado": false,
+            "quantidadeNecessaria": {
+              "valor": 300.0,
+              "unidade": "g"
+            }
+          },
+          {
+            "nome": "Creme de mandioca",
+            "quantidade": "100 g",
+            "busca": "Creme de mandioca",
+            "quantidadeCompra": 1,
+            "industrializado": false,
+            "quantidadeNecessaria": {
+              "valor": 100.0,
+              "unidade": "g"
+            },
+            "componentes": [
+              {
+                "nome": "Mandioca",
+                "quantidade": "100 g",
+                "busca": "Mandioca",
+                "industrializado": false,
+                "quantidadeCompra": 1,
+                "quantidadeNecessaria": {
+                  "valor": 100.0,
+                  "unidade": "g"
+                }
+              },
+              {
+                "nome": "Água",
+                "quantidade": "50 ml",
+                "busca": "Água",
+                "industrializado": false,
+                "quantidadeCompra": 1,
+                "quantidadeNecessaria": {
+                  "valor": 50.0,
+                  "unidade": "ml"
+                }
+              }
+            ],
+            "observacao": "Preparação caseira: os componentes entram na lista de compras no lugar de um creme pronto."
+          },
+          {
+            "nome": "Farinha de mandioca",
+            "quantidade": "100 g",
+            "busca": "Farinha de mandioca",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 100.0,
+              "unidade": "g"
+            },
+            "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+          },
+          {
+            "nome": "Água",
+            "quantidade": "300 ml",
+            "busca": "Água",
+            "quantidadeCompra": 1,
+            "industrializado": false,
+            "quantidadeNecessaria": {
+              "valor": 300.0,
+              "unidade": "ml"
+            }
+          },
+          {
+            "nome": "Azeite de oliva",
+            "quantidade": "2 colheres de sopa",
+            "busca": "Azeite de oliva",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "produtosReferencia": [
+              "5601252106103"
+            ],
+            "quantidadeNecessaria": {
+              "valor": 30,
+              "unidade": "ml"
+            }
+          },
+          {
+            "nome": "Sal",
+            "quantidade": "a gosto",
+            "busca": "Sal",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "produtosReferencia": [
+              "7896035210001"
+            ]
+          }
+        ],
+        "substituicoes": [
+          {
+            "original": "Requeijão",
+            "substituto": "Creme de mandioca",
+            "motivo": "Acrescenta cremosidade no lugar do queijo; não reproduz a elasticidade nem o sabor do queijo.",
+            "ingredienteOriginal": {
+              "nome": "Requeijão",
+              "quantidade": "100 g",
+              "busca": "Requeijão",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 100.0,
+                "unidade": "g"
+              }
+            },
+            "ingredienteSubstituto": {
+              "nome": "Creme de mandioca",
+              "quantidade": "100 g",
+              "busca": "Creme de mandioca",
+              "quantidadeCompra": 1,
+              "industrializado": false,
+              "quantidadeNecessaria": {
+                "valor": 100.0,
+                "unidade": "g"
+              },
+              "componentes": [
+                {
+                  "nome": "Mandioca",
+                  "quantidade": "100 g",
+                  "busca": "Mandioca",
+                  "industrializado": false,
+                  "quantidadeCompra": 1,
+                  "quantidadeNecessaria": {
+                    "valor": 100.0,
+                    "unidade": "g"
+                  }
+                },
+                {
+                  "nome": "Água",
+                  "quantidade": "50 ml",
+                  "busca": "Água",
+                  "industrializado": false,
+                  "quantidadeCompra": 1,
+                  "quantidadeNecessaria": {
+                    "valor": 50.0,
+                    "unidade": "ml"
+                  }
+                }
+              ],
+              "observacao": "Preparação caseira: os componentes entram na lista de compras no lugar de um creme pronto."
+            }
+          },
+          {
+            "original": "Farinha de trigo",
+            "substituto": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "motivo": "Alternativa sem trigo; confira a declaração de glúten e os demais alergênicos no rótulo.",
+            "ingredienteOriginal": {
+              "nome": "Farinha de trigo",
+              "quantidade": "200 g",
+              "busca": "Farinha de trigo",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "produtosReferencia": [
+                "7896005202074"
+              ],
+              "quantidadeNecessaria": {
+                "valor": 200.0,
+                "unidade": "g"
+              }
+            },
+            "ingredienteSubstituto": {
+              "nome": "Mistura de farinhas de arroz e polvilho sem glúten",
+              "quantidade": "200 g",
+              "busca": "Mistura de farinhas de arroz e polvilho sem glúten",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 200.0,
+                "unidade": "g"
+              },
+              "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+            }
+          },
+          {
+            "original": "Farinha de rosca",
+            "substituto": "Farinha de mandioca",
+            "motivo": "Alternativa sem trigo; confira a declaração de glúten e os demais alergênicos no rótulo.",
+            "ingredienteOriginal": {
+              "nome": "Farinha de rosca",
+              "quantidade": "100 g",
+              "busca": "Farinha de rosca",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 100.0,
+                "unidade": "g"
+              }
+            },
+            "ingredienteSubstituto": {
+              "nome": "Farinha de mandioca",
+              "quantidade": "100 g",
+              "busca": "Farinha de mandioca",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 100.0,
+                "unidade": "g"
+              },
+              "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+            }
+          }
+        ]
+      },
+      {
+        "id": "vegetal_sem_gluten",
+        "titulo": "Coxinha de frango — versão adaptada — massa sem glúten",
+        "ingredientes": [
+          {
+            "nome": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "quantidade": "200 g",
+            "busca": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 200.0,
+              "unidade": "g"
+            },
+            "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+          },
+          {
+            "nome": "Jaca verde desfiada",
+            "quantidade": "300 g",
+            "busca": "Jaca verde desfiada",
+            "quantidadeCompra": 1,
+            "industrializado": false,
+            "quantidadeNecessaria": {
+              "valor": 300.0,
+              "unidade": "g"
+            }
+          },
+          {
+            "nome": "Creme de mandioca",
+            "quantidade": "100 g",
+            "busca": "Creme de mandioca",
+            "quantidadeCompra": 1,
+            "industrializado": false,
+            "quantidadeNecessaria": {
+              "valor": 100.0,
+              "unidade": "g"
+            },
+            "componentes": [
+              {
+                "nome": "Mandioca",
+                "quantidade": "100 g",
+                "busca": "Mandioca",
+                "industrializado": false,
+                "quantidadeCompra": 1,
+                "quantidadeNecessaria": {
+                  "valor": 100.0,
+                  "unidade": "g"
+                }
+              },
+              {
+                "nome": "Água",
+                "quantidade": "50 ml",
+                "busca": "Água",
+                "industrializado": false,
+                "quantidadeCompra": 1,
+                "quantidadeNecessaria": {
+                  "valor": 50.0,
+                  "unidade": "ml"
+                }
+              }
+            ],
+            "observacao": "Preparação caseira: os componentes entram na lista de compras no lugar de um creme pronto."
+          },
+          {
+            "nome": "Farinha de mandioca",
+            "quantidade": "100 g",
+            "busca": "Farinha de mandioca",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 100.0,
+              "unidade": "g"
+            },
+            "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+          },
+          {
+            "nome": "Água",
+            "quantidade": "300 ml",
+            "busca": "Água",
+            "quantidadeCompra": 1,
+            "industrializado": false,
+            "quantidadeNecessaria": {
+              "valor": 300.0,
+              "unidade": "ml"
+            }
+          },
+          {
+            "nome": "Azeite de oliva",
+            "quantidade": "2 colheres de sopa",
+            "busca": "Azeite de oliva",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "produtosReferencia": [
+              "5601252106103"
+            ],
+            "quantidadeNecessaria": {
+              "valor": 30,
+              "unidade": "ml"
+            }
+          },
+          {
+            "nome": "Sal",
+            "quantidade": "a gosto",
+            "busca": "Sal",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "produtosReferencia": [
+              "7896035210001"
+            ]
+          }
+        ],
+        "substituicoes": [
+          {
+            "original": "Frango",
+            "substituto": "Jaca verde desfiada",
+            "motivo": "A jaca desfiada substitui a textura do recheio de frango; não fornece a mesma quantidade de proteína.",
+            "ingredienteOriginal": {
+              "nome": "Frango",
+              "quantidade": "300 g",
+              "busca": "Frango",
+              "quantidadeCompra": 1,
+              "industrializado": false,
+              "quantidadeNecessaria": {
+                "valor": 300.0,
+                "unidade": "g"
+              }
+            },
+            "ingredienteSubstituto": {
+              "nome": "Jaca verde desfiada",
+              "quantidade": "300 g",
+              "busca": "Jaca verde desfiada",
+              "quantidadeCompra": 1,
+              "industrializado": false,
+              "quantidadeNecessaria": {
+                "valor": 300.0,
+                "unidade": "g"
+              }
+            }
+          },
+          {
+            "original": "Requeijão",
+            "substituto": "Creme de mandioca",
+            "motivo": "Acrescenta cremosidade no lugar do queijo; não reproduz a elasticidade nem o sabor do queijo.",
+            "ingredienteOriginal": {
+              "nome": "Requeijão",
+              "quantidade": "100 g",
+              "busca": "Requeijão",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 100.0,
+                "unidade": "g"
+              }
+            },
+            "ingredienteSubstituto": {
+              "nome": "Creme de mandioca",
+              "quantidade": "100 g",
+              "busca": "Creme de mandioca",
+              "quantidadeCompra": 1,
+              "industrializado": false,
+              "quantidadeNecessaria": {
+                "valor": 100.0,
+                "unidade": "g"
+              },
+              "componentes": [
+                {
+                  "nome": "Mandioca",
+                  "quantidade": "100 g",
+                  "busca": "Mandioca",
+                  "industrializado": false,
+                  "quantidadeCompra": 1,
+                  "quantidadeNecessaria": {
+                    "valor": 100.0,
+                    "unidade": "g"
+                  }
+                },
+                {
+                  "nome": "Água",
+                  "quantidade": "50 ml",
+                  "busca": "Água",
+                  "industrializado": false,
+                  "quantidadeCompra": 1,
+                  "quantidadeNecessaria": {
+                    "valor": 50.0,
+                    "unidade": "ml"
+                  }
+                }
+              ],
+              "observacao": "Preparação caseira: os componentes entram na lista de compras no lugar de um creme pronto."
+            }
+          },
+          {
+            "original": "Farinha de trigo",
+            "substituto": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "motivo": "Alternativa sem trigo; confira a declaração de glúten e os demais alergênicos no rótulo.",
+            "ingredienteOriginal": {
+              "nome": "Farinha de trigo",
+              "quantidade": "200 g",
+              "busca": "Farinha de trigo",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "produtosReferencia": [
+                "7896005202074"
+              ],
+              "quantidadeNecessaria": {
+                "valor": 200.0,
+                "unidade": "g"
+              }
+            },
+            "ingredienteSubstituto": {
+              "nome": "Mistura de farinhas de arroz e polvilho sem glúten",
+              "quantidade": "200 g",
+              "busca": "Mistura de farinhas de arroz e polvilho sem glúten",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 200.0,
+                "unidade": "g"
+              },
+              "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+            }
+          },
+          {
+            "original": "Farinha de rosca",
+            "substituto": "Farinha de mandioca",
+            "motivo": "Alternativa sem trigo; confira a declaração de glúten e os demais alergênicos no rótulo.",
+            "ingredienteOriginal": {
+              "nome": "Farinha de rosca",
+              "quantidade": "100 g",
+              "busca": "Farinha de rosca",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 100.0,
+                "unidade": "g"
+              }
+            },
+            "ingredienteSubstituto": {
+              "nome": "Farinha de mandioca",
+              "quantidade": "100 g",
+              "busca": "Farinha de mandioca",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 100.0,
+                "unidade": "g"
+              },
+              "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
             }
           }
         ]
@@ -6199,6 +7794,548 @@
                 "valor": 100.0,
                 "unidade": "g"
               }
+            }
+          }
+        ]
+      },
+      {
+        "id": "base_sem_gluten",
+        "titulo": "Cookie com chocolate — massa sem glúten",
+        "ingredientes": [
+          {
+            "nome": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "quantidade": "200 g",
+            "busca": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 200.0,
+              "unidade": "g"
+            },
+            "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+          },
+          {
+            "nome": "Manteiga",
+            "quantidade": "80 g",
+            "busca": "Manteiga",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 80.0,
+              "unidade": "g"
+            }
+          },
+          {
+            "nome": "Ovo",
+            "quantidade": "1 unidade",
+            "busca": "Ovo",
+            "quantidadeCompra": 1,
+            "industrializado": false
+          },
+          {
+            "nome": "Chocolate ao leite",
+            "quantidade": "100 g",
+            "busca": "Chocolate ao leite",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 100.0,
+              "unidade": "g"
+            }
+          },
+          {
+            "nome": "Açúcar",
+            "quantidade": "100 g",
+            "busca": "Açúcar",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 100.0,
+              "unidade": "g"
+            }
+          }
+        ],
+        "substituicoes": [
+          {
+            "original": "Farinha de trigo",
+            "substituto": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "motivo": "Alternativa sem trigo; confira a declaração de glúten e os demais alergênicos no rótulo.",
+            "ingredienteOriginal": {
+              "nome": "Farinha de trigo",
+              "quantidade": "200 g",
+              "busca": "Farinha de trigo",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "produtosReferencia": [
+                "7896005202074"
+              ],
+              "quantidadeNecessaria": {
+                "valor": 200.0,
+                "unidade": "g"
+              }
+            },
+            "ingredienteSubstituto": {
+              "nome": "Mistura de farinhas de arroz e polvilho sem glúten",
+              "quantidade": "200 g",
+              "busca": "Mistura de farinhas de arroz e polvilho sem glúten",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 200.0,
+                "unidade": "g"
+              },
+              "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+            }
+          }
+        ]
+      },
+      {
+        "id": "sem_ovo_sem_gluten",
+        "titulo": "Cookie com chocolate — versão adaptada — massa sem glúten",
+        "ingredientes": [
+          {
+            "nome": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "quantidade": "200 g",
+            "busca": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 200.0,
+              "unidade": "g"
+            },
+            "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+          },
+          {
+            "nome": "Manteiga",
+            "quantidade": "80 g",
+            "busca": "Manteiga",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 80.0,
+              "unidade": "g"
+            }
+          },
+          {
+            "nome": "Linhaça dourada moída",
+            "quantidade": "10 g + 30 ml de água",
+            "busca": "Linhaça dourada moída",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "produtosReferencia": [
+              "7896283005268"
+            ],
+            "quantidadeNecessaria": {
+              "valor": 10,
+              "unidade": "g"
+            },
+            "observacao": "Comprar a linhaça em grãos e triturar; a água é de uso doméstico."
+          },
+          {
+            "nome": "Chocolate ao leite",
+            "quantidade": "100 g",
+            "busca": "Chocolate ao leite",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 100.0,
+              "unidade": "g"
+            }
+          },
+          {
+            "nome": "Açúcar",
+            "quantidade": "100 g",
+            "busca": "Açúcar",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 100.0,
+              "unidade": "g"
+            }
+          }
+        ],
+        "substituicoes": [
+          {
+            "original": "Ovo",
+            "substituto": "Linhaça dourada moída",
+            "motivo": "A linhaça hidratada ajuda a dar liga no lugar do ovo; o resultado tende a ficar mais denso.",
+            "ingredienteOriginal": {
+              "nome": "Ovo",
+              "quantidade": "1 unidade",
+              "busca": "Ovo",
+              "quantidadeCompra": 1,
+              "industrializado": false
+            },
+            "ingredienteSubstituto": {
+              "nome": "Linhaça dourada moída",
+              "quantidade": "10 g + 30 ml de água",
+              "busca": "Linhaça dourada moída",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "produtosReferencia": [
+                "7896283005268"
+              ],
+              "quantidadeNecessaria": {
+                "valor": 10,
+                "unidade": "g"
+              },
+              "observacao": "Comprar a linhaça em grãos e triturar; a água é de uso doméstico."
+            }
+          },
+          {
+            "original": "Farinha de trigo",
+            "substituto": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "motivo": "Alternativa sem trigo; confira a declaração de glúten e os demais alergênicos no rótulo.",
+            "ingredienteOriginal": {
+              "nome": "Farinha de trigo",
+              "quantidade": "200 g",
+              "busca": "Farinha de trigo",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "produtosReferencia": [
+                "7896005202074"
+              ],
+              "quantidadeNecessaria": {
+                "valor": 200.0,
+                "unidade": "g"
+              }
+            },
+            "ingredienteSubstituto": {
+              "nome": "Mistura de farinhas de arroz e polvilho sem glúten",
+              "quantidade": "200 g",
+              "busca": "Mistura de farinhas de arroz e polvilho sem glúten",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 200.0,
+                "unidade": "g"
+              },
+              "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+            }
+          }
+        ]
+      },
+      {
+        "id": "sem_leite_sem_gluten",
+        "titulo": "Cookie com chocolate — versão adaptada — massa sem glúten",
+        "ingredientes": [
+          {
+            "nome": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "quantidade": "200 g",
+            "busca": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 200.0,
+              "unidade": "g"
+            },
+            "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+          },
+          {
+            "nome": "Óleo de girassol",
+            "quantidade": "60 ml",
+            "busca": "Óleo de girassol",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 60,
+              "unidade": "ml"
+            }
+          },
+          {
+            "nome": "Ovo",
+            "quantidade": "1 unidade",
+            "busca": "Ovo",
+            "quantidadeCompra": 1,
+            "industrializado": false
+          },
+          {
+            "nome": "Chocolate sem leite e sem glúten",
+            "quantidade": "100 g",
+            "busca": "Chocolate sem leite e sem glúten",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 100.0,
+              "unidade": "g"
+            }
+          },
+          {
+            "nome": "Açúcar",
+            "quantidade": "100 g",
+            "busca": "Açúcar",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 100.0,
+              "unidade": "g"
+            }
+          }
+        ],
+        "substituicoes": [
+          {
+            "original": "Manteiga",
+            "substituto": "Óleo de girassol",
+            "motivo": "Fornece gordura à receita sem usar manteiga ou derivados do leite.",
+            "ingredienteOriginal": {
+              "nome": "Manteiga",
+              "quantidade": "80 g",
+              "busca": "Manteiga",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 80.0,
+                "unidade": "g"
+              }
+            },
+            "ingredienteSubstituto": {
+              "nome": "Óleo de girassol",
+              "quantidade": "60 ml",
+              "busca": "Óleo de girassol",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 60,
+                "unidade": "ml"
+              }
+            }
+          },
+          {
+            "original": "Chocolate ao leite",
+            "substituto": "Chocolate sem leite e sem glúten",
+            "motivo": "Mantém os pedaços de chocolate sem leite na formulação; confira também avisos de pode conter.",
+            "ingredienteOriginal": {
+              "nome": "Chocolate ao leite",
+              "quantidade": "100 g",
+              "busca": "Chocolate ao leite",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 100.0,
+                "unidade": "g"
+              }
+            },
+            "ingredienteSubstituto": {
+              "nome": "Chocolate sem leite e sem glúten",
+              "quantidade": "100 g",
+              "busca": "Chocolate sem leite e sem glúten",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 100.0,
+                "unidade": "g"
+              }
+            }
+          },
+          {
+            "original": "Farinha de trigo",
+            "substituto": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "motivo": "Alternativa sem trigo; confira a declaração de glúten e os demais alergênicos no rótulo.",
+            "ingredienteOriginal": {
+              "nome": "Farinha de trigo",
+              "quantidade": "200 g",
+              "busca": "Farinha de trigo",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "produtosReferencia": [
+                "7896005202074"
+              ],
+              "quantidadeNecessaria": {
+                "valor": 200.0,
+                "unidade": "g"
+              }
+            },
+            "ingredienteSubstituto": {
+              "nome": "Mistura de farinhas de arroz e polvilho sem glúten",
+              "quantidade": "200 g",
+              "busca": "Mistura de farinhas de arroz e polvilho sem glúten",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 200.0,
+                "unidade": "g"
+              },
+              "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+            }
+          }
+        ]
+      },
+      {
+        "id": "vegetal_sem_gluten",
+        "titulo": "Cookie com chocolate — versão adaptada — massa sem glúten",
+        "ingredientes": [
+          {
+            "nome": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "quantidade": "200 g",
+            "busca": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 200.0,
+              "unidade": "g"
+            },
+            "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+          },
+          {
+            "nome": "Óleo de girassol",
+            "quantidade": "60 ml",
+            "busca": "Óleo de girassol",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 60,
+              "unidade": "ml"
+            }
+          },
+          {
+            "nome": "Linhaça dourada moída",
+            "quantidade": "10 g + 30 ml de água",
+            "busca": "Linhaça dourada moída",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "produtosReferencia": [
+              "7896283005268"
+            ],
+            "quantidadeNecessaria": {
+              "valor": 10,
+              "unidade": "g"
+            },
+            "observacao": "Comprar a linhaça em grãos e triturar; a água é de uso doméstico."
+          },
+          {
+            "nome": "Chocolate sem leite e sem glúten",
+            "quantidade": "100 g",
+            "busca": "Chocolate sem leite e sem glúten",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 100.0,
+              "unidade": "g"
+            }
+          },
+          {
+            "nome": "Açúcar",
+            "quantidade": "100 g",
+            "busca": "Açúcar",
+            "quantidadeCompra": 1,
+            "industrializado": true,
+            "quantidadeNecessaria": {
+              "valor": 100.0,
+              "unidade": "g"
+            }
+          }
+        ],
+        "substituicoes": [
+          {
+            "original": "Manteiga",
+            "substituto": "Óleo de girassol",
+            "motivo": "Fornece gordura à receita sem usar manteiga ou derivados do leite.",
+            "ingredienteOriginal": {
+              "nome": "Manteiga",
+              "quantidade": "80 g",
+              "busca": "Manteiga",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 80.0,
+                "unidade": "g"
+              }
+            },
+            "ingredienteSubstituto": {
+              "nome": "Óleo de girassol",
+              "quantidade": "60 ml",
+              "busca": "Óleo de girassol",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 60,
+                "unidade": "ml"
+              }
+            }
+          },
+          {
+            "original": "Ovo",
+            "substituto": "Linhaça dourada moída",
+            "motivo": "A linhaça hidratada ajuda a dar liga no lugar do ovo; o resultado tende a ficar mais denso.",
+            "ingredienteOriginal": {
+              "nome": "Ovo",
+              "quantidade": "1 unidade",
+              "busca": "Ovo",
+              "quantidadeCompra": 1,
+              "industrializado": false
+            },
+            "ingredienteSubstituto": {
+              "nome": "Linhaça dourada moída",
+              "quantidade": "10 g + 30 ml de água",
+              "busca": "Linhaça dourada moída",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "produtosReferencia": [
+                "7896283005268"
+              ],
+              "quantidadeNecessaria": {
+                "valor": 10,
+                "unidade": "g"
+              },
+              "observacao": "Comprar a linhaça em grãos e triturar; a água é de uso doméstico."
+            }
+          },
+          {
+            "original": "Chocolate ao leite",
+            "substituto": "Chocolate sem leite e sem glúten",
+            "motivo": "Mantém os pedaços de chocolate sem leite na formulação; confira também avisos de pode conter.",
+            "ingredienteOriginal": {
+              "nome": "Chocolate ao leite",
+              "quantidade": "100 g",
+              "busca": "Chocolate ao leite",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 100.0,
+                "unidade": "g"
+              }
+            },
+            "ingredienteSubstituto": {
+              "nome": "Chocolate sem leite e sem glúten",
+              "quantidade": "100 g",
+              "busca": "Chocolate sem leite e sem glúten",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 100.0,
+                "unidade": "g"
+              }
+            }
+          },
+          {
+            "original": "Farinha de trigo",
+            "substituto": "Mistura de farinhas de arroz e polvilho sem glúten",
+            "motivo": "Alternativa sem trigo; confira a declaração de glúten e os demais alergênicos no rótulo.",
+            "ingredienteOriginal": {
+              "nome": "Farinha de trigo",
+              "quantidade": "200 g",
+              "busca": "Farinha de trigo",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "produtosReferencia": [
+                "7896005202074"
+              ],
+              "quantidadeNecessaria": {
+                "valor": 200.0,
+                "unidade": "g"
+              }
+            },
+            "ingredienteSubstituto": {
+              "nome": "Mistura de farinhas de arroz e polvilho sem glúten",
+              "quantidade": "200 g",
+              "busca": "Mistura de farinhas de arroz e polvilho sem glúten",
+              "quantidadeCompra": 1,
+              "industrializado": true,
+              "quantidadeNecessaria": {
+                "valor": 200.0,
+                "unidade": "g"
+              },
+              "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
             }
           }
         ]
