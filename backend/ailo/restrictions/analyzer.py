@@ -227,10 +227,14 @@ def _explain(restriction: Restriction, verdict: str, findings: list[dict]) -> st
         if terms_of(FindingKind.UNCERTAIN):
             reasons.append(f"ingredientes que podem conter {restriction.substance} ({', '.join(terms_of(FindingKind.UNCERTAIN))})")
         if any(finding["kind"] == FindingKind.CROSS_CONTACT for finding in findings):
-            reasons.append(
-                f"há indícios de contato cruzado com {restriction.substance} "
-                "(outros itens do cardápio ou preparo compartilhado; não é prova de contaminação)"
-            )
+            cross_findings = [finding for finding in findings if finding["kind"] == FindingKind.CROSS_CONTACT]
+            if any('aviso "pode conter"' in finding["where"] for finding in cross_findings):
+                reasons.append(f'o anúncio declara "pode conter {restriction.substance}"')
+            if any('aviso "pode conter"' not in finding["where"] for finding in cross_findings):
+                reasons.append(
+                    f"há indícios de contato cruzado com {restriction.substance} "
+                    "(outros itens do cardápio ou preparo compartilhado; não é prova de contaminação)"
+                )
         return f"Possível risco para {label}: {'; '.join(reasons)}."
     if verdict == Verdict.INSUFFICIENT:
         return (
@@ -238,6 +242,21 @@ def _explain(restriction: Restriction, verdict: str, findings: list[dict]) -> st
             f"mas isso não garante a ausência de {restriction.substance}."
         )
     return f"Nenhum conflito com {label} nas informações disponíveis. Isso não é uma garantia de segurança."
+
+
+def is_packaged_product(product: dict, kind: str) -> bool:
+    """Produtos de mercado e itens explicitamente embalados não usam o preparo da loja como evidência."""
+    return kind == KIND_MARKET or any(
+        product.get(field) is True
+        for field in ("industrializado", "isIndustrialized", "isPackaged", "sealedPackage")
+    )
+
+
+def has_absence_claim(product: dict, restriction: Restriction, declared_tags: list[str]) -> bool:
+    text = f"{product.get('itemName') or ''} {product.get('itemDescription') or ''}"
+    return bool(contains_any(text, list(restriction.free_claims + restriction.insufficient_claims))) or any(
+        tag in restriction.ifood_tags for tag in declared_tags
+    )
 
 
 def _analyze_restriction(product: dict, restriction: Restriction, context: dict) -> dict:
@@ -294,7 +313,8 @@ def _analyze_restriction(product: dict, restriction: Restriction, context: dict)
         present = find_terms(warning, terms, ignored).present
         if present:
             findings.append(_finding(FindingKind.CROSS_CONTACT, present, 'aviso "pode conter" no anúncio', source_label))
-    shared = SHARED_PREPARATION_PATTERN.search(full_text)
+    packaged = is_packaged_product(product, context["kind"])
+    shared = None if packaged else SHARED_PREPARATION_PATTERN.search(full_text)
     if shared and restriction.rigor != Rigor.LOW:
         findings.append(_finding(
             FindingKind.CROSS_CONTACT, [shared.group(0).lower()], "preparo compartilhado declarado pelo estabelecimento", source_label,
@@ -317,9 +337,9 @@ def _analyze_restriction(product: dict, restriction: Restriction, context: dict)
 
     # 6. Contato cruzado pelo cardápio: só para restrições de rigor alto em restaurantes.
     cross_contact = None
-    if restriction.rigor == Rigor.HIGH and context["kind"] != KIND_MARKET:
+    if not packaged and (restriction.rigor == Rigor.HIGH or has_valid_claim or insufficient_claims):
         menu_items = context.get("menu_items")
-        if menu_items:
+        if menu_items is not None:
             cross_contact = _analyze_cross_contact(product, restriction, menu_items)
             if cross_contact["itemsWithSubstance"]:
                 example_terms = list(dict.fromkeys(term for example in cross_contact["examples"] for term in example["terms"]))
@@ -336,13 +356,13 @@ def _analyze_restriction(product: dict, restriction: Restriction, context: dict)
     if len(normalize_text(product.get("itemDescription"))) < MIN_DESCRIPTIVE_LENGTH and not has_confirmation:
         missing_info.append(
             'O anúncio não traz a lista de ingredientes nem os avisos de alergênicos ("pode conter"). Confira o rótulo.'
-            if context["kind"] == KIND_MARKET
+            if packaged
             else "A descrição do item não traz a lista completa de ingredientes."
         )
     if restriction.rigor == Rigor.HIGH and not has_confirmation:
         missing_info.append(
             f'Avisos de "pode conter {restriction.substance}" só aparecem na embalagem; o iFood não informa.'
-            if context["kind"] == KIND_MARKET
+            if packaged
             else "O iFood não informa procedimentos de preparo, armazenamento ou equipamentos compartilhados."
         )
 

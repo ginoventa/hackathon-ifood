@@ -67,7 +67,7 @@ export const api = {
   listAddresses: () => request('/api/addresses'),
   selectAddress: (addressId) => request('/api/session/address', { method: 'POST', body: { addressId } }),
 
-  sendMessage: (message, mode) => request('/api/chat', { method: 'POST', body: { message, mode } }),
+  sendMessage: (message, mode, excludeItem) => request('/api/chat', { method: 'POST', body: { message, mode, excludeItem } }),
 
   loginIfood: () => request('/api/auth/ifood/login', { method: 'POST' }),
   logoutIfood: () => request('/api/auth/ifood/logout', { method: 'POST' }),

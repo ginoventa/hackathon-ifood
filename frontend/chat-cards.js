@@ -83,7 +83,7 @@ function renderRestrictions({ restrictions, inputs }, actions) {
 
 // ------------------------------------------------------------------- Busca
 
-function renderOptions({ title, items, filtersUsed }, actions) {
+function renderOptions({ title, items }, actions) {
   if (items.length === 0) {
     return card('options-card', [el('p', { className: 'card-muted', text: 'Nenhuma opção encontrada por perto.' })]);
   }
@@ -117,7 +117,6 @@ function renderOptions({ title, items, filtersUsed }, actions) {
 
   return card('options-card', [
     el('p', { className: 'card-kicker' }, [icon('search'), title]),
-    filtersUsed?.length ? el('p', { className: 'card-muted', text: `Priorizado com filtros do iFood: ${filtersUsed.join(', ')}` }) : null,
     carousel,
   ]);
 }
@@ -144,11 +143,10 @@ function renderMerchants({ title, merchants }, actions) {
 const FINDING_LABELS = {
   INGREDIENTE: 'Ingrediente incompatível',
   INGREDIENTE_INCERTO: 'Pode conter',
-  ADICIONAL: 'Adicional a evitar',
+  ADICIONAL: 'Ingrediente de adicional',
   CONTRADICAO: 'Informação contraditória',
   DECLARACAO_DE_AUSENCIA: 'Declaração de ausência',
   DECLARACAO_INSUFICIENTE: 'Declaração que não basta',
-  ETIQUETA_IFOOD: 'Etiqueta do iFood',
   POSSIVEL_CONTATO_CRUZADO: 'Possível contato cruzado',
   CONFIRMACAO_DO_ESTABELECIMENTO: 'Resposta do estabelecimento',
 };
@@ -162,8 +160,8 @@ function renderAnalysis(analysis, actions) {
       verdictBadge(result.verdict),
     ]),
     el('p', { text: result.explanation }),
-    result.findings.length > 0 ? details(`Evidências (${result.findings.length})`, [
-      el('ul', { className: 'evidence-list' }, result.findings.map((finding) => el('li', {}, [
+    result.findings.some((finding) => !['ETIQUETA_IFOOD', 'ADICIONAL'].includes(finding.kind)) ? details('Evidências', [
+      el('ul', { className: 'evidence-list' }, result.findings.filter((finding) => !['ETIQUETA_IFOOD', 'ADICIONAL'].includes(finding.kind)).map((finding) => el('li', {}, [
         el('strong', { text: FINDING_LABELS[finding.kind] ?? finding.kind }),
         el('span', { text: [finding.terms.join(', '), finding.note].filter(Boolean).join(' — ') }),
         el('small', { text: `${finding.where} · Fonte: ${finding.source}` }),
@@ -181,7 +179,11 @@ function renderAnalysis(analysis, actions) {
     ), 'primary')]
     : [
       actionButton('Consultar o restaurante', () => actions.send(`Quero consultar o restaurante sobre este item. ${ids}`, 'Quero consultar o restaurante')),
-      actionButton('Escolher outro produto', () => actions.send('Quero escolher outro produto compatível com as minhas restrições.', 'Quero escolher outro produto')),
+      actionButton('Escolher outro produto', () => actions.send(
+        `Quero outro produto compatível, diferente de "${analysis.itemName}".`,
+        'Quero escolher outro produto',
+        { itemId: analysis.itemId, merchantId: analysis.merchantId },
+      )),
       actionButton('Preparar em casa', () => actions.send(
         `Prefiro preparar em casa uma versão de "${analysis.itemName}" adaptada às minhas restrições.`,
         'Prefiro preparar em casa',
@@ -198,7 +200,6 @@ function renderAnalysis(analysis, actions) {
       ]),
     ]),
     ...restrictionBlocks,
-    analysis.addOnsToAvoid.length ? el('div', { className: 'card-note' }, [el('strong', { text: 'Evite estes adicionais' }), list(analysis.addOnsToAvoid)]) : null,
     analysis.missingInfo.length ? el('div', { className: 'card-note' }, [el('strong', { text: 'O que ainda não sabemos' }), list(analysis.missingInfo)]) : null,
     el('div', { className: 'card-actions' }, buttons),
     !analysis.canProceed

@@ -226,7 +226,7 @@ function addMessage(text, role) {
 
 /** Ações disponíveis para os botões dos cartões. */
 const cardActions = {
-  send: (message, display) => sendMessage(message, display),
+  send: (message, display, excludeItem) => sendMessage(message, display, excludeItem),
   fillComposer,
   openCheckout,
   toast,
@@ -256,7 +256,7 @@ function startChatLayout() {
  * @param {string} text Texto enviado ao backend (pode conter identificadores).
  * @param {string} [display] Texto mostrado na conversa, quando diferente do enviado.
  */
-async function sendMessage(text, display = text) {
+async function sendMessage(text, display = text, excludeItem) {
   if (!text.trim() || isSending) {
     return;
   }
@@ -271,7 +271,7 @@ async function sendMessage(text, display = text) {
   pending.classList.add('pending');
 
   try {
-    const response = await api.sendMessage(text.trim(), mode);
+    const response = await api.sendMessage(text.trim(), mode, excludeItem);
     pending.classList.remove('pending');
     pending.textContent = response.reply;
     for (const cardData of response.cards) {

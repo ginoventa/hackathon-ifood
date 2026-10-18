@@ -129,6 +129,15 @@ async def chat(body: dict = Body(...), session_id: str | None = SessionHeader) -
     if body.get("mode") in VALID_MODES:
         session.mode = body["mode"]
 
+    excluded = body.get("excludeItem")
+    if excluded is not None:
+        if not isinstance(excluded, dict) or not all(
+            isinstance(excluded.get(key), str) and excluded[key].strip()
+            for key in ("merchantId", "itemId")
+        ):
+            raise ValidationError("Produto a excluir inválido.")
+        session.excluded_items.add((excluded["merchantId"], excluded["itemId"]))
+
     session.busy = True
     try:
         await ensure_account_context(session)

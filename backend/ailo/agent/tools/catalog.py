@@ -49,7 +49,8 @@ async def _run_search(session, *, title: str, **params):
         output = {"lojas": [{"merchantId": item["merchantId"], "nome": item["merchantName"]} for item in merchants]}
         return output, {"type": "merchants", "data": {"title": title, "merchants": merchants}}
 
-    items = [{**item, "quickVerdict": _quick_verdict(session, item)} for item in result["items"]]
+    items = [{**item, "quickVerdict": _quick_verdict(session, item)} for item in result["items"]
+             if (item["merchantId"], item["itemId"]) not in session.excluded_items]
     items.sort(key=lambda item: DISPLAY_RANK.get(item["quickVerdict"], 1))
     output = {
         "total": len(items),
