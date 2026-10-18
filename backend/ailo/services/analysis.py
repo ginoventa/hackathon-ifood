@@ -6,16 +6,18 @@ maior rigor e aplica o analisador determinístico.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from datetime import date
 
 from ..errors import AppError, ValidationError
-from ..restrictions.analyzer import KIND_RESTAURANT, analyze_product, has_absence_claim, is_packaged_product
-from ..restrictions.catalog import Rigor
+from ..restrictions.analyzer import KIND_MARKET, KIND_RESTAURANT, analyze_product, has_absence_claim, is_packaged_product
+from ..restrictions.catalog import Rigor, to_ifood_item_restrictions
 from ..restrictions.clarification import build_clarification_message
-from ..sessions import Session
+from ..sessions import Session, remember_declared_tags
 from .account import first_name
-from .catalog import get_item_details, get_menu_items
+from .catalog import get_item_details, get_menu_items, get_tagged_item_ids
+from .labels import fetch_label
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +31,16 @@ async def analyze_selected_item(session: Session, merchant_id: str, item_id: str
     """Analisa um item escolhido pelo usuário e guarda o parecer na sessão."""
     _require_restrictions(session)
     product = await get_item_details(session, merchant_id, item_id)
+    merchant_type = "GROCERIES" if kind == KIND_MARKET else "RESTAURANT"
+
+    # Etiquetas do iFood (ex.: GLUTEN_FREE) da loja: confirmam o próprio item, mesmo que
+    # ele tenha vindo de uma busca sem filtro, e tiram do contato cruzado os itens etiquetados.
+    tags = to_ifood_item_restrictions(session.restrictions)
+    tagged_ids = dict(zip(tags, await asyncio.gather(*[get_tagged_item_ids(session, merchant_id, tag, merchant_type) for tag in tags])))
+    remember_declared_tags(session, [item_id], [tag for tag, ids in tagged_ids.items() if item_id in ids])
+
+    # Produto industrializado (tem código de barras): consulta o rótulo fora do iFood.
+    label = await fetch_label(product.get("itemEan"))
 
     # Consulte o cardápio também quando houver declaração de ausência, mesmo em preferências.
     menu_items = None
@@ -39,7 +51,10 @@ async def analyze_selected_item(session: Session, merchant_id: str, item_id: str
     )
     if not is_packaged_product(product, kind) and needs_menu:
         try:
-            menu_items = await get_menu_items(session, merchant_id)
+            menu_items = [
+                {**item, "tags": [tag for tag, ids in tagged_ids.items() if item["itemId"] in ids]}
+                for item in await get_menu_items(session, merchant_id)
+            ]
         except AppError as error:
             # Sem o cardápio, a análise continua e registra a lacuna de informação.
             logger.warning("Não foi possível ler o cardápio: %s", error.message)
@@ -51,7 +66,10 @@ async def analyze_selected_item(session: Session, merchant_id: str, item_id: str
         menu_items=menu_items,
         declared_tags=session.declared_tags.get(item_id, []),
         confirmations=session.confirmations,
+        label=label,
     )
+    if label and label.get("found"):
+        analysis["labelUrl"] = label["url"]
 
     # Dados extras para a interface e para montar o carrinho.
     analysis["imageUrl"] = product.get("itemImageUrl")

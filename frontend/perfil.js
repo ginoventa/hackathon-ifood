@@ -15,6 +15,7 @@ const GROUPS = [
   { type: 'ALERGIA', hint: 'Reação do sistema imunológico. Análise com rigor máximo, incluindo contato cruzado.' },
   { type: 'DOENCA_CELIACA', hint: 'Mesmo traços de glúten importam. Análise com rigor máximo.' },
   { type: 'INTOLERANCIA', hint: 'Dificuldade de digerir uma substância.' },
+  { type: 'RELIGIOSA', hint: 'Regras da sua fé, como halal, kosher ou não comer carne de porco. Certificações contam como evidência.' },
   { type: 'PREFERENCIA', hint: 'Escolhas alimentares, como vegetarianismo.' },
 ];
 

@@ -88,7 +88,7 @@ function renderRestrictions({ restrictions, inputs }, actions) {
 
 // ------------------------------------------------------------------- Busca
 
-function renderOptions({ title, items }, actions) {
+function renderOptions({ title, items, alternatives }, actions) {
   if (items.length === 0) {
     return card('options-card', [el('p', { className: 'card-muted', text: 'Nenhuma opção encontrada por perto.' })]);
   }
@@ -106,7 +106,7 @@ function renderOptions({ title, items }, actions) {
     return el('div', { className: 'option-item' }, [
       el('img', { attrs: { src: item.imageUrl ?? './ailo.svg', alt: '', loading: 'lazy' } }),
       el('div', { className: 'option-body' }, [
-        item.quickVerdict === 'CONFLITO' ? el('span', { className: 'quick-warning', text: 'Provável conflito pelo nome' }) : null,
+        item.ifoodTagLabel ? el('span', { className: 'ifood-tag' }, [icon('check'), item.ifoodTagLabel]) : null,
         el('h3', { text: item.itemName }),
         el('p', { className: 'option-store', text: item.merchantName }),
         el('p', { className: 'option-meta', text: [
@@ -120,8 +120,8 @@ function renderOptions({ title, items }, actions) {
     ]);
   }));
 
-  return card('options-card', [
-    el('p', { className: 'card-kicker' }, [icon('search'), title]),
+  return card(`options-card${alternatives ? ' alternatives' : ''}`, [
+    el('p', { className: 'card-kicker' }, [icon(alternatives ? 'help' : 'search'), title]),
     carousel,
   ]);
 }
@@ -154,7 +154,20 @@ const FINDING_LABELS = {
   DECLARACAO_INSUFICIENTE: 'Declaração que não basta',
   POSSIVEL_CONTATO_CRUZADO: 'Possível contato cruzado',
   CONFIRMACAO_DO_ESTABELECIMENTO: 'Resposta do estabelecimento',
+  ROTULO_SEM_A_SUBSTANCIA: 'Rótulo consultado',
 };
+
+/** Nomes amigáveis das etiquetas do iFood. */
+const IFOOD_TAG_LABELS = { GLUTEN_FREE: 'Sem glúten', LAC_FREE: 'Sem lactose', VEGAN: 'Vegano', VEGETARIAN: 'Vegetariano' };
+
+/** Etiquetas do iFood presentes na análise (ex.: "Sem glúten"). */
+function analysisTags(analysis) {
+  const tags = analysis.restrictions
+    .flatMap((result) => result.findings)
+    .filter((finding) => finding.kind === 'ETIQUETA_IFOOD')
+    .flatMap((finding) => finding.terms);
+  return [...new Set(tags)].map((tag) => IFOOD_TAG_LABELS[tag] ?? tag);
+}
 
 function renderAnalysis(analysis, actions) {
   const ids = `[itemId=${analysis.itemId}, merchantId=${analysis.merchantId}]`;
@@ -202,8 +215,14 @@ function renderAnalysis(analysis, actions) {
         el('p', { className: 'card-kicker', text: analysis.merchantName }),
         el('h3', { text: analysis.itemName }),
         verdictBadge(analysis.verdict),
+        analysisTags(analysis).length
+          ? el('span', { className: 'ifood-tag' }, [icon('check'), `Etiqueta do iFood: ${analysisTags(analysis).join(' · ')}`])
+          : null,
       ]),
     ]),
+    analysis.labelUrl
+      ? el('a', { className: 'label-link', text: 'Ver o rótulo consultado (Open Food Facts)', attrs: { href: analysis.labelUrl, target: '_blank', rel: 'noopener' } })
+      : null,
     ...restrictionBlocks,
     analysis.missingInfo.length ? el('div', { className: 'card-note' }, [el('strong', { text: 'O que ainda não sabemos' }), list(analysis.missingInfo)]) : null,
     el('div', { className: 'card-actions' }, buttons),

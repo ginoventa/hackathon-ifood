@@ -55,6 +55,8 @@ class FindingKind:
     IFOOD_TAG = "ETIQUETA_IFOOD"
     CROSS_CONTACT = "POSSIVEL_CONTATO_CRUZADO"
     CONFIRMATION = "CONFIRMACAO_DO_ESTABELECIMENTO"
+    # O rótulo foi consultado e não marca a substância (nem em "pode conter").
+    LABEL_CLEAR = "ROTULO_SEM_A_SUBSTANCIA"
 
 
 # Caminhos alternativos oferecidos quando há dúvida ou risco (seção 1.4).
@@ -87,6 +89,7 @@ TYPE_LABELS = {
     RestrictionType.ALLERGY: "alergia",
     RestrictionType.INTOLERANCE: "intolerância",
     RestrictionType.CELIAC: "doença celíaca",
+    RestrictionType.RELIGIOUS: "restrição religiosa",
     RestrictionType.PREFERENCE: "preferência alimentar",
 }
 
@@ -108,6 +111,68 @@ def _split_may_contain(text: str | None) -> tuple[str, list[str]]:
 
 def _worst_verdict(verdicts: list[str]) -> str:
     return max(verdicts, key=VERDICT_SEVERITY.__getitem__, default=Verdict.NO_DECLARED_CONFLICT)
+
+
+# Nomes legíveis dos alergênicos e selos da Open Food Facts.
+LABEL_TAG_NAMES = {
+    "en:gluten": "glúten", "en:contains-gluten": "contém glúten", "en:milk": "leite", "en:contains-milk": "contém leite",
+    "en:contains-lactose": "contém lactose", "en:eggs": "ovo", "en:peanuts": "amendoim", "en:nuts": "castanhas",
+    "en:soybeans": "soja", "en:fish": "peixe", "en:crustaceans": "crustáceos", "en:molluscs": "moluscos",
+    "en:sesame-seeds": "gergelim", "en:no-gluten": "sem glúten", "en:gluten-free": "sem glúten",
+    "en:no-lactose": "sem lactose", "en:lactose-free": "sem lactose", "en:no-milk": "sem leite", "en:dairy-free": "sem laticínios",
+    "en:vegan": "vegano", "en:vegetarian": "vegetariano", "en:halal": "halal", "en:kosher": "kosher",
+    "en:no-eggs": "sem ovo", "en:no-peanuts": "sem amendoim", "en:no-nuts": "sem castanhas", "en:no-soy": "sem soja",
+    "en:no-sesame": "sem gergelim",
+}
+
+
+def _tag_name(tag: str) -> str:
+    return LABEL_TAG_NAMES.get(tag, tag.split(":", 1)[-1].replace("-", " "))
+
+
+def _label_findings(label: dict | None, restriction: Restriction, terms: list[str], ignored: list[str]) -> tuple[list[dict], bool, bool]:
+    """Evidências vindas do rótulo do produto (consultado fora do iFood).
+
+    Returns:
+        ``(achados, selo_de_ausência, rótulo_sem_a_substância)``.
+    """
+    if not label or not label.get("found"):
+        return [], False, False
+
+    source = f"Rótulo do produto (Open Food Facts, EAN {label.get('ean')})"
+    note = "Base colaborativa: confira também a embalagem."
+    conflict_tags = set(restriction.label_conflict_tags)
+    findings = []
+
+    declared = [tag for tag in [*label.get("allergens", []), *label.get("labels", [])] if tag in conflict_tags]
+    if declared:
+        findings.append(_finding(FindingKind.INGREDIENT, [_tag_name(tag) for tag in declared], "rótulo: alergênicos declarados", source, note=note))
+
+    traces = [tag for tag in label.get("traces", []) if tag in conflict_tags]
+    if traces:
+        findings.append(_finding(FindingKind.CROSS_CONTACT, [_tag_name(tag) for tag in traces], 'rótulo: aviso "pode conter"', source, note=note))
+
+    free = [tag for tag in label.get("labels", []) if tag in restriction.label_free_tags]
+    if free:
+        findings.append(_finding(FindingKind.FREE_CLAIM, [_tag_name(tag) for tag in free], "rótulo: selo", source, note=note))
+
+    ingredients = label.get("ingredients") or ""
+    from_ingredients = []
+    if ingredients:
+        clean_text, _ = _split_may_contain(ingredients)
+        search_terms = list(restriction.effective_core_terms) if free else terms
+        from_ingredients = find_terms(clean_text, search_terms, ignored).present
+        if from_ingredients:
+            findings.append(_finding(FindingKind.INGREDIENT, from_ingredients, "rótulo: lista de ingredientes", source, note=note))
+
+    # O rótulo só "libera" quando traz dados de alergênicos/ingredientes e nada marca a substância.
+    has_data = bool(label.get("allergens") or label.get("traces") or ingredients)
+    is_clear = bool(conflict_tags) and has_data and not (declared or traces or from_ingredients)
+    if is_clear:
+        findings.append(_finding(
+            FindingKind.LABEL_CLEAR, [], f"rótulo sem {restriction.substance} nos alergênicos e no \"pode conter\"", source, note=note,
+        ))
+    return findings, bool(free), is_clear
 
 
 def _lower_first(text: str) -> str:
@@ -157,6 +222,10 @@ def _analyze_cross_contact(product: dict, restriction: Restriction, menu_items: 
     examples = []
     for item in menu_items:
         if item.get("itemId") == product.get("itemId"):
+            continue
+        # Itens com a etiqueta do iFood para esta restrição (ex.: GLUTEN_FREE) não são
+        # fonte de contato cruzado, mesmo que o nome cite "pizza" ou "massa".
+        if any(tag in restriction.ifood_tags for tag in item.get("tags") or []):
             continue
         text = f"{item.get('itemName') or ''} {item.get('itemDescription') or ''}"
         present = find_terms(text, list(restriction.terms), list(restriction.ignored_phrases)).present
@@ -214,9 +283,10 @@ def _explain(restriction: Restriction, verdict: str, findings: list[dict]) -> st
 
     label = _lower_first(restriction.label)
     if verdict == Verdict.CONFLICT:
+        who = "o rótulo declara" if any(f["kind"] == FindingKind.INGREDIENT and "rótulo" in f["where"] for f in findings) else "o estabelecimento cita"
         return (
             f"Incompatível com {label} ({TYPE_LABELS[restriction.type]}): "
-            f"o estabelecimento cita {', '.join(terms_of(FindingKind.INGREDIENT))}."
+            f"{who} {', '.join(terms_of(FindingKind.INGREDIENT))}."
         )
     if verdict == Verdict.RISK:
         reasons = []
@@ -228,9 +298,11 @@ def _explain(restriction: Restriction, verdict: str, findings: list[dict]) -> st
             reasons.append(f"ingredientes que podem conter {restriction.substance} ({', '.join(terms_of(FindingKind.UNCERTAIN))})")
         if any(finding["kind"] == FindingKind.CROSS_CONTACT for finding in findings):
             cross_findings = [finding for finding in findings if finding["kind"] == FindingKind.CROSS_CONTACT]
-            if any('aviso "pode conter"' in finding["where"] for finding in cross_findings):
+            if any("rótulo" in finding["where"] for finding in cross_findings):
+                reasons.append(f'o rótulo declara "pode conter {restriction.substance}"')
+            if any('aviso "pode conter" no anúncio' in finding["where"] for finding in cross_findings):
                 reasons.append(f'o anúncio declara "pode conter {restriction.substance}"')
-            if any('aviso "pode conter"' not in finding["where"] for finding in cross_findings):
+            if any('"pode conter"' not in finding["where"] for finding in cross_findings):
                 reasons.append(
                     f"há indícios de contato cruzado com {restriction.substance} "
                     "(outros itens do cardápio ou preparo compartilhado; não é prova de contaminação)"
@@ -241,12 +313,17 @@ def _explain(restriction: Restriction, verdict: str, findings: list[dict]) -> st
             f"Não há informações suficientes para avaliar {label}. Nenhum ingrediente incompatível foi citado, "
             f"mas isso não garante a ausência de {restriction.substance}."
         )
+    if any(finding["kind"] == FindingKind.LABEL_CLEAR for finding in findings):
+        return (
+            f"O rótulo consultado não marca {restriction.substance} (nem em \"pode conter\"). "
+            "Confira a embalagem ao receber: a base de rótulos é colaborativa."
+        )
     return f"Nenhum conflito com {label} nas informações disponíveis. Isso não é uma garantia de segurança."
 
 
 def is_packaged_product(product: dict, kind: str) -> bool:
     """Produtos de mercado e itens explicitamente embalados não usam o preparo da loja como evidência."""
-    return kind == KIND_MARKET or any(
+    return kind == KIND_MARKET or bool(product.get("itemEan")) or any(
         product.get(field) is True
         for field in ("industrializado", "isIndustrialized", "isPackaged", "sealedPackage")
     )
@@ -290,10 +367,15 @@ def _analyze_restriction(product: dict, restriction: Restriction, context: dict)
     for tag in matching_tags:
         findings.append(_finding(FindingKind.IFOOD_TAG, [tag], "filtro de busca", "Classificação do iFood (itemRestrictions)"))
 
-    # 3. Ingredientes no nome e na descrição. Se o produto declara ausência,
-    #    nomes de prato ("lasanha") deixam de contar e só a substância em si
-    #    ("trigo") indica contradição.
-    has_valid_claim = bool(valid_claims or matching_tags)
+    # 2b. Rótulo do produto industrializado (consulta externa pelo código de barras).
+    label = context.get("label")
+    label_found, label_free, label_clear = _label_findings(label, restriction, terms, ignored)
+    findings.extend(label_found)
+
+    # 3. Ingredientes no nome e na descrição. Se o produto declara ausência
+    #    (texto, etiqueta do iFood ou selo do rótulo), nomes de prato ("lasanha",
+    #    "pizza", "massa") deixam de contar e só a substância em si ("trigo") indica contradição.
+    has_valid_claim = bool(valid_claims or matching_tags or label_free)
     terms_to_search = list(restriction.effective_core_terms) if has_valid_claim else terms
     for where, raw in (("nome do item", product.get("itemName")), ("descrição do item", product.get("itemDescription"))):
         clean_text, _ = _split_may_contain(raw)
@@ -353,20 +435,26 @@ def _analyze_restriction(product: dict, restriction: Restriction, context: dict)
 
     # 7. Lacunas de informação.
     has_confirmation = bool(confirmations)
-    if len(normalize_text(product.get("itemDescription"))) < MIN_DESCRIPTIVE_LENGTH and not has_confirmation:
+    # Só conta como rótulo consultado se a base trouxer alergênicos, selos ou ingredientes.
+    has_label = bool(label and label.get("found") and (
+        label.get("allergens") or label.get("traces") or label.get("labels") or label.get("ingredients")
+    ))
+    if len(normalize_text(product.get("itemDescription"))) < MIN_DESCRIPTIVE_LENGTH and not has_confirmation and not has_label:
         missing_info.append(
             'O anúncio não traz a lista de ingredientes nem os avisos de alergênicos ("pode conter"). Confira o rótulo.'
             if packaged
             else "A descrição do item não traz a lista completa de ingredientes."
         )
-    if restriction.rigor == Rigor.HIGH and not has_confirmation:
+    if restriction.rigor == Rigor.HIGH and not has_confirmation and not (packaged and has_label):
         missing_info.append(
             f'Avisos de "pode conter {restriction.substance}" só aparecem na embalagem; o iFood não informa.'
             if packaged
             else "O iFood não informa procedimentos de preparo, armazenamento ou equipamentos compartilhados."
         )
 
-    verdict = _decide_verdict(restriction, findings, missing_info, has_valid_claim=has_valid_claim, has_confirmation=has_confirmation)
+    verdict = _decide_verdict(
+        restriction, findings, missing_info, has_valid_claim=has_valid_claim or label_clear, has_confirmation=has_confirmation,
+    )
     return {
         "restrictionId": restriction.id,
         "label": restriction.label,
@@ -389,6 +477,7 @@ def analyze_product(
     menu_items: list[dict] | None = None,
     declared_tags: list[str] | None = None,
     confirmations: list[dict] | None = None,
+    label: dict | None = None,
 ) -> dict:
     """Analisa um produto para todas as restrições do usuário.
 
@@ -400,8 +489,15 @@ def analyze_product(
         menu_items: Outros itens do cardápio (contato cruzado).
         declared_tags: Etiquetas ``itemRestrictions`` do iFood para o item.
         confirmations: Respostas do estabelecimento informadas pelo usuário.
+        label: Rótulo do produto industrializado (``services.labels.fetch_label``).
     """
-    context = {"kind": kind, "menu_items": menu_items, "declared_tags": declared_tags, "confirmations": confirmations}
+    context = {
+        "kind": kind,
+        "menu_items": menu_items,
+        "declared_tags": declared_tags,
+        "confirmations": confirmations,
+        "label": label,
+    }
     results = [_analyze_restriction(product, restriction, context) for restriction in restrictions]
     verdict = _worst_verdict([result["verdict"] for result in results]) if results else Verdict.INSUFFICIENT
 

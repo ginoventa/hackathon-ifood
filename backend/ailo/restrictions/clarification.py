@@ -24,6 +24,12 @@ def _questions_for(restriction_type: str, substance: str) -> list[str]:
             f"O prato contém {substance} em algum ingrediente, inclusive molhos e finalizações?",
             "É possível preparar sem esses ingredientes?",
         ]
+    if restriction_type == RestrictionType.RELIGIOUS:
+        return [
+            f"O prato contém {substance} ou derivados (inclusive caldos, banha, gelatina e temperos)?",
+            "Ele é preparado com utensílios, panelas e superfícies separados?",
+            "O estabelecimento ou os ingredientes têm certificação (por exemplo, halal ou kosher)?",
+        ]
     if restriction_type == RestrictionType.PREFERENCE:
         return [f"O prato leva {substance} em algum ingrediente, inclusive caldos e molhos?"]
     return [

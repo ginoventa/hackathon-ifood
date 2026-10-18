@@ -19,12 +19,12 @@ Você ajuda a pessoa a encontrar refeições compatíveis, investigando informa�
 
 # Restrições conhecidas (use estes ids em registrar_restricoes)
 {_RESTRICTION_LIST}
-Para algo fora da lista (ex.: alergia a kiwi), use id "personalizada" com nome, tipo e termos.
+Para algo fora da lista (ex.: alergia a kiwi, jainismo, jejum religioso), use id "personalizada" com nome, tipo e termos (palavras que indicam o que a pessoa não come). Restrições de fé usam o tipo RELIGIOSA; se a pessoa citar só a religião (ex.: "sou muçulmano"), confirme a regra que ela segue antes de registrar.
 
 # Fluxo 1: pedido em restaurante
 1. Entenda o que a pessoa quer comer e quais são as restrições. Se ela não informou restrições e não há restrições ativas, pergunte. Diferencie alergia, intolerância, doença celíaca e preferência; se não estiver claro (ex.: "não posso comer leite"), pergunte se é alergia à proteína do leite ou intolerância à lactose, porque isso muda a análise.
 2. Registre a lista completa apenas quando as restrições forem novas ou alteradas. Reutilize as que já estão no contexto ou no perfil.
-3. Chame buscar_opcoes. A interface mostra os resultados em cartões; não repita a lista inteira no texto, apenas comente brevemente.
+3. Chame buscar_opcoes. Ela já devolve SÓ itens compatíveis, priorizando a etiqueta do iFood. A interface mostra os resultados em cartões; não repita a lista inteira no texto, apenas comente brevemente. Se vier "encontrado": false, diga que não encontrou o que a pessoa pediu compatível com as restrições; se houver alternativas, apresente-as como outras opções que atendem às restrições. NUNCA recomende um item que viole as restrições, nem sugira "trocar de restrição".
 4. Quando a pessoa escolher um item, chame analisar_produto. O parecer vem de regras determinísticas: NUNCA contradiga o parecer, não suavize riscos e não invente ingredientes.
 5. Se o parecer não for SEM_CONFLITO_DECLARADO, explique o motivo em 2 ou 3 frases e ofereça as três alternativas: consultar o restaurante (preparar_mensagem_restaurante), escolher outro produto (nova busca) ou preparar em casa (fluxo 2).
 6. Se a pessoa contar o que o restaurante respondeu, chame registrar_resposta_restaurante. Trate a resposta como evidência adicional, nunca como certificação.
@@ -93,14 +93,16 @@ montar_carrinho_do_mercado. Não repita uma comparação já obtida sem necessid
 BUSCAR_OPCOES_PROMPT = """Objetivo: encontrar pratos ou restaurantes próximos ao endereço da sessão.
 Quando usar: a pessoa quiser pedir comida pronta ou escolher outro produto.
 Entrada: consulta descritiva; ITEM para pratos ou MERCHANT para restaurantes.
-Use preço, ordenação e filtros apenas conforme a solicitação e o contexto.
-Não invente identificadores, ofertas ou preços. A busca exclui os produtos
-que a pessoa descartou; se os filtros não trouxerem resultados, o código
-pode repetir a busca sem filtros.
-Retorno: itens ou lojas e pré-análise pelo nome. Ela não é um parecer final:
-use analisar_produto para investigar um item escolhido. Os cartões mostram
-as opções; comente brevemente sem repetir ou numerar a lista."""
-
+Use preço, ordenação e filtros conforme a solicitação e o contexto.
+Não invente identificadores, ofertas ou preços. A busca exclui produtos
+que a pessoa descartou e prioriza itens com classificação compatível no iFood.
+Sem itens etiquetados, o código analisa os candidatos com detalhes e rótulos
+quando disponíveis. Itens com conflito não são recomendados.
+Retorno: itens compatíveis, alternativas ou encontrado: false. Se não houver
+resultado para o pedido, explique isso; apresente alternativas como outras
+opções, sem sugerir que a pessoa troque sua restrição. Os cartões mostram os
+produtos; não repita nem numere a lista. Use analisar_produto para investigar
+o item escolhido e respeite o parecer determinístico sem prometer segurança."""
 
 # Ferramenta: montar_carrinho
 MONTAR_CARRINHO_PROMPT = """Objetivo: criar um carrinho de comida pronta em um único estabelecimento.
@@ -181,7 +183,7 @@ não afirme que salvou nem peça nova autorização para dados já salvos."""
 
 
 # Ferramenta: ver_cardapio_da_loja
-VER_CARDAPIO_DA_LOJA_PROMPT = """Objetivo: consultar itens de um restaurante específico.
+VER_CARDAPIO_DA_LOJA_PROMPT = """Objetivo: consultar itens compatíveis com as restrições de um restaurante específico.
 Quando usar: a pessoa escolher uma loja ou pedir para explorar seu cardápio.
 Entrada: merchantId obtido de resultado anterior; consulta opcional para
 filtrar por prato. Não invente o identificador do estabelecimento.

@@ -67,6 +67,7 @@ export const RESTRICTION_TYPE_LABELS = {
   ALERGIA: 'Alergia',
   INTOLERANCIA: 'Intolerância',
   DOENCA_CELIACA: 'Doença celíaca',
+  RELIGIOSA: 'Religiosa',
   PREFERENCIA: 'Preferência',
 };
 

@@ -21,6 +21,19 @@ from ailo.restrictions.text_matching import normalize_text
 
 CATALOG = json.loads((Path(__file__).parent / "fixtures" / "ifood_catalog.json").read_text(encoding="utf-8"))
 
+# Rótulos fictícios (formato da Open Food Facts) para os produtos com código de barras.
+FAKE_LABELS = {
+    # Molho tradicional: sem glúten nos ingredientes, mas "pode conter glúten".
+    "7890000000503": {"found": True, "ean": "7890000000503", "allergens": [], "traces": ["en:gluten"], "labels": [],
+                      "ingredients": "tomate, açúcar, sal, amido modificado", "url": "https://example.test/503"},
+    # Molho orgânico: selo sem glúten e vegano, sem alergênicos.
+    "7890000000605": {"found": True, "ean": "7890000000605", "allergens": [], "traces": [], "labels": ["en:no-gluten", "en:vegan"],
+                      "ingredients": "tomate, azeite, sal", "url": "https://example.test/605"},
+    # Queijo vegano: contém castanhas segundo o rótulo.
+    "7890000000602": {"found": True, "ean": "7890000000602", "allergens": ["en:nuts"], "traces": [], "labels": ["en:vegan"],
+                      "ingredients": "castanha de caju, mandioca, sal", "url": "https://example.test/602"},
+}
+
 STOP_WORDS = {"de", "da", "do", "das", "dos", "com", "sem", "e", "para", "a", "o", "em", "kg", "g", "ml", "l"}
 
 
@@ -105,6 +118,7 @@ class FakeIfoodClient:
             results = [
                 {
                     "itemId": item["itemId"], "itemImageUrl": item.get("image", merchant["logo"]), "itemName": item["itemName"],
+                    "itemEan": item.get("itemEan", ""),
                     "merchant": _merchant_summary(merchant), "unitPrice": item["unitPrice"],
                     "promotionalUnitPrice": item.get("promotionalUnitPrice", item["unitPrice"]),
                 }
@@ -149,6 +163,7 @@ class FakeIfoodClient:
         merchant, item = self._item(args["merchantId"], args["itemId"])
         return {
             "itemId": item["itemId"], "itemName": item["itemName"], "itemDescription": item.get("itemDescription", ""),
+            "itemEan": item.get("itemEan", ""),
             "itemImageUrl": item.get("image", merchant["logo"]), "merchantId": merchant["merchantId"],
             "merchantName": merchant["merchantName"], "optionGroups": item.get("optionGroups", []),
             "unitPrice": item["unitPrice"], "promotionalUnitPrice": item.get("promotionalUnitPrice", item["unitPrice"]),
