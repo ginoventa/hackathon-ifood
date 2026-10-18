@@ -1,0 +1,730 @@
+{
+  "user": {
+    "fullName": "Usuário Demonstração",
+    "email": "demo@ailo.app"
+  },
+  "addresses": [
+    {
+      "addressId": "00000000-0000-4000-8000-000000000001",
+      "formattedAddress": "Avenida Trabalhador São-carlense, 400, Parque Arnold Schimidt, São Carlos, SP",
+      "alias": "Trabalho",
+      "location": {
+        "street": "Avenida Trabalhador São-carlense",
+        "number": "400",
+        "neighborhood": "Parque Arnold Schimidt",
+        "city": "São Carlos",
+        "state": "SP"
+      },
+      "coordinates": {
+        "latitude": -22.0074,
+        "longitude": -47.8949
+      },
+      "isLastUsedAddress": true,
+      "isMostUsedAddress30d": true
+    },
+    {
+      "addressId": "00000000-0000-4000-8000-000000000002",
+      "formattedAddress": "Rua Aquidaban, 1, Centro, São Carlos, SP",
+      "alias": "Casa",
+      "location": {
+        "street": "Rua Aquidaban",
+        "number": "1",
+        "neighborhood": "Centro",
+        "city": "São Carlos",
+        "state": "SP"
+      },
+      "coordinates": {
+        "latitude": -22.0175,
+        "longitude": -47.8908
+      },
+      "isLastUsedAddress": false,
+      "isMostUsedAddress30d": false
+    }
+  ],
+  "merchants": [
+    {
+      "merchantId": "00000000-0000-4000-8000-000000000100",
+      "merchantName": "Cantina Nonna Lia",
+      "merchantType": "RESTAURANT",
+      "reviewRating": 4.8,
+      "ratingCount": 1320,
+      "straightLineDistanceKm": 1.2,
+      "minimumOrderAmount": 30,
+      "deliveryFee": 6.99,
+      "estimatedMinutes": {
+        "min": 35,
+        "max": 50
+      },
+      "logo": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=600&q=80",
+      "items": [
+        {
+          "itemId": "00000000-0000-4000-8000-000000000101",
+          "itemName": "Lasanha Bolonhesa",
+          "itemDescription": "Massa artesanal de farinha de trigo e ovos, molho bolonhesa, molho branco e muçarela gratinada. Serve 1 pessoa.",
+          "unitPrice": 54.9,
+          "promotionalUnitPrice": 47.9,
+          "image": "https://images.unsplash.com/photo-1574894709920-11b28e7367e3?auto=format&fit=crop&w=600&q=80",
+          "optionGroups": [
+            {
+              "optionGroupId": "00000000-0000-4000-8000-000000001011",
+              "name": "Adicionais",
+              "minSelections": 0,
+              "maxSelections": 3,
+              "options": [
+                {
+                  "optionId": "00000000-0000-4000-8000-000000010111",
+                  "name": "Parmesão ralado extra",
+                  "description": "Porção de 30 g",
+                  "additionalPrice": 6
+                },
+                {
+                  "optionId": "00000000-0000-4000-8000-000000010112",
+                  "name": "Pão italiano",
+                  "description": "Fatias de pão de fermentação natural",
+                  "additionalPrice": 8
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000102",
+          "itemName": "Lasanha de Berinjela (sem massa)",
+          "itemDescription": "Camadas de berinjela grelhada no lugar da massa, molho de tomate caseiro, ricota temperada e muçarela. Sem glúten na receita.",
+          "unitPrice": 52.9,
+          "image": "https://images.unsplash.com/photo-1619895092538-128341789043?auto=format&fit=crop&w=600&q=80",
+          "tags": [
+            "GLUTEN_FREE"
+          ],
+          "optionGroups": []
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000103",
+          "itemName": "Nhoque ao Sugo",
+          "itemDescription": "Nhoque de batata com farinha de trigo, molho de tomate italiano e manjericão fresco.",
+          "unitPrice": 44.9,
+          "image": "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=600&q=80",
+          "tags": [
+            "VEGETARIAN"
+          ],
+          "optionGroups": []
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000104",
+          "itemName": "Frango Grelhado com Legumes",
+          "itemDescription": "Peito de frango grelhado no azeite, arroz branco, brócolis e cenoura no vapor. Temperado com sal, alho e ervas.",
+          "unitPrice": 39.9,
+          "image": "https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=600&q=80",
+          "tags": [
+            "GLUTEN_FREE",
+            "LAC_FREE"
+          ],
+          "optionGroups": []
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000105",
+          "itemName": "Pão de Alho",
+          "itemDescription": "Pão francês com manteiga de alho e salsinha.",
+          "unitPrice": 18.9,
+          "image": "https://images.unsplash.com/photo-1573140401552-3fab0b24306f?auto=format&fit=crop&w=600&q=80",
+          "optionGroups": []
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000106",
+          "itemName": "Tiramisù",
+          "itemDescription": "Creme de mascarpone, biscoito champagne molhado no café e cacau.",
+          "unitPrice": 26.9,
+          "image": "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&w=600&q=80",
+          "optionGroups": []
+        }
+      ]
+    },
+    {
+      "merchantId": "00000000-0000-4000-8000-000000000200",
+      "merchantName": "Verde Raiz Cozinha Vegetal",
+      "merchantType": "RESTAURANT",
+      "reviewRating": 4.9,
+      "ratingCount": 845,
+      "straightLineDistanceKm": 2.4,
+      "minimumOrderAmount": 25,
+      "deliveryFee": 0,
+      "estimatedMinutes": {
+        "min": 30,
+        "max": 45
+      },
+      "logo": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600&q=80",
+      "items": [
+        {
+          "itemId": "00000000-0000-4000-8000-000000000201",
+          "itemName": "Lasanha Vegana de Abobrinha",
+          "itemDescription": "Lâminas de abobrinha, ragu de lentilha, molho branco de castanha de caju e tomate assado. 100% vegetal: sem leite e sem ovos.",
+          "unitPrice": 49.9,
+          "image": "https://images.unsplash.com/photo-1560684352-8497838a2229?auto=format&fit=crop&w=600&q=80",
+          "tags": [
+            "VEGAN",
+            "VEGETARIAN",
+            "LAC_FREE",
+            "GLUTEN_FREE"
+          ],
+          "optionGroups": []
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000202",
+          "itemName": "Lasanha Vegana de Massa de Arroz",
+          "itemDescription": "Massa de arroz sem glúten, molho de tomate, legumes assados e creme de mandioca. 100% vegetal: sem leite, sem ovos e sem glúten na receita.",
+          "unitPrice": 52.9,
+          "image": "https://images.unsplash.com/photo-1621510456681-2330135e5871?auto=format&fit=crop&w=600&q=80",
+          "tags": [
+            "VEGAN",
+            "VEGETARIAN",
+            "LAC_FREE",
+            "GLUTEN_FREE"
+          ],
+          "optionGroups": [
+            {
+              "optionGroupId": "00000000-0000-4000-8000-000000002021",
+              "name": "Acompanhamento",
+              "minSelections": 0,
+              "maxSelections": 1,
+              "options": [
+                {
+                  "optionId": "00000000-0000-4000-8000-000000020211",
+                  "name": "Salada verde",
+                  "description": "Folhas, tomate e azeite",
+                  "additionalPrice": 9
+                },
+                {
+                  "optionId": "00000000-0000-4000-8000-000000020212",
+                  "name": "Pão de fermentação natural",
+                  "description": "Pão de trigo",
+                  "additionalPrice": 7
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000203",
+          "itemName": "Hambúrguer de Grão-de-bico",
+          "itemDescription": "Hambúrguer de grão-de-bico no pão de trigo, alface, tomate e maionese vegana.",
+          "unitPrice": 36.9,
+          "image": "https://images.unsplash.com/photo-1520072959219-c595dc870360?auto=format&fit=crop&w=600&q=80",
+          "tags": [
+            "VEGAN",
+            "VEGETARIAN",
+            "LAC_FREE"
+          ],
+          "optionGroups": []
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000204",
+          "itemName": "Coxinha de Jaca",
+          "itemDescription": "Massa de batata, recheio de jaca temperada, empanada na farinha de rosca.",
+          "unitPrice": 9.9,
+          "image": "https://images.unsplash.com/photo-1625938145744-e380515399bf?auto=format&fit=crop&w=600&q=80",
+          "tags": [
+            "VEGAN",
+            "VEGETARIAN",
+            "LAC_FREE"
+          ],
+          "optionGroups": []
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000205",
+          "itemName": "Brownie Vegano",
+          "itemDescription": "Brownie de cacau com farinha de trigo, açúcar mascavo e nozes.",
+          "unitPrice": 14.9,
+          "image": "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=600&q=80",
+          "tags": [
+            "VEGAN",
+            "VEGETARIAN",
+            "LAC_FREE"
+          ],
+          "optionGroups": []
+        }
+      ]
+    },
+    {
+      "merchantId": "00000000-0000-4000-8000-000000000300",
+      "merchantName": "Pizzaria Forno a Lenha",
+      "merchantType": "RESTAURANT",
+      "reviewRating": 4.7,
+      "ratingCount": 2210,
+      "straightLineDistanceKm": 3.1,
+      "minimumOrderAmount": 40,
+      "deliveryFee": 8.99,
+      "estimatedMinutes": {
+        "min": 40,
+        "max": 55
+      },
+      "logo": "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80",
+      "items": [
+        {
+          "itemId": "00000000-0000-4000-8000-000000000301",
+          "itemName": "Pizza Marguerita sem Glúten (média)",
+          "itemDescription": "Massa sem glúten de farinha de arroz, molho de tomate, muçarela e manjericão. Assada no mesmo forno das demais pizzas.",
+          "unitPrice": 69.9,
+          "image": "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=600&q=80",
+          "tags": [
+            "GLUTEN_FREE",
+            "VEGETARIAN"
+          ],
+          "optionGroups": []
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000302",
+          "itemName": "Pizza Calabresa (média)",
+          "itemDescription": "Massa tradicional de farinha de trigo, molho de tomate, calabresa e cebola.",
+          "unitPrice": 59.9,
+          "image": "https://images.unsplash.com/photo-1628840042765-356cda07504e?auto=format&fit=crop&w=600&q=80",
+          "optionGroups": []
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000303",
+          "itemName": "Pizza Quatro Queijos (média)",
+          "itemDescription": "Massa tradicional, muçarela, provolone, parmesão e gorgonzola.",
+          "unitPrice": 64.9,
+          "image": "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80",
+          "tags": [
+            "VEGETARIAN"
+          ],
+          "optionGroups": []
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000304",
+          "itemName": "Esfiha de Carne",
+          "itemDescription": "Massa de trigo com carne moída temperada.",
+          "unitPrice": 8.5,
+          "image": "https://images.unsplash.com/photo-1601050690597-df0568f70950?auto=format&fit=crop&w=600&q=80",
+          "optionGroups": []
+        }
+      ]
+    },
+    {
+      "merchantId": "00000000-0000-4000-8000-000000000400",
+      "merchantName": "Sushi Kazu",
+      "merchantType": "RESTAURANT",
+      "reviewRating": 4.6,
+      "ratingCount": 980,
+      "straightLineDistanceKm": 1.8,
+      "minimumOrderAmount": 35,
+      "deliveryFee": 5.99,
+      "estimatedMinutes": {
+        "min": 30,
+        "max": 45
+      },
+      "logo": "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=600&q=80",
+      "items": [
+        {
+          "itemId": "00000000-0000-4000-8000-000000000401",
+          "itemName": "Combinado Salmão 20 peças",
+          "itemDescription": "Sashimi e niguiri de salmão, uramaki de salmão com cream cheese. Acompanha shoyu.",
+          "unitPrice": 79.9,
+          "image": "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?auto=format&fit=crop&w=600&q=80",
+          "optionGroups": []
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000402",
+          "itemName": "Yakisoba de Legumes",
+          "itemDescription": "Macarrão de trigo, legumes salteados e molho de shoyu.",
+          "unitPrice": 42.9,
+          "image": "https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=600&q=80",
+          "tags": [
+            "VEGETARIAN",
+            "LAC_FREE"
+          ],
+          "optionGroups": []
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000403",
+          "itemName": "Sunomono",
+          "itemDescription": "Pepino em conserva agridoce com gergelim.",
+          "unitPrice": 14.9,
+          "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80",
+          "tags": [
+            "VEGAN",
+            "VEGETARIAN",
+            "LAC_FREE"
+          ],
+          "optionGroups": []
+        }
+      ]
+    },
+    {
+      "merchantId": "00000000-0000-4000-8000-000000000500",
+      "merchantName": "Mercado Bom Preço",
+      "merchantType": "GROCERIES",
+      "reviewRating": 4.5,
+      "ratingCount": 3120,
+      "straightLineDistanceKm": 1.5,
+      "minimumOrderAmount": 40,
+      "deliveryFee": 7.99,
+      "estimatedMinutes": {
+        "min": 40,
+        "max": 60
+      },
+      "logo": "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=600&q=80",
+      "items": [
+        {
+          "itemId": "00000000-0000-4000-8000-000000000501",
+          "itemName": "Massa para Lasanha com Ovos 500g",
+          "itemDescription": "Pacote 500g. Farinha de trigo enriquecida e ovos.",
+          "unitPrice": 8.49
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000502",
+          "itemName": "Massa para Lasanha Sem Glúten de Arroz 400g",
+          "itemDescription": "Pacote 400g",
+          "unitPrice": 15.9,
+          "tags": [
+            "GLUTEN_FREE",
+            "VEGAN"
+          ]
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000503",
+          "itemName": "Molho de Tomate Tradicional 340g",
+          "itemDescription": "Sachê 340g",
+          "unitPrice": 3.79,
+          "tags": [
+            "VEGAN",
+            "GLUTEN_FREE",
+            "LAC_FREE"
+          ],
+          "itemEan": "7890000000503"
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000504",
+          "itemName": "Carne Moída Patinho 500g",
+          "itemDescription": "Bandeja 500g, resfriada",
+          "unitPrice": 27.9,
+          "tags": [
+            "GLUTEN_FREE",
+            "LAC_FREE"
+          ]
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000505",
+          "itemName": "Cebola 1kg",
+          "itemDescription": "Cebola branca, aproximadamente 1kg",
+          "unitPrice": 5.99,
+          "tags": [
+            "VEGAN",
+            "GLUTEN_FREE",
+            "LAC_FREE"
+          ]
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000506",
+          "itemName": "Alho 200g",
+          "itemDescription": "Cabeças de alho, 200g",
+          "unitPrice": 6.49,
+          "tags": [
+            "VEGAN",
+            "GLUTEN_FREE",
+            "LAC_FREE"
+          ]
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000507",
+          "itemName": "Azeite de Oliva Extra Virgem 500ml",
+          "itemDescription": "Garrafa 500ml",
+          "unitPrice": 32.9,
+          "tags": [
+            "VEGAN",
+            "GLUTEN_FREE",
+            "LAC_FREE"
+          ]
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000508",
+          "itemName": "Queijo Muçarela Fatiado 150g",
+          "itemDescription": "Bandeja 150g",
+          "unitPrice": 9.99,
+          "tags": [
+            "GLUTEN_FREE",
+            "VEGETARIAN"
+          ]
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000509",
+          "itemName": "Leite Integral 1L",
+          "itemDescription": "Caixa 1L",
+          "unitPrice": 5.49,
+          "tags": [
+            "GLUTEN_FREE",
+            "VEGETARIAN"
+          ]
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000510",
+          "itemName": "Bebida Vegetal de Aveia 1L",
+          "itemDescription": "Caixa 1L, sem leite",
+          "unitPrice": 14.9,
+          "tags": [
+            "VEGAN",
+            "LAC_FREE"
+          ]
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000511",
+          "itemName": "Leite Zero Lactose 1L",
+          "itemDescription": "Caixa 1L",
+          "unitPrice": 6.99,
+          "tags": [
+            "LAC_FREE",
+            "GLUTEN_FREE",
+            "VEGETARIAN"
+          ]
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000512",
+          "itemName": "Farinha de Trigo 1kg",
+          "itemDescription": "Pacote 1kg",
+          "unitPrice": 5.29,
+          "tags": [
+            "VEGAN"
+          ]
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000513",
+          "itemName": "Amido de Milho 500g",
+          "itemDescription": "Caixa 500g",
+          "unitPrice": 6.99,
+          "tags": [
+            "VEGAN",
+            "GLUTEN_FREE",
+            "LAC_FREE"
+          ]
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000514",
+          "itemName": "Berinjela 500g",
+          "itemDescription": "Unidades selecionadas, aproximadamente 500g",
+          "unitPrice": 4.99,
+          "tags": [
+            "VEGAN",
+            "GLUTEN_FREE",
+            "LAC_FREE"
+          ]
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000515",
+          "itemName": "Noz-moscada em Pó 10g",
+          "itemDescription": "Pote 10g",
+          "unitPrice": 7.9,
+          "tags": [
+            "VEGAN",
+            "GLUTEN_FREE",
+            "LAC_FREE"
+          ]
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000516",
+          "itemName": "Sal Refinado 1kg",
+          "itemDescription": "Pacote 1kg",
+          "unitPrice": 2.99,
+          "tags": [
+            "VEGAN",
+            "GLUTEN_FREE",
+            "LAC_FREE"
+          ]
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000517",
+          "itemName": "Manjericão Fresco Maço",
+          "itemDescription": "Maço",
+          "unitPrice": 3.99,
+          "tags": [
+            "VEGAN",
+            "GLUTEN_FREE",
+            "LAC_FREE"
+          ]
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000518",
+          "itemName": "Espaguete de Trigo 500g",
+          "itemDescription": "Pacote 500g",
+          "unitPrice": 4.59,
+          "tags": [
+            "VEGAN"
+          ]
+        }
+      ]
+    },
+    {
+      "merchantId": "00000000-0000-4000-8000-000000000600",
+      "merchantName": "Empório Natural Vida",
+      "merchantType": "GROCERIES",
+      "reviewRating": 4.9,
+      "ratingCount": 640,
+      "straightLineDistanceKm": 2.9,
+      "minimumOrderAmount": 50,
+      "deliveryFee": 0,
+      "estimatedMinutes": {
+        "min": 50,
+        "max": 70
+      },
+      "logo": "https://images.unsplash.com/photo-1488459716781-31db52582fe9?auto=format&fit=crop&w=600&q=80",
+      "items": [
+        {
+          "itemId": "00000000-0000-4000-8000-000000000601",
+          "itemName": "Massa para Lasanha Sem Glúten de Arroz 400g",
+          "itemDescription": "Pacote 400g. Ingredientes: farinha de arroz e água. Não contém glúten.",
+          "unitPrice": 13.9,
+          "tags": [
+            "GLUTEN_FREE",
+            "VEGAN"
+          ]
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000602",
+          "itemName": "Queijo Vegano Sabor Muçarela 200g",
+          "itemDescription": "Base de castanha de caju e mandioca. 100% vegetal, sem leite.",
+          "unitPrice": 24.9,
+          "tags": [
+            "VEGAN",
+            "LAC_FREE",
+            "GLUTEN_FREE"
+          ],
+          "itemEan": "7890000000602"
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000603",
+          "itemName": "Queijo Vegetal de Mandioca 200g",
+          "itemDescription": "Base de mandioca e azeite. 100% vegetal, sem leite e sem castanhas.",
+          "unitPrice": 22.9,
+          "tags": [
+            "VEGAN",
+            "LAC_FREE",
+            "GLUTEN_FREE"
+          ]
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000604",
+          "itemName": "Bebida Vegetal de Arroz 1L",
+          "itemDescription": "Caixa 1L, sem leite, sem glúten",
+          "unitPrice": 15.9,
+          "tags": [
+            "VEGAN",
+            "LAC_FREE",
+            "GLUTEN_FREE"
+          ]
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000605",
+          "itemName": "Molho de Tomate Orgânico 300g",
+          "itemDescription": "Vidro 300g. Tomate, azeite e sal.",
+          "unitPrice": 9.9,
+          "tags": [
+            "VEGAN",
+            "GLUTEN_FREE",
+            "LAC_FREE"
+          ],
+          "itemEan": "7890000000605"
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000606",
+          "itemName": "Carne Moída Orgânica 500g",
+          "itemDescription": "Bandeja 500g, patinho orgânico",
+          "unitPrice": 39.9,
+          "tags": [
+            "GLUTEN_FREE",
+            "LAC_FREE"
+          ]
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000607",
+          "itemName": "Cebola Orgânica 500g",
+          "itemDescription": "Aproximadamente 500g",
+          "unitPrice": 6.9,
+          "tags": [
+            "VEGAN",
+            "GLUTEN_FREE",
+            "LAC_FREE"
+          ]
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000608",
+          "itemName": "Alho Orgânico 100g",
+          "itemDescription": "100g",
+          "unitPrice": 5.9,
+          "tags": [
+            "VEGAN",
+            "GLUTEN_FREE",
+            "LAC_FREE"
+          ]
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000609",
+          "itemName": "Azeite de Oliva Extra Virgem 250ml",
+          "itemDescription": "Garrafa 250ml",
+          "unitPrice": 29.9,
+          "tags": [
+            "VEGAN",
+            "GLUTEN_FREE",
+            "LAC_FREE"
+          ]
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000610",
+          "itemName": "Farinha de Arroz 500g",
+          "itemDescription": "Pacote 500g, sem glúten",
+          "unitPrice": 8.9,
+          "tags": [
+            "VEGAN",
+            "GLUTEN_FREE",
+            "LAC_FREE"
+          ]
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000611",
+          "itemName": "Creme Vegetal Culinário de Aveia 200g",
+          "itemDescription": "Caixa 200g. 100% vegetal, sem leite. Pode conter traços de glúten.",
+          "unitPrice": 9.5,
+          "tags": [
+            "VEGAN",
+            "LAC_FREE"
+          ]
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000612",
+          "itemName": "Abobrinha Orgânica 500g",
+          "itemDescription": "Aproximadamente 500g",
+          "unitPrice": 6.5,
+          "tags": [
+            "VEGAN",
+            "GLUTEN_FREE",
+            "LAC_FREE"
+          ]
+        },
+        {
+          "itemId": "00000000-0000-4000-8000-000000000613",
+          "itemName": "Manjericão Orgânico Maço",
+          "itemDescription": "Maço",
+          "unitPrice": 4.5,
+          "tags": [
+            "VEGAN",
+            "GLUTEN_FREE",
+            "LAC_FREE"
+          ]
+        }
+      ]
+    }
+  ],
+  "paymentMethods": [
+    {
+      "paymentMethodId": "00000000-0000-4000-8000-000000000900",
+      "kind": "PIX",
+      "displayName": "Pix",
+      "brand": "PIX"
+    },
+    {
+      "paymentMethodId": "00000000-0000-4000-8000-000000000901",
+      "kind": "CREDIT_CARD",
+      "displayName": "Cartão de Crédito final 1111",
+      "cardTokenId": "00000000-0000-4000-8000-000000000902",
+      "brand": "VISA"
+    }
+  ]
+}

@@ -1,0 +1,991 @@
+/*
+ * Estilos dos cartões da conversa, da revisão do pedido e dos elementos
+ * novos da tela principal. Segue a identidade de styles.css:
+ * Arial, rosa #f92371, cantos bem arredondados e bordas #ececec.
+ */
+
+/* --------------------------------------------------------- Tela principal */
+
+.welcome-subtitle {
+  max-width: 420px;
+  margin: 14px auto 0;
+  color: #707070;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.connect-banner {
+  position: relative;
+  z-index: 4;
+  margin: 0 25px;
+  max-width: 520px;
+  align-self: center;
+  background: #fff;
+  border: 1px solid #f7c9d8;
+  border-radius: 20px;
+  padding: 16px 18px;
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+}
+
+.connect-banner p {
+  margin: 0;
+  font-size: 14px;
+  color: #555;
+  line-height: 1.5;
+}
+
+.restriction-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 9px 14px;
+  border-radius: 30px;
+  background: #fff;
+  border: 1px solid #ececec;
+  font-size: 13px;
+  color: #555;
+}
+
+.restriction-bar svg {
+  width: 18px;
+  height: 18px;
+  color: #f92371;
+}
+
+.restriction-bar span {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.restriction-bar a {
+  color: #f92371;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.message.error {
+  color: #b8101c;
+}
+
+.drawer-name {
+  display: block;
+  margin: 0;
+  font-size: 25px;
+  font-weight: 700;
+  color: #191919;
+}
+
+.drawer h2 .drawer-name + span {
+  margin-top: 10px;
+}
+
+/* ----------------------------------------------------- Diálogo de endereço */
+
+.address-options {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.address-option {
+  display: flex !important;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px;
+  border: 1px solid #ececec;
+  border-radius: 16px;
+  color: #191919 !important;
+  font-size: 14px !important;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.address-option:has(input:checked) {
+  border-color: #f92371;
+  background: #fff5f9;
+}
+
+.address-option input {
+  width: auto;
+  accent-color: #f92371;
+  margin-top: 3px;
+}
+
+.address-option strong {
+  display: block;
+}
+
+.dialog-hint {
+  font-size: 13px;
+  color: #777;
+  margin: 12px 0 0;
+}
+
+/* ------------------------------------------------------------- Cartões */
+
+.chat-card {
+  background: #fff;
+  border: 1px solid #ececec;
+  border-radius: 24px;
+  padding: 20px;
+  display: grid;
+  gap: 12px;
+  margin-left: 36px;
+  font-size: 15px;
+  line-height: 1.5;
+  box-shadow: 0 2px 12px #00000005;
+  animation: card-in .25s ease;
+}
+
+.chat-card h3 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+.chat-card h4 {
+  margin: 4px 0 0;
+  font-size: 14px;
+}
+
+.chat-card p {
+  margin: 0;
+}
+
+.card-kicker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  color: #888;
+}
+
+.card-kicker svg {
+  width: 18px;
+  height: 18px;
+  color: #f92371;
+}
+
+.card-muted {
+  color: #777;
+  font-size: 13px;
+}
+
+.card-disclaimer {
+  font-size: 11.5px;
+  color: #8a8a8a;
+  line-height: 1.5;
+}
+
+.card-list {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+}
+
+.card-note {
+  background: #f7f7f7;
+  border-radius: 16px;
+  padding: 12px 14px;
+  font-size: 14px;
+}
+
+.card-note.warning {
+  background: #fff6e8;
+  color: #6b4a00;
+}
+
+.card-details summary {
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  color: #444;
+  padding: 4px 0;
+}
+
+.card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.card-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 30px;
+  padding: 11px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  background: #f5f5f5;
+  color: #333;
+  transition: transform .15s, opacity .15s;
+}
+
+.card-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.card-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.card-button:disabled {
+  opacity: .5;
+  cursor: default;
+}
+
+.card-button.primary {
+  background: linear-gradient(160deg, #fb4bc6, #ff0750);
+  color: #fff;
+}
+
+.card-button.link {
+  background: none;
+  padding: 4px 0;
+  color: #f92371;
+  justify-self: start;
+}
+
+/* Selos de parecer */
+
+.verdict-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.verdict-badge svg {
+  width: 14px;
+  height: 14px;
+}
+
+.verdict-badge.conflict {
+  background: #fde7e9;
+  color: #b8101c;
+}
+
+.verdict-badge.risk {
+  background: #fff0de;
+  color: #a35200;
+}
+
+/* "Inseguro": item com etiqueta do iFood, mas com possível contato cruzado na loja. */
+.verdict-badge.unsafe {
+  background: #fff4c2;
+  color: #7a5a00;
+}
+
+.card-note.unsafe {
+  background: #fffaf0;
+  border: 1px solid #f3dc8a;
+}
+
+.verdict-badge.unknown {
+  background: #eef1f6;
+  color: #46536b;
+}
+
+.verdict-badge.ok {
+  background: #e3f5e8;
+  color: #1e7e34;
+}
+
+/* Restrições */
+
+.restriction-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.restriction-chip {
+  display: grid;
+  border-radius: 16px;
+  padding: 8px 12px;
+  background: #fff1f6;
+  border: 1px solid #f7c9d8;
+}
+
+.restriction-chip strong {
+  font-size: 14px;
+}
+
+.restriction-chip small {
+  font-size: 11px;
+  color: #b0336b;
+}
+
+.consent-line {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 13px;
+  color: #555;
+  line-height: 1.45;
+  cursor: pointer;
+}
+
+.consent-line input {
+  accent-color: #f92371;
+  width: 18px;
+  height: 18px;
+  margin: 1px 0 0;
+  flex-shrink: 0;
+}
+
+/* Opções de busca */
+
+.option-carousel {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  margin: 0 -20px;
+  padding: 2px 20px 8px;
+  scrollbar-width: thin;
+}
+
+.option-item {
+  flex: 0 0 min(260px, calc(100% - 32px));
+  scroll-snap-align: start;
+  border: 1px solid #ececec;
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+
+.option-item img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  background: #f5f5f5;
+}
+
+.option-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.option-body h3 {
+  font-size: 15px;
+}
+
+.option-store {
+  font-size: 13px;
+  color: #555;
+}
+
+.option-meta {
+  font-size: 12px;
+  color: #888;
+}
+
+.option-price {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin: 4px 0 6px;
+}
+
+.option-price del {
+  color: #999;
+  font-size: 12px;
+}
+
+.option-body .card-button {
+  margin-top: auto;
+}
+
+.ifood-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
+  border-radius: 20px;
+  padding: 3px 9px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #e3f5e8;
+  color: #1e7e34;
+}
+
+.ifood-tag svg {
+  width: 13px;
+  height: 13px;
+}
+
+.label-link {
+  font-size: 13px;
+  font-weight: 700;
+  color: #f92371;
+}
+
+.options-card.alternatives .card-kicker {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 14px;
+  color: #555;
+}
+
+.quick-warning {
+  font-size: 11px;
+  font-weight: 700;
+  color: #b8101c;
+}
+
+.merchant-list {
+  display: grid;
+  gap: 10px;
+}
+
+.merchant-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 10px;
+}
+
+/* Análise */
+
+.analysis-card.conflict {
+  border-color: #f5b5bb;
+}
+
+.analysis-card.risk {
+  border-color: #f6cf9f;
+}
+
+.analysis-header {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.analysis-header img {
+  width: 76px;
+  height: 76px;
+  border-radius: 18px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.analysis-header > div {
+  display: grid;
+  gap: 6px;
+}
+
+.analysis-restriction {
+  border-top: 1px solid #f0f0f0;
+  padding-top: 12px;
+  display: grid;
+  gap: 6px;
+}
+
+.analysis-restriction-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.evidence-list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.evidence-list li {
+  display: grid;
+  gap: 2px;
+  font-size: 13px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #fafafa;
+}
+
+.evidence-list small {
+  color: #888;
+}
+
+/* Mensagem ao restaurante */
+
+.clarification-text {
+  margin: 0;
+  white-space: pre-wrap;
+  font: inherit;
+  font-size: 14px;
+  background: #fafafa;
+  border-radius: 16px;
+  padding: 14px;
+  border: 1px dashed #e0e0e0;
+}
+
+/* Receita */
+
+.ingredient-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.ingredient-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f3f3f3;
+}
+
+.ingredient-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.label-tag {
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 20px;
+  padding: 4px 9px;
+  background: #fff0de;
+  color: #a35200;
+}
+
+.label-tag.ok {
+  background: #e3f5e8;
+  color: #1e7e34;
+}
+
+.label-tag.muted {
+  background: #f0f0f0;
+  color: #666;
+}
+
+/* Mercado e carrinho */
+
+.market-merchant {
+  display: grid;
+  gap: 10px;
+  border: 1px solid #ececec;
+  border-radius: 20px;
+  padding: 14px;
+  margin-top: 8px;
+}
+
+.market-merchant.recommended {
+  border-color: #cae9f7;
+  background: #f6fbfe;
+}
+
+.market-merchant-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.recommended-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #0b6b94;
+  margin-bottom: 4px;
+}
+
+.market-total {
+  font-size: 18px;
+  white-space: nowrap;
+}
+
+.market-items {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.market-items li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.market-items li > div {
+  display: grid;
+  gap: 3px;
+}
+
+.market-items small,
+.market-ingredient {
+  font-size: 12px;
+  color: #888;
+}
+
+.market-items li > span {
+  white-space: nowrap;
+}
+
+.cart-total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 15px;
+  border-top: 1px solid #f0f0f0;
+  padding-top: 8px;
+}
+
+/* --------------------------------------------------- Revisão do pedido */
+
+.checkout-dialog {
+  width: min(520px, 94vw);
+  max-height: 92svh;
+  padding: 0;
+  overflow-y: auto;
+}
+
+/* Os estilos genéricos de "dialog input" (styles.css) não servem para rádios e caixas de seleção. */
+dialog input[type="radio"],
+dialog input[type="checkbox"] {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+.checkout-form,
+.checkout-state {
+  padding: 24px;
+  display: grid;
+  gap: 16px;
+}
+
+.checkout-state {
+  text-align: center;
+  justify-items: center;
+}
+
+.checkout-state h2 {
+  margin: 0;
+}
+
+.success-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #e3f5e8;
+  color: #1e7e34;
+}
+
+.success-icon svg {
+  width: 32px;
+  height: 32px;
+}
+
+.order-status {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.checkout-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.checkout-header h2 {
+  margin: 0;
+}
+
+.checkout-header .icon-button {
+  font-size: 26px;
+}
+
+.checkout-section {
+  display: grid;
+  gap: 8px;
+}
+
+.checkout-section h3,
+.checkout-alerts h3 {
+  margin: 0;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkout-alerts {
+  background: #fff6e8;
+  border-radius: 18px;
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+  color: #4d3600;
+}
+
+.checkout-alerts h3 svg {
+  width: 18px;
+  height: 18px;
+}
+
+.checkout-alert {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.checkout-alert-title {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.checkout-options {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.checkout-options legend {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.checkout-option {
+  color: #191919 !important;
+  font-size: 15px !important;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid #ececec;
+  border-radius: 16px;
+  cursor: pointer;
+}
+
+.checkout-option:has(input:checked) {
+  border-color: #f92371;
+  background: #fff5f9;
+}
+
+.checkout-option input {
+  accent-color: #f92371;
+  width: 18px;
+  height: 18px;
+}
+
+.checkout-option span {
+  display: grid;
+  gap: 2px;
+}
+
+.checkout-option small {
+  color: #777;
+}
+
+.checkout-form .card-details input {
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+}
+
+.checkout-error {
+  color: #b8101c;
+  font-size: 14px;
+  margin: 0;
+}
+
+.confirm-order {
+  width: 100%;
+  padding: 15px 18px;
+  font-size: 16px;
+}
+
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* ------------------------------------------------------------- Celular */
+
+/* Alvos de toque confortáveis (mínimo de 44px recomendado para dedos). */
+.card-button {
+  min-height: 44px;
+}
+
+@media (max-width: 520px) {
+  .chat-card {
+    margin-left: 0;
+    padding: 16px;
+    border-radius: 20px;
+  }
+  .option-carousel {
+    margin: 0 -16px;
+    padding: 2px 16px 8px;
+    scroll-snap-type: x mandatory;
+  }
+  .option-item {
+    /* Mostra um pedaço do próximo cartão para indicar que dá para arrastar. */
+    flex-basis: 84%;
+    scroll-snap-align: start;
+  }
+
+  /* Botões empilhados, na largura toda e com a ação principal primeiro (perto do polegar). */
+  .card-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .card-actions .card-button {
+    width: 100%;
+    min-height: 48px;
+  }
+  .card-actions .card-button.primary {
+    order: -1;
+  }
+
+  .analysis-header img {
+    width: 60px;
+    height: 60px;
+    border-radius: 14px;
+  }
+
+  /* Listas de mercado/carrinho: nome quebra em linhas, preço sempre visível à direita. */
+  .market-items li > div {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .market-merchant-header {
+    gap: 8px;
+  }
+
+  .nutrition-table {
+    font-size: 11px;
+  }
+  .nutrition-table th,
+  .nutrition-table td {
+    padding: 4px 3px;
+  }
+
+  /* Revisão do pedido como "folha" que sobe da parte de baixo da tela. */
+  .checkout-dialog {
+    width: 100vw;
+    max-width: 100vw;
+    max-height: 94dvh;
+    margin: auto 0 0;
+    border-radius: 24px 24px 0 0;
+  }
+  .checkout-form,
+  .checkout-state {
+    padding: 20px 16px max(20px, env(safe-area-inset-bottom));
+  }
+  /* O botão de confirmar fica sempre visível ao rolar a revisão. */
+  .confirm-order {
+    position: sticky;
+    bottom: max(12px, env(safe-area-inset-bottom));
+    min-height: 52px;
+    box-shadow: 0 8px 24px rgba(249, 35, 113, .25);
+  }
+  .checkout-option {
+    min-height: 52px;
+  }
+
+  /* Campos com 16px: abaixo disso o iPhone dá zoom ao tocar no campo. */
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* Em telas de toque não existe "hover": evita o botão ficar "levantado" após o toque. */
+@media (hover: none) {
+  .card-button:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
+.ifood-cart-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  text-decoration: none;
+  background: #ea1d2c;
+  color: #fff;
+}
+
+.cart-preview-items li {
+  padding: 16px 0;
+}
+
+.cart-preview-items small {
+  display: block;
+  color: #717171;
+  margin-top: 6px;
+}
+
+/* Comparação nutricional das trocas da receita */
+.swap + .swap {
+  margin-top: 10px;
+}
+
+.nutrition-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin: 8px 0;
+}
+
+.nutrition-table th,
+.nutrition-table td {
+  text-align: left;
+  padding: 4px 6px;
+  border-bottom: 1px solid #ececec;
+}
+
+.nutrition-table th {
+  font-weight: 700;
+}

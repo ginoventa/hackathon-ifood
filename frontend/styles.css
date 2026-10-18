@@ -201,6 +201,9 @@ h1 {
   margin: 0 -25px 20px;
   padding: 3px 25px;
   align-items: center;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 25px;
+  overscroll-behavior-x: contain;
 }
 
 .suggestions::-webkit-scrollbar {
@@ -208,6 +211,8 @@ h1 {
 }
 
 .suggestion {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
   white-space: nowrap;
   border: 1px solid #ededed;
   background: #fff;
@@ -485,7 +490,7 @@ h1 {
   padding-top: 15px;
 }
 
-.demo-note {
+.chat-disclaimer {
   text-align: center;
   font-size: 10px;
   color: #777;
@@ -627,7 +632,7 @@ dialog input {
     padding: 23px 24px 20px;
   }
   .suggestions {
-    justify-content: center;
+    justify-content: flex-start;
   }
   .conversation {
     width: 100%;

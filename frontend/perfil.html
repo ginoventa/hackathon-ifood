@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
+    <meta content="#f7c9d8" name="theme-color"/>
+    <meta content="Gerencie as restrições alimentares que o Ailo considera nos seus pedidos." name="description"/>
+    <title>
+      Perfil alimentar • Ailo
+    </title>
+    <link href="./ailo.svg" rel="icon" type="image/svg+xml"/>
+    <link href="./styles.css" rel="stylesheet"/>
+    <link href="./chat-cards.css" rel="stylesheet"/>
+    <link href="./perfil.css" rel="stylesheet"/>
+  </head>
+  <body>
+    <main class="profile-page">
+      <header class="header">
+        <a aria-label="Voltar ao Ailo" class="icon-button" href="./index.html">
+          <svg>
+            <use href="./icons.svg#back">
+            </use>
+          </svg>
+        </a>
+        <div class="address">
+          <span>
+            Ailo
+          </span>
+          <strong>
+            Perfil alimentar
+          </strong>
+        </div>
+      </header>
+      <section aria-labelledby="profile-title" class="profile-intro">
+        <h1 id="profile-title">
+          Quais são as suas restrições?
+        </h1>
+        <p>
+          O Ailo usa estas informações para investigar cardápios, receitas e produtos. Diferenciar alergia, intolerância, doença celíaca e preferência muda o rigor da análise.
+        </p>
+      </section>
+      <form class="profile-form" id="profile-form">
+        <div id="restriction-groups">
+          <p class="card-muted">
+            Carregando restrições…
+          </p>
+        </div>
+        <fieldset class="profile-group">
+          <legend>
+            Outra restrição
+            <span>
+              Ex.: alergia a kiwi ou mostarda, jejum religioso, jainismo (sem cebola, alho e batata)
+            </span>
+          </legend>
+          <div class="custom-restriction">
+            <label for="custom-name">
+              Nome
+            </label>
+            <input id="custom-name" maxlength="60" placeholder="Alergia a kiwi"/>
+            <label for="custom-type">
+              Tipo
+            </label>
+            <select id="custom-type">
+              <option value="ALERGIA">
+                Alergia
+              </option>
+              <option value="INTOLERANCIA">
+                Intolerância
+              </option>
+              <option value="RELIGIOSA">
+                Religiosa
+              </option>
+              <option value="PREFERENCIA">
+                Preferência
+              </option>
+            </select>
+            <label for="custom-terms">
+              Palavras que indicam a substância
+            </label>
+            <input id="custom-terms" maxlength="200" placeholder="kiwi, quiuí"/>
+            <button class="card-button" id="add-custom" type="button">
+              Adicionar
+            </button>
+          </div>
+          <ul class="custom-list" id="custom-list">
+          </ul>
+        </fieldset>
+        <label class="consent-line" for="profile-consent">
+          <input id="profile-consent" type="checkbox"/>
+          <span>
+            Autorizo o Ailo a guardar minhas restrições alimentares neste dispositivo para personalizar meus próximos pedidos. Posso apagá-las a qualquer momento.
+          </span>
+        </label>
+        <p class="checkout-error" hidden="" id="profile-error" role="alert">
+        </p>
+        <div class="profile-actions">
+          <button class="card-button primary" type="submit">
+            Salvar perfil
+          </button>
+          <button class="card-button link" id="delete-profile" type="button">
+            Apagar meu perfil
+          </button>
+        </div>
+        <p class="card-disclaimer">
+          O Ailo apoia a sua decisão com as informações disponíveis no iFood. Ele não certifica a segurança dos alimentos nem substitui orientação médica.
+        </p>
+      </form>
+      <div class="toast" hidden="" id="toast" role="status">
+      </div>
+    </main>
+    <script src="./perfil.js" type="module">
+    </script>
+  </body>
+</html>
