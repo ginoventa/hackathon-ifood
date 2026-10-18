@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import asyncio
 
+from ...config import config
 from ...errors import AppError
 from ...restrictions.analyzer import Verdict, analyze_product
 from ...restrictions.catalog import to_ifood_item_restrictions
