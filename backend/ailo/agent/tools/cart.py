@@ -8,6 +8,10 @@ from __future__ import annotations
 
 from ...errors import ValidationError
 from ...services.cart import create_cart
+from ..system_prompt import (
+    MONTAR_CARRINHO_DO_MERCADO_PROMPT,
+    MONTAR_CARRINHO_PROMPT,
+)
 from .base import ToolDefinition
 
 
@@ -29,7 +33,7 @@ async def _build_cart(session, args):
 
 BUILD_CART = ToolDefinition(
     name="montar_carrinho",
-    description="Cria o carrinho no iFood com itens de UM estabelecimento. Não envia o pedido.",
+    description=MONTAR_CARRINHO_PROMPT,
     schema={
         "type": "object",
         "properties": {
@@ -72,7 +76,7 @@ async def _build_grocery_cart(session, args):
 
 BUILD_GROCERY_CART = ToolDefinition(
     name="montar_carrinho_do_mercado",
-    description="Cria o carrinho com os produtos escolhidos para a receita no mercado indicado (da última comparação).",
+    description=MONTAR_CARRINHO_DO_MERCADO_PROMPT,
     schema={"type": "object", "properties": {"merchantId": {"type": "string"}}, "required": ["merchantId"]},
     execute=_build_grocery_cart,
 )

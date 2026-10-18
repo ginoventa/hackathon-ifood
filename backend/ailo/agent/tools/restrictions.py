@@ -9,6 +9,12 @@ from ...errors import ValidationError
 from ...profiles import read_profile, read_profile_restrictions
 from ...restrictions.catalog import CUSTOM_RESTRICTION_ID, RESTRICTIONS, RestrictionType, resolve_restriction
 from ...services.analysis import analyze_selected_item, clarification_for, record_establishment_confirmation
+from ..system_prompt import (
+    ANALISAR_PRODUTO_PROMPT,
+    PREPARAR_MENSAGEM_RESTAURANTE_PROMPT,
+    REGISTRAR_RESPOSTA_RESTAURANTE_PROMPT,
+    REGISTRAR_RESTRICOES_PROMPT,
+)
 from .base import ToolDefinition, summarize_analysis_for_model, summarize_restrictions
 
 
@@ -44,7 +50,7 @@ async def _register_restrictions(session, args):
 
 REGISTER_RESTRICTIONS = ToolDefinition(
     name="registrar_restricoes",
-    description="Define as restrições alimentares ATIVAS da conversa. Envie sempre a lista completa (substitui a anterior).",
+    description=REGISTRAR_RESTRICOES_PROMPT,
     schema={
         "type": "object",
         "properties": {
@@ -76,10 +82,7 @@ async def _analyze_product(session, args):
 
 ANALYZE_PRODUCT = ToolDefinition(
     name="analisar_produto",
-    description=(
-        "Analisa um item escolhido pelo usuário contra as restrições ativas: ingredientes declarados, adicionais, "
-        "cardápio (contato cruzado) e lacunas. Retorna um parecer determinístico."
-    ),
+    description=ANALISAR_PRODUTO_PROMPT,
     schema={
         "type": "object",
         "properties": {
@@ -100,7 +103,7 @@ async def _clarification_message(session, args):
 
 CLARIFICATION_MESSAGE = ToolDefinition(
     name="preparar_mensagem_restaurante",
-    description="Gera a mensagem para o usuário enviar ao restaurante, confirmando ingredientes, preparo e contato cruzado do item analisado.",
+    description=PREPARAR_MENSAGEM_RESTAURANTE_PROMPT,
     schema={"type": "object", "properties": {"itemId": {"type": "string"}}, "required": ["itemId"]},
     execute=_clarification_message,
 )
@@ -114,7 +117,7 @@ async def _establishment_answer(session, args):
 
 ESTABLISHMENT_ANSWER = ToolDefinition(
     name="registrar_resposta_restaurante",
-    description="Registra o que o restaurante respondeu (contado pelo usuário) e refaz a análise do item. É evidência adicional, não certificação.",
+    description=REGISTRAR_RESPOSTA_RESTAURANTE_PROMPT,
     schema={
         "type": "object",
         "properties": {

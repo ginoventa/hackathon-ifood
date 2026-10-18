@@ -5,6 +5,10 @@ from __future__ import annotations
 from ...errors import ValidationError
 from ...restrictions.analyzer import Verdict
 from ...services.market import plan_grocery_shopping, register_recipe
+from ..system_prompt import (
+    BUSCAR_INGREDIENTES_NO_MERCADO_PROMPT,
+    REGISTRAR_RECEITA_PROMPT,
+)
 from .base import ToolDefinition
 
 
@@ -34,7 +38,7 @@ async def _register_recipe(session, args):
 
 REGISTER_RECIPE = ToolDefinition(
     name="registrar_receita",
-    description="Registra a receita adaptada às restrições ativas. O sistema verifica cada ingrediente e RECUSA a receita se algum conflitar.",
+    description=REGISTRAR_RECEITA_PROMPT,
     schema={
         "type": "object",
         "properties": {
@@ -95,7 +99,7 @@ async def _grocery_plan(session, _args):
 
 GROCERY_PLAN = ToolDefinition(
     name="buscar_ingredientes_no_mercado",
-    description="Busca os ingredientes da receita atual nos mercados do iFood e compara preço, compatibilidade, entrega e pedido mínimo.",
+    description=BUSCAR_INGREDIENTES_NO_MERCADO_PROMPT,
     schema={"type": "object", "properties": {}},
     execute=_grocery_plan,
 )

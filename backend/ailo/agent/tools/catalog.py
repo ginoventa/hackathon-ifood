@@ -12,6 +12,10 @@ from dataclasses import replace
 from ...restrictions.analyzer import Verdict, analyze_product
 from ...restrictions.catalog import to_ifood_item_restrictions
 from ...services.catalog import search_offers
+from ..system_prompt import (
+    BUSCAR_OPCOES_PROMPT,
+    VER_CARDAPIO_DA_LOJA_PROMPT,
+)
 from .base import ToolDefinition
 
 # Ordem de exibição: itens com conflito aparente vão para o fim.
@@ -105,7 +109,7 @@ async def _search_options(session, args):
 
 SEARCH_OPTIONS = ToolDefinition(
     name="buscar_opcoes",
-    description="Busca pratos (ITEM) ou restaurantes (MERCHANT) no iFood perto do usuário. Use para o pedido em restaurante.",
+    description=BUSCAR_OPCOES_PROMPT,
     schema={
         "type": "object",
         "properties": {
@@ -140,7 +144,7 @@ async def _merchant_menu(session, args):
 
 MERCHANT_MENU = ToolDefinition(
     name="ver_cardapio_da_loja",
-    description="Lista itens de um restaurante específico, opcionalmente filtrando por texto.",
+    description=VER_CARDAPIO_DA_LOJA_PROMPT,
     schema={
         "type": "object",
         "properties": {

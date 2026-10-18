@@ -164,3 +164,12 @@ Todas as rotas usam o cabeçalho `X-Session-Id`, gerado por aba no navegador.
 - A busca de contato cruzado lê até 75 itens do cardápio, só pelo nome (a listagem do MCP não traz descrições).
 - Sessões ficam em memória: reiniciar o servidor apaga as conversas. O perfil alimentar e o login persistem em `backend/.data/`.
 - O formato da resposta de carrinho do MCP ainda não foi validado com um carrinho real. `normalize_cart` aceita variações de nomes de campos.
+
+## Organização dos prompts
+
+Todos os prompts ficam em `backend/ailo/agent/system_prompt.py`:
+
+- `SYSTEM_PROMPT`: papel do Ailo, fluxos e regras compartilhadas.
+- `<NOME_DA_TOOL>_PROMPT`: instruções de cada ferramenta, como `ANALISAR_PRODUTO_PROMPT` e `MONTAR_CARRINHO_DO_MERCADO_PROMPT`.
+
+As ferramentas importam a constante correspondente e usam seu texto como `description` no LangChain. Os schemas e as funções de execução continuam em `backend/ailo/agent/tools/`. Permanece um único agente, sem chamadas extras pela organização dos textos.

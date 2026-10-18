@@ -4,7 +4,7 @@ Mapeamento do código atual em 18/10/2026. Descreve a implementação; não repr
 
 ## Orquestração
 
-Há um agente principal, criado com `langchain.agents.create_agent` em `backend/ailo/agent/agent.py`. Ele usa Gemini (`agent/chat_model.py`) para interpretar mensagens e decidir quais das dez ferramentas registradas em `agent/tools/__init__.py` executar. Os resultados estruturados geram cartões na interface; as decisões alimentares são calculadas pelo analisador determinístico.
+Há um agente principal, criado com `langchain.agents.create_agent` em `backend/ailo/agent/agent.py`. Todos os prompts ficam em `agent/system_prompt.py`: `SYSTEM_PROMPT` orienta o agente e as constantes `<NOME_DA_TOOL>_PROMPT` alimentam as descrições de cada ferramenta no LangChain. Ele usa Gemini (`agent/chat_model.py`) para interpretar mensagens e decidir quais das dez ferramentas registradas em `agent/tools/__init__.py` executar. Os resultados estruturados geram cartões na interface; as decisões alimentares são calculadas pelo analisador determinístico.
 
 ## Ferramentas disponíveis à IA
 
