@@ -90,6 +90,25 @@ Fluxo de uma mensagem:
 | Confirmação do restaurante é evidência adicional, não certificação | `record_establishment_confirmation`: não anula `CONFLITO` |
 | Compra só com confirmação explícita | Rota `POST /api/orders` + ciência dos alertas |
 | Perfil alimentar só com autorização | `profiles.py` exige `consent=True` |
+| Etiqueta do iFood tem prioridade | `tools/catalog.py`: com etiqueta (ex.: GLUTEN_FREE), só itens etiquetados são recomendados e nomes de prato ("pizza", "massa") não contam; itens etiquetados do cardápio não são contato cruzado |
+| Nunca recomendar item com outra restrição | `tools/catalog.py`: itens com conflito são descartados; sem opção compatível, mostra alternativas que atendem às restrições ou diz que não encontrou (e avisa se as compatíveis estão fechadas) |
+| Rótulo de industrializados | `services/labels.py`: consulta a Open Food Facts pelo código de barras (alergênicos, "pode conter", selos e ingredientes) |
+
+### Restrições religiosas e menos comuns
+
+O catálogo inclui, além das alergias e intolerâncias comuns: **sem carne de porco** (islamismo, judaísmo, adventismo), **halal**, **kosher**, **sem carne bovina** (hinduísmo), **alergia a gergelim** e **intolerância à frutose**. Restrições religiosas usam o tipo `RELIGIOSA` e exigem evidência positiva: no halal, por exemplo, carne sem certificação é "possível risco". Qualquer outra regra (jejum, jainismo, alergia a kiwi...) pode ser cadastrada no perfil como **Outra restrição**, com tipo e palavras-chave.
+
+### Rótulo de produtos industrializados
+
+Quando o item tem código de barras (EAN), o Ailo consulta o rótulo na [Open Food Facts](https://world.openfoodfacts.org):
+
+- alergênico declarado ("contém glúten") → **incompatível**;
+- "pode conter" → **possível risco**;
+- selo de ausência ("sem glúten", "vegano", "halal") → evidência a favor;
+- rótulo com dados e sem a substância → "sem conflito declarado", com o lembrete de conferir a embalagem;
+- produto fora da base ou sem dados → continua o aviso "confira o rótulo".
+
+A Open Food Facts é colaborativa: os dados são tratados como evidência, nunca como certificação.
 
 ## Estrutura de pastas
 

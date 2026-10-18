@@ -87,6 +87,6 @@ async def test_other_product_excludes_chosen_item_from_cards_and_model(monkeypat
         ]}
 
     monkeypatch.setattr(catalog_tools, "search_offers", search)
-    output, card = await catalog_tools._run_search(session, title="Alternativas", query="burger")
+    output, card = await catalog_tools._search_options(session, {"consulta": "burger"})
     assert [item["itemId"] for item in output["itens"]] == ["other"]
     assert [item["itemId"] for item in card["data"]["items"]] == ["other"]

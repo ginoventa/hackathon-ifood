@@ -30,14 +30,17 @@ from typing import Any
 
 
 class RestrictionType:
-    """Tipos clínicos, que o agente deve sempre diferenciar."""
+    """Tipos de restrição, que o agente deve sempre diferenciar."""
 
     ALLERGY = "ALERGIA"
     INTOLERANCE = "INTOLERANCIA"
     CELIAC = "DOENCA_CELIACA"
+    # Restrições de fé (halal, kosher, sem carne de porco...): não são clínicas,
+    # mas são regras firmes para quem as segue, então pedem evidência positiva.
+    RELIGIOUS = "RELIGIOSA"
     PREFERENCE = "PREFERENCIA"
 
-    ALL = (ALLERGY, INTOLERANCE, CELIAC, PREFERENCE)
+    ALL = (ALLERGY, INTOLERANCE, CELIAC, RELIGIOUS, PREFERENCE)
 
 
 class Rigor:
@@ -52,6 +55,7 @@ RIGOR_BY_TYPE = {
     RestrictionType.ALLERGY: Rigor.HIGH,
     RestrictionType.CELIAC: Rigor.HIGH,
     RestrictionType.INTOLERANCE: Rigor.MEDIUM,
+    RestrictionType.RELIGIOUS: Rigor.MEDIUM,
     RestrictionType.PREFERENCE: Rigor.LOW,
 }
 
@@ -71,6 +75,10 @@ class Restriction:
     free_claims: tuple[str, ...] = ()
     insufficient_claims: tuple[str, ...] = ()
     ifood_tags: tuple[str, ...] = ()
+    # Rótulo (Open Food Facts): alergênicos/selos que indicam a substância e
+    # selos que declaram a ausência (ex.: "en:gluten" e "en:no-gluten").
+    label_conflict_tags: tuple[str, ...] = ()
+    label_free_tags: tuple[str, ...] = ()
     note: str = ""
     custom: bool = False
     user_note: str = ""
@@ -144,6 +152,22 @@ MEAT_TERMS = (
     "caldo de carne", "caldo de galinha", "banha", "torresmo", "gelatina",
 )
 MEAT_CORE = ("carne", "frango", "porco", "bacon", "presunto", "peixe", "camarao", "gelatina", "banha", "caldo de carne", "caldo de galinha")
+PORK_TERMS = (
+    "porco", "suino", "suina", "bacon", "presunto", "pancetta", "toucinho", "torresmo", "banha", "lombo",
+    "pernil", "costelinha de porco", "leitao", "pururuca", "linguica", "calabresa", "salame", "mortadela",
+    "copa", "parma", "pepperoni", "chourico", "salsicha", "feijoada",
+)
+PORK_UNCERTAIN = ("gelatina", "embutido", "frios", "hamburguer", "almondega", "caldo de carne", "toucinho defumado")
+PORK_IGNORED = ("linguica de frango", "salsicha de frango", "presunto de peru", "bacon vegano", "linguica vegana", "calabresa vegana")
+ALCOHOL_TERMS = ("vinho", "cerveja", "chope", "cachaca", "rum", "vodka", "whisky", "conhaque", "licor", "saque", "marsala", "flambado")
+SHELLFISH_TERMS = ("camarao", "lagosta", "caranguejo", "siri", "lula", "polvo", "mexilhao", "marisco", "ostra", "vieira", "frutos do mar", "kani")
+BEEF_TERMS = (
+    "carne bovina", "bovina", "bovino", "boi", "vaca", "picanha", "alcatra", "patinho", "file mignon", "contra file",
+    "acem", "cupim", "maminha", "fraldinha", "costela bovina", "ossobuco", "vitelo", "carne moida", "carne seca",
+    "charque", "rosbife", "cheeseburger",
+)
+BEEF_UNCERTAIN = ("carne", "hamburguer", "bolonhesa", "ragu", "almondega", "caldo de carne", "estrogonofe", "file", "gelatina")
+
 MEAT_IGNORED = (
     "carne vegetal", "carne de jaca", "hamburguer vegetal", "hamburguer vegano", "hamburguer de grao de bico",
     "frango vegano", "carne vegana", "proteina vegetal", "hamburguer de cogumelo",
@@ -157,6 +181,7 @@ RESTRICTIONS: dict[str, Restriction] = {
             id="doenca_celiaca", label="Doença celíaca", substance="glúten", type=RestrictionType.CELIAC,
             terms=GLUTEN_TERMS, core_terms=GLUTEN_CORE, uncertain_terms=GLUTEN_UNCERTAIN,
             ignored_phrases=GLUTEN_IGNORED, free_claims=GLUTEN_FREE_CLAIMS, ifood_tags=("GLUTEN_FREE",),
+            label_conflict_tags=("en:gluten", "en:contains-gluten"), label_free_tags=("en:no-gluten", "en:gluten-free"),
             note="Mesmo traços de glúten podem causar reação. Contato cruzado em fornos, óleo de fritura e utensílios é relevante.",
         ),
         Restriction(
@@ -164,6 +189,7 @@ RESTRICTIONS: dict[str, Restriction] = {
             type=RestrictionType.INTOLERANCE, terms=GLUTEN_TERMS, core_terms=GLUTEN_CORE,
             uncertain_terms=GLUTEN_UNCERTAIN, ignored_phrases=GLUTEN_IGNORED, free_claims=GLUTEN_FREE_CLAIMS,
             ifood_tags=("GLUTEN_FREE",),
+            label_conflict_tags=("en:gluten", "en:contains-gluten"), label_free_tags=("en:no-gluten", "en:gluten-free"),
         ),
         Restriction(
             id="alergia_leite", label="Alergia à proteína do leite (APLV)", substance="proteína do leite",
@@ -173,6 +199,7 @@ RESTRICTIONS: dict[str, Restriction] = {
             # "Zero lactose" remove o açúcar do leite, mas mantém a proteína: não serve para APLV.
             insufficient_claims=("zero lactose", "sem lactose", "lactose free", "baixa lactose"),
             ifood_tags=("VEGAN",),
+            label_conflict_tags=("en:milk", "en:contains-milk"), label_free_tags=("en:no-milk", "en:vegan", "en:dairy-free"),
             note='"Sem lactose" NÃO significa sem proteína do leite. Para APLV, produtos zero lactose continuam incompatíveis.',
         ),
         Restriction(
@@ -185,18 +212,22 @@ RESTRICTIONS: dict[str, Restriction] = {
             ignored_phrases=(*DAIRY_IGNORED, "zero lactose", "sem lactose"),
             free_claims=("sem lactose", "zero lactose", "lactose free", "sem leite", "vegano", "vegana", "100% vegetal"),
             ifood_tags=("LAC_FREE",),
+            # "Contém leite" no rótulo não basta: produtos zero lactose também contêm leite.
+            label_conflict_tags=("en:contains-lactose",), label_free_tags=("en:no-lactose", "en:lactose-free", "en:no-milk", "en:vegan"),
         ),
         Restriction(
             id="alergia_ovo", label="Alergia a ovo", substance="ovo", type=RestrictionType.ALLERGY,
             terms=EGG_TERMS, core_terms=EGG_CORE, uncertain_terms=EGG_UNCERTAIN,
             ignored_phrases=("maionese vegana", "maionese vegetal", "ovo vegano"),
             free_claims=("sem ovo", "sem ovos", "vegano", "vegana", "100% vegetal"), ifood_tags=("VEGAN",),
+            label_conflict_tags=("en:eggs",), label_free_tags=("en:no-eggs", "en:vegan"),
         ),
         Restriction(
             id="alergia_amendoim", label="Alergia a amendoim", substance="amendoim", type=RestrictionType.ALLERGY,
             terms=("amendoim", "pacoca", "pe de moleque", "pasta de amendoim", "manteiga de amendoim", "satay", "mendorato"),
             uncertain_terms=("granola", "crocante", "praline", "chocolate", "molho thai", "molho asiatico", "xerem"),
             free_claims=("sem amendoim", "livre de amendoim"),
+            label_conflict_tags=("en:peanuts",), label_free_tags=("en:no-peanuts",),
         ),
         Restriction(
             id="alergia_castanhas", label="Alergia a castanhas e nozes", substance="castanhas/nozes",
@@ -207,18 +238,21 @@ RESTRICTIONS: dict[str, Restriction] = {
             ),
             uncertain_terms=("pesto", "granola", "crocante", "chocolate", "farofa doce", "mix de graos"),
             free_claims=("sem castanhas", "sem nozes", "livre de castanhas"),
+            label_conflict_tags=("en:nuts",), label_free_tags=("en:no-nuts",),
         ),
         Restriction(
             id="alergia_soja", label="Alergia a soja", substance="soja", type=RestrictionType.ALLERGY,
             terms=("soja", "shoyu", "molho de soja", "tofu", "misso", "missoshiru", "edamame", "lecitina de soja", "proteina de soja", "tempeh", "teriyaki"),
             uncertain_terms=("proteina vegetal", "molho oriental", "tempero pronto", "chocolate", "margarina"),
             free_claims=("sem soja", "livre de soja"),
+            label_conflict_tags=("en:soybeans",), label_free_tags=("en:no-soy",),
         ),
         Restriction(
             id="alergia_peixe", label="Alergia a peixe", substance="peixe", type=RestrictionType.ALLERGY,
             terms=("peixe", "salmao", "atum", "bacalhau", "tilapia", "sardinha", "anchova", "aliche", "pescada", "merluza", "robalo", "sushi", "sashimi", "molho de peixe", "dashi", "katsuobushi"),
             uncertain_terms=("molho ingles", "worcestershire", "caesar", "temaki", "poke", "frutos do mar"),
             free_claims=("sem peixe",),
+            label_conflict_tags=("en:fish",),
         ),
         Restriction(
             id="alergia_frutos_mar", label="Alergia a frutos do mar", substance="crustáceos e moluscos",
@@ -226,6 +260,58 @@ RESTRICTIONS: dict[str, Restriction] = {
             terms=("camarao", "lagosta", "caranguejo", "siri", "lula", "polvo", "mexilhao", "marisco", "ostra", "vieira", "frutos do mar", "paella", "kani"),
             uncertain_terms=("molho de peixe", "tempura", "yakisoba", "moqueca", "bobo"),
             free_claims=("sem frutos do mar",),
+            label_conflict_tags=("en:crustaceans", "en:molluscs"),
+        ),
+        Restriction(
+            id="alergia_gergelim", label="Alergia a gergelim", substance="gergelim", type=RestrictionType.ALLERGY,
+            terms=("gergelim", "tahine", "tahini", "homus", "hommus", "oleo de gergelim", "gomasio"),
+            uncertain_terms=("molho oriental", "pao sirio", "zaatar", "furikake"),
+            free_claims=("sem gergelim",),
+            label_conflict_tags=("en:sesame-seeds",), label_free_tags=("en:no-sesame",),
+        ),
+        Restriction(
+            id="intolerancia_frutose", label="Intolerância à frutose", substance="frutose", type=RestrictionType.INTOLERANCE,
+            terms=("frutose", "mel", "xarope de milho", "xarope de agave", "agave", "sorbitol", "acucar invertido", "melado"),
+            uncertain_terms=("fruta", "frutas", "suco", "geleia", "calda", "adocado"),
+            free_claims=("sem frutose", "sem acucar"),
+        ),
+        Restriction(
+            id="religiao_sem_porco", label="Sem carne de porco (islamismo, judaísmo, adventismo)",
+            substance="carne de porco e derivados", type=RestrictionType.RELIGIOUS,
+            terms=PORK_TERMS, uncertain_terms=PORK_UNCERTAIN, ignored_phrases=PORK_IGNORED,
+            free_claims=("sem porco", "sem carne suina", "halal", "kosher", "casher"),
+            label_free_tags=("en:halal", "en:kosher", "en:vegetarian", "en:vegan"),
+            note="Banha, gelatina e caldos podem ser de origem suína mesmo sem aparecer no nome do prato.",
+        ),
+        Restriction(
+            id="halal", label="Halal (islamismo)", substance="porco, álcool e carnes sem abate halal",
+            type=RestrictionType.RELIGIOUS,
+            terms=(*PORK_TERMS, *ALCOHOL_TERMS), core_terms=(*PORK_TERMS, *ALCOHOL_TERMS),
+            # Sem certificação, qualquer carne é dúvida: o abate precisa ser halal.
+            uncertain_terms=(*PORK_UNCERTAIN, "carne", "frango", "cordeiro", "peru", "file", "linguica de frango"),
+            ignored_phrases=(*PORK_IGNORED, "carne vegetal", "carne de jaca", "frango vegano", "hamburguer vegano"),
+            free_claims=("halal", "certificado halal", "abate halal"),
+            label_free_tags=("en:halal",),
+            note="Carnes só são compatíveis com abate e certificação halal; peça a confirmação do estabelecimento.",
+        ),
+        Restriction(
+            id="kosher", label="Kosher / casher (judaísmo)", substance="porco, frutos do mar e carnes não kosher",
+            type=RestrictionType.RELIGIOUS,
+            terms=(*PORK_TERMS, *SHELLFISH_TERMS),
+            # Mistura de carne e leite e a origem das carnes só se confirmam com certificação.
+            uncertain_terms=(*PORK_UNCERTAIN, "carne", "frango", "cordeiro", "queijo", "molho branco", "gelatina"),
+            ignored_phrases=(*PORK_IGNORED, "carne vegetal", "carne de jaca", "frango vegano", "queijo vegano"),
+            free_claims=("kosher", "casher", "certificado kosher"),
+            label_free_tags=("en:kosher",),
+            note="Kosher também proíbe misturar carne e leite; só a certificação do estabelecimento confirma.",
+        ),
+        Restriction(
+            id="sem_carne_bovina", label="Sem carne bovina (hinduísmo)", substance="carne bovina",
+            type=RestrictionType.RELIGIOUS,
+            terms=BEEF_TERMS, uncertain_terms=BEEF_UNCERTAIN,
+            ignored_phrases=("carne vegetal", "carne de jaca", "hamburguer vegano", "hamburguer de frango", "file de frango", "file de peixe"),
+            free_claims=("sem carne bovina", "vegetariano", "vegetariana", "vegano", "vegana"),
+            label_free_tags=("en:vegetarian", "en:vegan"),
         ),
         Restriction(
             id="vegano", label="Vegano", substance="ingredientes de origem animal", type=RestrictionType.PREFERENCE,
@@ -233,12 +319,14 @@ RESTRICTIONS: dict[str, Restriction] = {
             uncertain_terms=("molho da casa", "caldo", "massa fresca", "chocolate"),
             ignored_phrases=(*MEAT_IGNORED, *DAIRY_IGNORED, "maionese vegana"),
             free_claims=("vegano", "vegana", "100% vegetal", "plant based"), ifood_tags=("VEGAN",),
+            label_conflict_tags=("en:milk", "en:eggs", "en:fish", "en:crustaceans", "en:molluscs"), label_free_tags=("en:vegan",),
         ),
         Restriction(
             id="vegetariano", label="Vegetariano", substance="carnes", type=RestrictionType.PREFERENCE,
             terms=MEAT_TERMS, core_terms=MEAT_CORE, uncertain_terms=("caldo", "molho da casa"),
             ignored_phrases=MEAT_IGNORED, free_claims=("vegetariano", "vegetariana", "vegano", "vegana"),
             ifood_tags=("VEGETARIAN",),
+            label_conflict_tags=("en:fish", "en:crustaceans", "en:molluscs"), label_free_tags=("en:vegetarian", "en:vegan"),
         ),
     )
 }

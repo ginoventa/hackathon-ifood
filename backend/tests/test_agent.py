@@ -143,15 +143,41 @@ async def test_historico_e_mantido_entre_turnos(session):
     assert any("Olá!" == getattr(message, "content", None) for message in llm.received[0])
 
 
-async def test_busca_repete_sem_filtro_quando_o_filtro_do_ifood_esconde_tudo(session):
+async def test_busca_mostra_so_itens_com_etiqueta_do_ifood_quando_existem(session):
+    llm = model(
+        {"call": ("registrar_restricoes", {"restricoes": [{"id": "doenca_celiaca"}]})},
+        {"call": ("buscar_opcoes", {"consulta": "lasanha"})},
+        {"text": "ok"},
+    )
+    result = await run_agent_turn(session, "Quero lasanha, sou celíaca", model=llm)
+    items = next(card["data"]["items"] for card in result["cards"] if card["type"] == "options")
+    # Todas as opções têm a etiqueta GLUTEN_FREE; "lasanha" no nome não conta como conflito.
+    assert items and all(item["ifoodTag"] for item in items)
+    assert all(item["quickVerdict"] != "CONFLITO" for item in items)
+
+
+async def test_busca_nunca_recomenda_item_com_outra_restricao(session):
     llm = model(
         {"call": ("registrar_restricoes", {"restricoes": [{"id": "alergia_leite"}, {"id": "doenca_celiaca"}]})},
-        # Nenhum item do catálogo de teste tem ao mesmo tempo VEGAN e GLUTEN_FREE com "calabresa".
+        # Não existe pizza calabresa vegana e sem glúten no catálogo de teste.
         {"call": ("buscar_opcoes", {"consulta": "pizza calabresa"})},
         {"text": "ok"},
     )
     result = await run_agent_turn(session, "Quero pizza de calabresa", model=llm)
-    options = next(card["data"] for card in result["cards"] if card["type"] == "options")
-    assert options["items"], "a busca deveria repetir sem os filtros do iFood"
-    assert options["filtersUsed"] == []
-    assert "sem filtro" in llm.last_tool_output()["observacao"]
+    output = llm.last_tool_output()
+    assert output["encontrado"] is False
+    # As alternativas atendem às restrições pela etiqueta do iFood (VEGAN e GLUTEN_FREE).
+    alternatives = next(card["data"] for card in result["cards"] if card["type"] == "options")
+    assert alternatives["alternatives"] is True
+    assert {item["itemName"] for item in alternatives["items"]} <= {"Lasanha Vegana de Abobrinha", "Lasanha Vegana de Massa de Arroz"}
+
+
+async def test_sem_alternativas_diz_que_nao_encontrou(session):
+    llm = model(
+        {"call": ("registrar_restricoes", {"restricoes": [{"id": "alergia_amendoim"}, {"id": "halal"}]})},
+        {"call": ("buscar_opcoes", {"consulta": "pizza calabresa"})},
+        {"text": "Infelizmente não encontrei."},
+    )
+    result = await run_agent_turn(session, "Quero pizza de calabresa", model=llm)
+    assert llm.last_tool_output()["encontrado"] is False
+    assert not [card for card in result["cards"] if card["type"] == "options"]

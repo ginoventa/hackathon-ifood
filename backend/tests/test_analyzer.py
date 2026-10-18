@@ -138,3 +138,90 @@ def test_mensagem_ao_restaurante():
     assert "Lasanha Bolonhesa" in message["text"]
     assert "compartilhados" in message["text"]
     assert message["text"].endswith("Beatriz")
+
+
+class TestRotulo:
+    """Rótulo de produto industrializado (Open Food Facts)."""
+
+    PRODUCT = {"itemId": "m", "itemName": "Molho de tomate 340g", "itemDescription": "Sachê 340g", "itemEan": "789"}
+
+    def label(self, **extra):
+        return {"found": True, "ean": "789", "allergens": [], "traces": [], "labels": [], "ingredients": "tomate, sal", **extra}
+
+    def test_alergenico_declarado_no_rotulo_e_conflito(self):
+        analysis = analyze_product(self.PRODUCT, [CELIAC], kind="MERCADO", label=self.label(allergens=["en:gluten"]))
+        assert analysis["verdict"] == Verdict.CONFLICT
+        assert "rótulo declara" in analysis["restrictions"][0]["explanation"]
+
+    def test_pode_conter_no_rotulo_e_risco(self):
+        analysis = analyze_product(self.PRODUCT, [CELIAC], kind="MERCADO", label=self.label(traces=["en:gluten"]))
+        assert analysis["verdict"] == Verdict.RISK
+
+    def test_rotulo_sem_a_substancia_libera_com_aviso(self):
+        analysis = analyze_product(self.PRODUCT, [CELIAC, MILK_ALLERGY], kind="MERCADO", label=self.label())
+        assert analysis["verdict"] == Verdict.NO_DECLARED_CONFLICT
+        assert FindingKind.LABEL_CLEAR in kinds(analysis)
+        assert "embalagem" in analysis["restrictions"][0]["explanation"]
+
+    def test_selo_sem_gluten_no_rotulo_ignora_nome_de_massa(self):
+        product = {"itemId": "p", "itemName": "Macarrão parafuso 500g", "itemDescription": "Pacote", "itemEan": "789"}
+        analysis = analyze_product(product, [CELIAC], kind="MERCADO", label=self.label(labels=["en:no-gluten"], ingredients="farinha de arroz"))
+        assert analysis["verdict"] == Verdict.NO_DECLARED_CONFLICT
+
+    def test_rotulo_nao_encontrado_mantem_aviso_de_conferir_embalagem(self):
+        analysis = analyze_product(self.PRODUCT, [CELIAC], kind="MERCADO", label={"found": False, "ean": "789"})
+        assert analysis["verdict"] == Verdict.INSUFFICIENT
+        assert any("rótulo" in info for info in analysis["missingInfo"])
+
+
+class TestEtiquetaDoIfood:
+    def test_etiqueta_dispensa_nome_de_prato(self):
+        product = {"itemId": "pz", "itemName": "Pizza de Calabresa Grande", "itemDescription": "Massa artesanal, molho e calabresa."}
+        analysis = analyze_product(product, [CELIAC], menu_items=[], declared_tags=["GLUTEN_FREE"])
+        assert analysis["verdict"] == Verdict.NO_DECLARED_CONFLICT
+
+    def test_sem_etiqueta_nome_de_prato_conta(self):
+        product = {"itemId": "pz", "itemName": "Pizza de Calabresa Grande", "itemDescription": "Massa artesanal, molho e calabresa."}
+        assert analyze_product(product, [CELIAC], menu_items=[])["verdict"] == Verdict.CONFLICT
+
+    def test_itens_etiquetados_do_cardapio_nao_sao_contato_cruzado(self):
+        product = {"itemId": "a", "itemName": "Pizza de Frango", "itemDescription": "Massa de arroz."}
+        menu = [product, {"itemId": "b", "itemName": "Pizza de Calabresa", "tags": ["GLUTEN_FREE"]}]
+        analysis = analyze_product(product, [CELIAC], menu_items=menu, declared_tags=["GLUTEN_FREE"])
+        assert analysis["verdict"] == Verdict.NO_DECLARED_CONFLICT
+
+
+class TestRestricoesReligiosas:
+    def test_sem_porco_detecta_derivados(self):
+        restriction = resolve_restriction({"id": "religiao_sem_porco"})
+        product = {"itemId": "f", "itemName": "Feijoada completa", "itemDescription": "Feijão preto com paio e costelinha."}
+        assert analyze_product(product, [restriction], menu_items=[])["verdict"] == Verdict.CONFLICT
+
+    def test_linguica_de_frango_nao_e_porco(self):
+        restriction = resolve_restriction({"id": "religiao_sem_porco"})
+        product = {"itemId": "l", "itemName": "Linguiça de frango grelhada", "itemDescription": "Linguiça de frango com arroz, feijão e salada verde da casa."}
+        assert analyze_product(product, [restriction], menu_items=[])["verdict"] == Verdict.NO_DECLARED_CONFLICT
+
+    def test_halal_carne_sem_certificacao_e_risco(self):
+        restriction = resolve_restriction({"id": "halal"})
+        product = {"itemId": "c", "itemName": "Frango grelhado", "itemDescription": "Peito de frango grelhado com arroz e legumes no vapor."}
+        assert analyze_product(product, [restriction], menu_items=[])["verdict"] == Verdict.RISK
+
+    def test_halal_certificado(self):
+        restriction = resolve_restriction({"id": "halal"})
+        product = {"itemId": "c", "itemName": "Frango grelhado halal", "itemDescription": "Peito de frango com certificado halal, arroz e legumes."}
+        assert analyze_product(product, [restriction], menu_items=[])["verdict"] == Verdict.NO_DECLARED_CONFLICT
+
+    def test_restricao_religiosa_personalizada(self):
+        restriction = resolve_restriction({"id": "personalizada", "nome": "Jainismo: sem raízes", "tipo": "RELIGIOSA", "termos": ["cebola", "alho", "batata"]})
+        assert restriction.type == "RELIGIOSA"
+        product = {"itemId": "s", "itemName": "Sopa de legumes", "itemDescription": "Abóbora, cenoura, batata e cebola."}
+        assert analyze_product(product, [restriction], menu_items=[])["verdict"] == Verdict.CONFLICT
+
+
+def test_rotulo_sem_dados_mantem_aviso_de_conferir_embalagem():
+    product = {"itemId": "m", "itemName": "Batata original 104g", "itemDescription": "Tubo", "itemEan": "789"}
+    empty = {"found": True, "ean": "789", "allergens": [], "traces": [], "labels": [], "ingredients": ""}
+    analysis = analyze_product(product, [CELIAC], kind="MERCADO", label=empty)
+    assert analysis["verdict"] == Verdict.INSUFFICIENT
+    assert any("rótulo" in info for info in analysis["missingInfo"])

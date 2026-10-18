@@ -6,6 +6,7 @@ from __future__ import annotations
 import time
 from typing import Any
 
+from ..errors import AppError
 from ..ifood.client import get_ifood_client
 from ..sessions import Session, remember_declared_tags
 from .account import user_location
@@ -17,6 +18,7 @@ MENU_PAGE_SIZE = 25
 # Cache de cardápios: evita refazer a mesma varredura em poucos minutos.
 MENU_CACHE_TTL_SECONDS = 10 * 60
 _menu_cache: dict[str, tuple[float, list[dict]]] = {}
+_tagged_cache: dict[str, tuple[float, set[str]]] = {}
 
 
 def summarize_item_result(result: dict) -> dict[str, Any]:
@@ -27,6 +29,7 @@ def summarize_item_result(result: dict) -> dict[str, Any]:
     return {
         "itemId": result.get("itemId"),
         "itemName": result.get("itemName"),
+        "itemEan": result.get("itemEan") or None,
         "imageUrl": result.get("itemImageUrl"),
         "unitPrice": unit_price,
         "promotionalUnitPrice": result.get("promotionalUnitPrice", unit_price),
@@ -90,11 +93,63 @@ async def search_offers(
     return {"kind": "MERCHANT", "merchants": [summarize_merchant_result(item) for item in results], "hasMore": bool(response.get("hasMore"))}
 
 
+async def browse_items(session: Session, *, merchant_type: str, refinements: dict, page_size: int = 8) -> list[dict]:
+    """Navega pelos itens perto do usuário sem termo de busca (ex.: tudo com GLUTEN_FREE).
+
+    Os itens retornados ficam marcados na sessão com as etiquetas do filtro.
+    """
+    response = await get_ifood_client().call_tool("browseOffers", {
+        "merchantType": merchant_type,
+        "resultKind": "ITEM",
+        "pageSize": page_size,
+        "refinements": refinements,
+        "userLocation": user_location(session),
+    })
+    results = response.get("results") or []
+    remember_declared_tags(session, [item.get("itemId") for item in results], refinements.get("itemRestrictions"))
+    return [summarize_item_result(item) for item in results]
+
+
 async def get_item_details(session: Session, merchant_id: str, item_id: str) -> dict:
     """Detalhes completos de um item (descrição e adicionais)."""
     return await get_ifood_client().call_tool(
         "getItem", {"merchantId": merchant_id, "itemId": item_id, "userLocation": user_location(session)},
     )
+
+
+async def get_tagged_item_ids(session: Session, merchant_id: str, tag: str, merchant_type: str = "RESTAURANT") -> set[str]:
+    """Ids dos itens da loja que o iFood classifica com a etiqueta (ex.: GLUTEN_FREE).
+
+    Falhas não interrompem a análise: sem a lista, nenhum item é tratado como etiquetado.
+    """
+    key = f"{merchant_id}:{tag}"
+    cached = _tagged_cache.get(key)
+    if cached and cached[0] > time.time():
+        return cached[1]
+
+    ids: set[str] = set()
+    next_page_token = None
+    try:
+        for _ in range(MENU_PAGES):
+            args: dict[str, Any] = {
+                "merchantType": merchant_type,
+                "resultKind": "ITEM",
+                "pageSize": MENU_PAGE_SIZE,
+                "refinements": {"merchantId": merchant_id, "itemRestrictions": [tag]},
+                "userLocation": user_location(session),
+            }
+            if next_page_token:
+                args["nextPageToken"] = next_page_token
+            response = await get_ifood_client().call_tool("browseOffers", args)
+            ids.update(item.get("itemId") for item in response.get("results") or [])
+            next_page_token = response.get("nextPageToken")
+            if not response.get("hasMore") or not next_page_token:
+                break
+    except AppError:
+        return ids
+
+    _tagged_cache[key] = (time.time() + MENU_CACHE_TTL_SECONDS, ids)
+    return ids
 
 
 async def get_menu_items(session: Session, merchant_id: str, merchant_type: str = "RESTAURANT") -> list[dict]:

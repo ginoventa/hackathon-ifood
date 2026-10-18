@@ -17,6 +17,7 @@ from ..restrictions.catalog import to_ifood_item_restrictions
 from ..restrictions.text_matching import normalize_text
 from ..sessions import Session
 from .catalog import get_item_details, search_offers
+from .labels import fetch_label
 
 # Quantos resultados buscar por ingrediente.
 RESULTS_PER_INGREDIENT = 10
@@ -245,10 +246,15 @@ async def plan_grocery_shopping(session: Session) -> dict:
                 details = await get_item_details(session, recommended["merchantId"], item["itemId"])
             except AppError:
                 return  # Mantém a análise rápida (só pelo nome).
+            # Produto industrializado: consulta o rótulo (alergênicos e "pode conter") pelo código de barras.
+            label = await fetch_label(details.get("itemEan") or item.get("itemEan"))
             item["analysis"] = analyze_product(
-                details, session.restrictions, kind=KIND_MARKET, declared_tags=session.declared_tags.get(item["itemId"], []),
+                details, session.restrictions, kind=KIND_MARKET,
+                declared_tags=session.declared_tags.get(item["itemId"], []), label=label,
             )
             item["verdict"] = item["analysis"]["verdict"]
+            if label and label.get("found"):
+                item["labelUrl"] = label["url"]
 
         await asyncio.gather(*[reanalyze(item) for item in recommended["items"]])
         conflicting = [item for item in recommended["items"] if item["verdict"] == Verdict.CONFLICT]
