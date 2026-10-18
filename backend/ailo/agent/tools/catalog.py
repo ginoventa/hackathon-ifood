@@ -152,7 +152,7 @@ async def _search_options(session, args):
     query = args["consulta"]
     use_filters = args.get("priorizarComFiltrosDoIfood", True) is not False
     tags = to_ifood_item_restrictions(session.restrictions) if use_filters else []
-    refinements: dict = {"onlyOpen": args.get("apenasAbertos", True) is not False}
+    refinements: dict = {"onlyOpen": args.get("apenasAbertos", not config.demo_mode) is True}
     if args.get("precoMaximo"):
         refinements["maxItemPrice"] = args["precoMaximo"]
     if args.get("ordenarPor"):
@@ -216,7 +216,10 @@ SEARCH_OPTIONS = ToolDefinition(
             },
             "precoMaximo": {"type": "number"},
             "ordenarPor": {"type": "string", "enum": ["RELEVANCE", "PRICE", "DISTANCE", "DELIVERY_TIME", "DELIVERY_FEE"]},
-            "apenasAbertos": {"type": "boolean", "description": "Padrão: true."},
+            "apenasAbertos": {
+                "type": "boolean",
+                "description": "Filtra apenas restaurantes abertos. Padrão: true fora do demo e false no demo.",
+            },
         },
         "required": ["consulta"],
     },
