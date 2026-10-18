@@ -44,7 +44,18 @@ async def _register_recipe(session, args):
         "varianteId": recipe.get("varianteId"),
         "ingredientes": [{"nome": item["nome"], "quantidade": item["quantidade"], "referenciasDemo": item.get("referenciasDemo", []), "analiseReferencias": item.get("analiseReferencias"), "jaTenhoEmCasa": item.get("jaTenhoEmCasa", False)} for item in recipe["ingredientes"]],
         "origem": recipe.get("origem"),
-        "substituicoes": recipe["substituicoes"],
+        # Base para a IA explicar cada troca: restrição atendida, nota culinária,
+        # composição e tabela nutricional do original e do substituto.
+        "substituicoes": [
+            {
+                "original": swap["original"],
+                "substituto": swap["substituto"],
+                "restricoesAtendidas": swap.get("restricoes", []),
+                "notaCulinaria": swap.get("motivo"),
+                "comparacao": swap.get("comparacao"),
+            }
+            for swap in recipe["substituicoes"]
+        ],
         "ingredientesParaConferirRotulo": [item["nome"] for item in recipe["ingredientes"] if item["verificacao"]["needsLabelCheck"]],
         "ingredientesComDuvida": [item["nome"] for item in recipe["ingredientes"] if item["verificacao"]["uncertain"]],
     }, {"type": "recipe", "data": recipe}

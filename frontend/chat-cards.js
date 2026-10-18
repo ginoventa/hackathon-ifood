@@ -16,7 +16,8 @@ import { el, formatMinutes, formatPrice, icon, RESTRICTION_TYPE_LABELS, VERDICT_
  * @typedef {object} CardActions
  * @property {(message: string, display: string) => void} send Envia uma mensagem ao agente.
  * @property {(text: string) => void} fillComposer Preenche o campo de mensagem.
- * @property {(cartId: string) => void} openCheckout Abre a revisão do pedido.
+ * @property {(cartId: string) => void} openCheckout Abre a sacola do iFood.
+ * @property {(cartId: string) => void} finalizeOrder Abre a finalização (entrega, pagamento e confirmação).
  * @property {(inputs: object[]) => Promise<void>} saveProfile Salva o perfil alimentar.
  * @property {(text: string) => void} toast Mostra um aviso rápido.
  */
@@ -156,15 +157,22 @@ function analysisTags(analysis) {
   return [...new Set(tags)].map((tag) => IFOOD_TAG_LABELS[tag] ?? tag);
 }
 
+/** Selo amarelo "Inseguro": etiqueta do iFood, mas a loja prepara itens com a substância. */
+function unsafeBadge() {
+  return el('span', { className: 'verdict-badge unsafe' }, [icon('alert'), 'Inseguro']);
+}
+
 function renderAnalysis(analysis, actions) {
   const ids = `[itemId=${analysis.itemId}, merchantId=${analysis.merchantId}]`;
+  const alert = analysis.crossContactAlert;
 
   const restrictionBlocks = analysis.restrictions.map((result) => el('section', { className: 'analysis-restriction' }, [
     el('div', { className: 'analysis-restriction-header' }, [
       el('strong', { text: result.label }),
-      verdictBadge(result.verdict),
+      alert?.restriction === result.label ? unsafeBadge() : verdictBadge(result.verdict),
     ]),
-    el('p', { text: result.explanation }),
+    // Com o alerta "Inseguro", a explicação já está na caixa amarela abaixo.
+    alert?.restriction === result.label ? null : el('p', { text: result.explanation }),
 
   ]));
 
@@ -174,7 +182,6 @@ function renderAnalysis(analysis, actions) {
       'Quero seguir com o pedido',
     ), 'primary')]
     : [
-      actionButton('Consultar o restaurante', () => actions.consultRestaurant(analysis.itemId, analysis.merchantId)),
       actionButton('Escolher outro produto', () => actions.send(
         `Quero outro produto compatível, diferente de "${analysis.itemName}".`,
         'Quero escolher outro produto',
@@ -192,7 +199,7 @@ function renderAnalysis(analysis, actions) {
       el('div', {}, [
         el('p', { className: 'card-kicker', text: analysis.merchantName }),
         el('h3', { text: analysis.itemName }),
-        verdictBadge(analysis.verdict),
+        alert ? unsafeBadge() : verdictBadge(analysis.verdict),
         analysisTags(analysis).length
           ? el('span', { className: 'ifood-tag' }, [icon('check'), `Etiqueta do iFood: ${analysisTags(analysis).join(' · ')}`])
           : null,
@@ -202,6 +209,12 @@ function renderAnalysis(analysis, actions) {
       ? el('a', { className: 'label-link', text: 'Ver o rótulo consultado (Open Food Facts)', attrs: { href: analysis.labelUrl, target: '_blank', rel: 'noopener' } })
       : null,
     ...restrictionBlocks,
+    alert ? el('div', { className: 'card-note unsafe' }, [
+      el('strong', { text: `Possível contato cruzado com ${alert.substance}` }),
+      el('p', { text: 'Mesmo com a etiqueta do iFood, o estabelecimento prepara itens como:' }),
+      list(alert.examples),
+      el('p', { className: 'card-muted', text: 'Isso indica possível contato cruzado, não prova de contaminação.' }),
+    ]) : null,
     analysis.missingInfo.length ? el('div', { className: 'card-note' }, [el('strong', { text: 'O que ainda não sabemos' }), list(analysis.missingInfo)]) : null,
     el('div', { className: 'card-actions' }, buttons),
     el('p', { className: 'card-disclaimer', text: analysis.disclaimer }),
@@ -233,6 +246,45 @@ function renderClarification({ itemName, merchantName, text }, actions) {
 
 // ------------------------------------------------------------ Receita/mercado
 
+/** Linhas da tabela nutricional (por 100 g) usadas na comparação das trocas. */
+const NUTRIENTS = [
+  ['energiaKcal', 'Energia', 'kcal'],
+  ['carboidratosG', 'Carboidratos', 'g'],
+  ['proteinasG', 'Proteínas', 'g'],
+  ['gordurasTotaisG', 'Gorduras totais', 'g'],
+  ['fibrasG', 'Fibras', 'g'],
+  ['sodioMg', 'Sódio', 'mg'],
+];
+
+/** Valor nutricional formatado ou "—" quando não há dado. */
+function nutrientValue(table, key, unit) {
+  const value = table?.[key];
+  return typeof value === 'number' ? `${value.toLocaleString('pt-BR')} ${unit}` : '—';
+}
+
+/** Composição e tabela nutricional do original e do substituto de uma troca. */
+function swapComparison({ original, substituto }) {
+  const hasTable = original.tabelaNutricionalPor100g || substituto.tabelaNutricionalPor100g;
+  const sources = [...new Set([original.fonteNutricional, substituto.fonteNutricional].filter(Boolean))];
+  return details('Composição e tabela nutricional', [
+    ...[original, substituto].map((side) => el('p', { className: 'card-muted' }, [
+      el('strong', { text: `${side.nome}${side.produto ? ` (${side.produto}${side.produtoFicticio ? ', fictício' : ''})` : ''}: ` }),
+      side.composicao ?? 'composição não disponível',
+    ])),
+    hasTable ? el('table', { className: 'nutrition-table' }, [
+      el('thead', {}, [el('tr', {}, [
+        el('th', { text: 'Por 100 g' }), el('th', { text: original.nome }), el('th', { text: substituto.nome }),
+      ])]),
+      el('tbody', {}, NUTRIENTS.map(([key, label, unit]) => el('tr', {}, [
+        el('td', { text: label }),
+        el('td', { text: nutrientValue(original.tabelaNutricionalPor100g, key, unit) }),
+        el('td', { text: nutrientValue(substituto.tabelaNutricionalPor100g, key, unit) }),
+      ]))),
+    ]) : el('p', { className: 'card-muted', text: 'Tabela nutricional não disponível para esta troca.' }),
+    ...sources.map((source) => el('p', { className: 'card-disclaimer', text: source })),
+  ]);
+}
+
 function renderRecipe(recipe, actions) {
   const ingredients = el('ul', { className: 'ingredient-list' }, recipe.ingredientes.map((ingredient) => {
     const check = ingredient.verificacao;
@@ -240,7 +292,9 @@ function renderRecipe(recipe, actions) {
     if (check.status !== 'SEM_CONFLITO_DECLARADO') {
       tags.push(verdictBadge(check.status));
     }
-    if (check.needsLabelCheck) {
+    if (check.labelChecked) {
+      tags.push(el('span', { className: 'label-tag ok', text: 'Rótulo verificado' }));
+    } else if (check.needsLabelCheck) {
       tags.push(el('span', { className: 'label-tag', text: 'Confira o rótulo' }));
     }
     if (ingredient.jaTenhoEmCasa) {
@@ -263,14 +317,14 @@ function renderRecipe(recipe, actions) {
     ingredients,
     recipe.substituicoes.length ? el('div', { className: 'card-note' }, [
       el('strong', { text: 'Substituições' }),
-      list(recipe.substituicoes.map((swap) => [
-        `${swap.original} → ${swap.substituto}${swap.motivo ? ` (${swap.motivo})` : ''}`,
-      ].filter(Boolean).join(' — '))),
+      ...recipe.substituicoes.map((swap) => el('div', { className: 'swap' }, [
+        el('p', { text: `${swap.original} → ${swap.substituto}` }),
+        swap.comparacao ? swapComparison(swap.comparacao) : null,
+      ])),
     ]) : null,
-    recipe.modoDePreparo?.length ? el('div', {}, [el('h4', { text: 'Modo de preparo' }), el('ol', { className: 'card-list' }, recipe.modoDePreparo.map((step) => el('li', { text: step })))]) : null,
     recipe.cuidados.length ? el('div', { className: 'card-note warning' }, [el('strong', { text: 'Cuidados' }), list(recipe.cuidados)]) : null,
     el('div', { className: 'card-actions' }, [
-      actionButton('Buscar ingredientes no mercado', () => actions.send('Pode buscar os ingredientes no mercado.', 'Buscar os ingredientes no mercado'), 'primary'),
+      actionButton('Aprovar lista', () => actions.send('Aprovo a lista de ingredientes. Pode buscar no mercado.', 'Aprovar lista'), 'primary'),
     ]),
     el('p', { className: 'card-disclaimer', text: 'Receita sugerida pela IA e verificada por regras do Ailo. Confira sempre os rótulos dos produtos.' }),
   ]);
@@ -335,9 +389,9 @@ function renderCart(cart, actions) {
     el('div', { className: 'cart-total' }, [el('span', { text: 'Total' }), el('strong', { text: formatPrice(cart.total ?? cart.subtotal) })]),
     cart.alerts.length ? el('p', { className: 'card-note warning', text: `${cart.alerts.length} alerta(s) alimentar(es) para revisar antes de finalizar.` }) : null,
     el('div', { className: 'card-actions' }, [
-      actionButton('Ver carrinho no iFood', () => actions.openCheckout(cart.cartId), 'primary'),
+      actionButton('Finalizar pedido', () => actions.finalizeOrder(cart.cartId), 'primary'),
     ]),
-    el('p', { className: 'card-disclaimer', text: 'Nada é enviado ao iFood sem a sua confirmação na tela de revisão.' }),
+    el('p', { className: 'card-disclaimer', text: 'Na próxima tela você escolhe entrega e pagamento. O pedido só é enviado ao iFood quando você confirmar.' }),
   ]);
 }
 

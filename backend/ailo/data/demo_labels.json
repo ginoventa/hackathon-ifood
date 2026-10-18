@@ -394,5 +394,91 @@
     ],
     "allergenStatementComplete": false,
     "sourceNote": "Informações pré-carregadas de fonte pública; confira a embalagem. Avisos não publicados permanecem desconhecidos."
+  },
+  "2000000000015": {
+    "found": true,
+    "ean": "2000000000015",
+    "productName": "Mistura para pizza sem glúten Ailo Demo 500 g",
+    "brand": "Ailo Demo",
+    "quantity": "500 g",
+    "ingredients": "Farinha de arroz, polvilho doce, fécula de batata, açúcar, sal e espessante goma xantana.",
+    "allergens": [],
+    "traces": [],
+    "labels": [
+      "en:no-gluten",
+      "en:no-lactose",
+      "en:vegan"
+    ],
+    "url": null,
+    "source": "Produto fictício da demonstração",
+    "demo": true,
+    "dataKind": "mock",
+    "allergenStatementComplete": true,
+    "sourceNote": "Produto fictício criado para a demonstração (EAN da faixa interna 20–29); não representa um rótulo real.",
+    "nutricaoPor100g": {
+      "energiaKcal": 352,
+      "carboidratosG": 84.0,
+      "proteinasG": 1.6,
+      "gordurasTotaisG": 0.6,
+      "fibrasG": 1.2,
+      "sodioMg": 310
+    }
+  },
+  "2000000000022": {
+    "found": true,
+    "ean": "2000000000022",
+    "productName": "Queijo muçarela fatiado Ailo Demo 150 g",
+    "brand": "Ailo Demo",
+    "quantity": "150 g",
+    "ingredients": "Leite pasteurizado, sal, fermento lácteo, coalho e cloreto de cálcio.",
+    "allergens": [
+      "en:milk"
+    ],
+    "traces": [],
+    "labels": [
+      "en:no-gluten"
+    ],
+    "url": null,
+    "source": "Produto fictício da demonstração",
+    "demo": true,
+    "dataKind": "mock",
+    "allergenStatementComplete": true,
+    "sourceNote": "Produto fictício criado para a demonstração (EAN da faixa interna 20–29); não representa um rótulo real.",
+    "nutricaoPor100g": {
+      "energiaKcal": 330,
+      "carboidratosG": 3.0,
+      "proteinasG": 22.6,
+      "gordurasTotaisG": 25.2,
+      "fibrasG": 0.0,
+      "sodioMg": 581
+    }
+  },
+  "2000000000039": {
+    "found": true,
+    "ean": "2000000000039",
+    "productName": "Fermento biológico seco instantâneo Ailo Demo 10 g",
+    "brand": "Ailo Demo",
+    "quantity": "10 g",
+    "ingredients": "Levedura (Saccharomyces cerevisiae) e emulsificante monoestearato de sorbitana.",
+    "allergens": [],
+    "traces": [],
+    "labels": [
+      "en:no-gluten",
+      "en:vegan"
+    ],
+    "url": null,
+    "source": "Produto fictício da demonstração",
+    "demo": true,
+    "dataKind": "mock",
+    "allergenStatementComplete": true,
+    "sourceNote": "Produto fictício criado para a demonstração (EAN da faixa interna 20–29); não representa um rótulo real.",
+    "nutricaoPor100g": {
+      "energiaKcal": 325,
+      "carboidratosG": 41.2,
+      "proteinasG": 40.4,
+      "gordurasTotaisG": 7.6,
+      "fibrasG": 26.9,
+      "sodioMg": 51
+    }
   }
 }

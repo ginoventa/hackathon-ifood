@@ -47,8 +47,10 @@ def normalize_cart(raw: dict) -> dict[str, Any]:
             "itemId": item.get("itemId") or item.get("catalogItemId"),
             "name": item.get("name") or item.get("itemName") or item.get("description") or "Item",
             "quantity": item.get("quantity") or 1,
-            "unitPrice": _pick_number(item, ["unitPrice", "price"]),
-            "totalPrice": _pick_number(item, ["totalPrice", "total", "subtotal"]),
+            "unitPrice": _pick_number(item, ["promotionalUnitPrice", "unitPrice", "price", "prices.unitPrice", "unitAmount", "price.unit"]),
+            "totalPrice": _pick_number(item, [
+                "totalPrice", "total", "subtotal", "totalAmount", "prices.total", "prices.totalPrice", "price.total", "amount.total",
+            ]),
             "customerNote": item.get("customerNote") or item.get("observation"),
             "options": [option.get("name") or option.get("optionName") or "Opção" for option in item.get("options") or []],
         }
@@ -70,6 +72,30 @@ def normalize_cart(raw: dict) -> dict[str, Any]:
         "deliveryMethodId": (cart.get("deliveryMethod") or {}).get("deliveryMethodId"),
         "paymentMethodId": (cart.get("paymentMethod") or {}).get("paymentMethodId"),
     }
+
+
+def _known_unit_price(session: Session, item_id: str) -> float | None:
+    """Preço unitário já visto no iFood nesta sessão (análise ou comparação de mercados)."""
+    for plan in (session.market_plan or {}).get("merchants", []):
+        for item in plan["items"]:
+            if item["itemId"] == item_id and item.get("unitPrice") is not None:
+                return float(item["unitPrice"])
+    price = (session.analyses.get(item_id) or {}).get("unitPrice")
+    return float(price) if isinstance(price, (int, float)) else None
+
+
+def fill_item_prices(session: Session, cart: dict) -> dict:
+    """Completa o preço de cada item quando a resposta do carrinho não o traz.
+
+    Usa o preço que o próprio iFood informou na busca/análise do item; o total do
+    carrinho continua sendo sempre o devolvido pelo iFood.
+    """
+    for item in cart["items"]:
+        if item["unitPrice"] is None and item["itemId"]:
+            item["unitPrice"] = _known_unit_price(session, item["itemId"])
+        if item["unitPrice"] is not None and item["totalPrice"] is None:
+            item["totalPrice"] = round(item["unitPrice"] * item["quantity"], 2)
+    return cart
 
 
 def _analysis_for(session: Session, item_id: str) -> dict | None:
@@ -141,7 +167,7 @@ async def create_cart(session: Session, merchant_id: str, items: list[dict]) -> 
     raw = await get_ifood_client().call_tool(
         "createCart", {"merchantId": merchant_id, "addressId": session.address["addressId"], "items": cart_items},
     )
-    cart = normalize_cart(raw)
+    cart = fill_item_prices(session, normalize_cart(raw))
     if not cart["cartId"]:
         raise AppError("O iFood não retornou o identificador do carrinho.", status=502, code="IFOOD_CARRINHO_INVALIDO")
     cart["merchantId"] = cart["merchantId"] or merchant_id
@@ -156,7 +182,7 @@ async def get_cart_preview(session: Session, cart_id: str) -> dict:
     entry = _require_own_cart(session, cart_id)
     raw = await get_ifood_client().call_tool("getCart", {"cartId": cart_id})
     return {
-        "cart": normalize_cart(raw),
+        "cart": fill_item_prices(session, normalize_cart(raw)),
         "alerts": dietary_alerts_for(session, entry["itemIds"]),
         "address": session.address,
     }
@@ -197,7 +223,7 @@ async def get_checkout_options(session: Session, cart_id: str) -> dict:
     ]
 
     return {
-        "cart": normalize_cart(cart_raw),
+        "cart": fill_item_prices(session, normalize_cart(cart_raw)),
         "alerts": dietary_alerts_for(session, entry["itemIds"]),
         "address": session.address,
         "deliveryMethods": delivery_methods,

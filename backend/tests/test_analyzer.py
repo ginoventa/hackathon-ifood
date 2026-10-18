@@ -54,7 +54,7 @@ class TestAnalyzeProduct:
         analysis = analyze_product(LASANHA_BOLONHESA, [MILK_ALLERGY], menu_items=[])
         assert analysis["verdict"] == Verdict.CONFLICT
         assert analysis["canProceed"] is False
-        assert len(analysis["alternatives"]) == 3
+        assert analysis["alternatives"] == ["ESCOLHER_OUTRO_PRODUTO", "PREPARAR_EM_CASA"]
 
     def test_adicionais_opcionais_a_evitar(self):
         analysis = analyze_product(LASANHA_BOLONHESA, [MILK_ALLERGY], menu_items=[])
@@ -225,3 +225,52 @@ def test_rotulo_sem_dados_mantem_aviso_de_conferir_embalagem():
     analysis = analyze_product(product, [CELIAC], kind="MERCADO", label=empty)
     assert analysis["verdict"] == Verdict.INSUFFICIENT
     assert any("rótulo" in info for info in analysis["missingInfo"])
+
+
+# Item real do MCP (Pop Vegan Food - Pinheiros), resumido: etiqueta GLUTEN_FREE,
+# mas a mesma pizza também é vendida com massa tradicional.
+POP_VEGAN_PIZZA = {
+    "itemId": "pizza-individual",
+    "itemName": "Pizza Individual",
+    "itemDescription": "Nossas pizzinhas sem trigo e massa tradicional têm 18cm de diâmetro (tamanho individual).",
+    "merchantName": "Pop Vegan Food - Pinheiros",
+    "optionGroups": [
+        {
+            "name": "Pizza Individual",
+            "minSelections": 1,
+            "options": [
+                {"optionId": "baiana", "name": "Baiana - Massa Sem Trigo", "description": "Molho de tomate e mussarela. Alergênicos: Contém soja."},
+                {"optionId": "veganella", "name": "Veganella - Massa Sem Trigo", "description": "Creme de avelã. Pode conter centeio, cevada e aveia."},
+                {"optionId": "pistache", "name": "Pistache - Massa Tradicional", "description": "Contém derivados de trigo e de soja. Contém glúten."},
+            ],
+        }
+    ],
+}
+
+
+def test_item_etiquetado_com_opcao_tradicional_e_inseguro_e_nao_incompativel():
+    menu = [
+        {"itemId": "coxinha", "itemName": "Coxinha de jaca", "itemDescription": ""},
+        {"itemId": "lasanha", "itemName": "Lasanha vegana", "itemDescription": "Massa de trigo"},
+        {"itemId": "brownie", "itemName": "Brownie sem glúten", "itemDescription": "", "tags": ["GLUTEN_FREE"]},
+    ]
+    analysis = analyze_product(POP_VEGAN_PIZZA, [CELIAC], menu_items=menu, declared_tags=["GLUTEN_FREE"])
+
+    # "Massa Sem Trigo" não conflita: só a opção tradicional (e o "pode conter") vira adicional a evitar.
+    assert analysis["verdict"] == Verdict.RISK
+    assert len(analysis["addOnsToAvoid"]) == 2
+    # Alerta "Inseguro" com dois exemplos do cardápio, ignorando itens etiquetados.
+    assert analysis["crossContactAlert"]["examples"] == ["Coxinha de jaca", "Lasanha vegana"]
+    assert "“Coxinha de jaca” e “Lasanha vegana”" in analysis["restrictions"][0]["explanation"]
+
+
+def test_sem_outros_itens_com_gluten_exemplos_vem_das_opcoes_do_item():
+    analysis = analyze_product(POP_VEGAN_PIZZA, [CELIAC], menu_items=[], declared_tags=["GLUTEN_FREE"])
+    assert "Pistache - Massa Tradicional" in analysis["crossContactAlert"]["examples"]
+
+
+def test_item_etiquetado_sem_fonte_de_contato_cruzado_nao_tem_alerta():
+    product = {**POP_VEGAN_PIZZA, "optionGroups": POP_VEGAN_PIZZA["optionGroups"][:1]}
+    product["optionGroups"] = [{**product["optionGroups"][0], "options": product["optionGroups"][0]["options"][:1]}]
+    analysis = analyze_product(product, [CELIAC], menu_items=[], declared_tags=["GLUTEN_FREE"])
+    assert analysis["crossContactAlert"] is None

@@ -79,3 +79,15 @@ async def test_cart_preview_rejects_another_session_cart(fake_ifood):
 def test_recipe_does_not_request_preparation_steps():
     assert "modoDePreparo" not in REGISTER_RECIPE.schema["properties"]
     assert "modoDePreparo" not in REGISTER_RECIPE.schema["required"]
+
+
+def test_cart_fills_missing_item_price_from_prices_seen_in_ifood():
+    from ailo.services.cart import fill_item_prices
+
+    session = Session(id="precos")
+    session.market_plan = {"merchants": [{"items": [{"itemId": "queijo", "unitPrice": 12.5}]}]}
+    cart = normalize_cart({"cartId": "c1", "items": [{"itemId": "queijo", "name": "Queijo", "quantity": 2}], "total": 30})
+    fill_item_prices(session, cart)
+    assert cart["items"][0]["unitPrice"] == 12.5 and cart["items"][0]["totalPrice"] == 25
+    # O total continua sendo o devolvido pelo iFood.
+    assert cart["total"] == 30

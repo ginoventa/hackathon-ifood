@@ -22,7 +22,7 @@ def _cart_output(cart: dict) -> dict:
         "itens": [f"{item['quantity']}x {item['name']}" for item in cart["items"]],
         "total": cart["total"] if cart["total"] is not None else cart["subtotal"],
         "alertasAlimentares": len(cart["alerts"]),
-        "proximoPasso": "O usuário deve revisar e confirmar o pedido na tela de revisão.",
+        "proximoPasso": 'O usuário clica em "Finalizar pedido" no cartão, escolhe entrega e pagamento e confirma o envio.',
     }
 
 

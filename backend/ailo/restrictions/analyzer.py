@@ -60,13 +60,16 @@ class FindingKind:
 
 
 # Caminhos alternativos oferecidos quando há dúvida ou risco (seção 1.4).
-ALTERNATIVES = ["CONSULTAR_RESTAURANTE", "ESCOLHER_OUTRO_PRODUTO", "PREPARAR_EM_CASA"]
+ALTERNATIVES = ["ESCOLHER_OUTRO_PRODUTO", "PREPARAR_EM_CASA"]
 
 # Descrições mais curtas que isto são tratadas como lista de ingredientes incompleta.
 MIN_DESCRIPTIVE_LENGTH = 45
 
 # Limite de itens do cardápio listados como possível contato cruzado.
 MAX_CROSS_CONTACT_EXAMPLES = 6
+
+# Quantos exemplos de fonte de contato cruzado entram no texto do parecer e no alerta.
+CROSS_CONTACT_EXAMPLES_SHOWN = 2
 
 KIND_RESTAURANT = "RESTAURANTE"
 KIND_MARKET = "MERCADO"
@@ -184,7 +187,26 @@ def _finding(kind: str, terms: list[str], where: str, source: str, **extra: Any)
     return {"kind": kind, "terms": terms, "where": where, "source": source, **extra}
 
 
-def _analyze_option_groups(product: dict, restriction: Restriction, source_label: str) -> list[dict]:
+def _option_conflict_terms(option: dict, restriction: Restriction, item_has_claim: bool) -> list[str]:
+    """Termos da substância numa opção, incluindo os do aviso "pode conter" dela.
+
+    Se o item tem declaração de ausência (ex.: etiqueta GLUTEN_FREE do iFood) ou
+    a própria opção declara ausência, nomes de prato ("massa", "pizza") deixam de
+    contar e só a substância em si ("trigo", "centeio") indica conflito. Assim,
+    "Baiana - Massa Sem Trigo" não conflita, mas "Pistache - Massa Tradicional
+    (contém trigo)" sim.
+    """
+    text = f"{option.get('name', '')} {option.get('description') or ''}"
+    clean_text, warnings = _split_may_contain(text)
+    declares_free = bool(contains_any(text, list(restriction.free_claims)))
+    terms = list(restriction.effective_core_terms if item_has_claim or declares_free else restriction.terms)
+    ignored = list(restriction.ignored_phrases)
+    present = find_terms(clean_text, terms, ignored).present
+    may_contain = [term for warning in warnings for term in find_terms(warning, list(restriction.terms), ignored).present]
+    return list(dict.fromkeys([*present, *may_contain]))
+
+
+def _analyze_option_groups(product: dict, restriction: Restriction, source_label: str, item_has_claim: bool = False) -> list[dict]:
     """Analisa os adicionais do item.
 
     Adicionais opcionais não tornam o prato incompatível, mas devem ser
@@ -193,10 +215,7 @@ def _analyze_option_groups(product: dict, restriction: Restriction, source_label
     findings = []
     for group in product.get("optionGroups") or []:
         options = group.get("options") or []
-        matches = [
-            (option, find_terms(f"{option.get('name', '')} {option.get('description') or ''}", list(restriction.terms), list(restriction.ignored_phrases)).present)
-            for option in options
-        ]
+        matches = [(option, _option_conflict_terms(option, restriction, item_has_claim)) for option in options]
         conflicting = [(option, terms) for option, terms in matches if terms]
         if not conflicting:
             continue
@@ -210,6 +229,7 @@ def _analyze_option_groups(product: dict, restriction: Restriction, source_label
                 f'adicional "{option.get("name")}" (grupo "{group.get("name")}", {"obrigatório" if is_mandatory else "opcional"})',
                 source_label,
                 optionId=option.get("optionId"),
+                optionName=option.get("name"),
             ))
     return findings
 
@@ -271,6 +291,12 @@ def _decide_verdict(restriction: Restriction, findings: list[dict], missing_info
     return Verdict.INSUFFICIENT
 
 
+def _cross_contact_examples(findings: list[dict]) -> list[str]:
+    """Nomes de itens que podem causar contato cruzado: primeiro o cardápio, depois as opções do item."""
+    names = [name for finding in findings if finding["kind"] == FindingKind.CROSS_CONTACT for name in finding.get("examples") or []]
+    return list(dict.fromkeys(names))[:CROSS_CONTACT_EXAMPLES_SHOWN]
+
+
 def _explain(restriction: Restriction, verdict: str, findings: list[dict]) -> str:
     """Gera uma explicação curta e determinística para a interface."""
 
@@ -303,8 +329,12 @@ def _explain(restriction: Restriction, verdict: str, findings: list[dict]) -> st
             if any('aviso "pode conter" no anúncio' in finding["where"] for finding in cross_findings):
                 reasons.append(f'o anúncio declara "pode conter {restriction.substance}"')
             if any('"pode conter"' not in finding["where"] for finding in cross_findings):
+                examples = _cross_contact_examples(findings)
                 reasons.append(
-                    f"há indícios de contato cruzado com {restriction.substance} "
+                    f"o estabelecimento também prepara itens com {restriction.substance}, como "
+                    f"{' e '.join(f'“{name}”' for name in examples)} (possível contato cruzado; não é prova de contaminação)"
+                    if examples
+                    else f"há indícios de contato cruzado com {restriction.substance} "
                     "(outros itens do cardápio ou preparo compartilhado; não é prova de contaminação)"
                 )
         return f"Possível risco para {label}: {'; '.join(reasons)}."
@@ -403,7 +433,7 @@ def _analyze_restriction(product: dict, restriction: Restriction, context: dict)
         ))
 
     # 4. Adicionais e opções.
-    findings.extend(_analyze_option_groups(product, restriction, source_label))
+    findings.extend(_analyze_option_groups(product, restriction, source_label, item_has_claim=has_valid_claim))
 
     # 5. Confirmações do estabelecimento informadas pelo usuário (evidência adicional).
     confirmations = [
@@ -429,9 +459,22 @@ def _analyze_restriction(product: dict, restriction: Restriction, context: dict)
                     FindingKind.CROSS_CONTACT, example_terms[:6],
                     f"{cross_contact['itemsWithSubstance']} de {cross_contact['analyzedItems']} itens do cardápio analisados",
                     "Cardápio do estabelecimento no iFood",
+                    examples=[example["itemName"] for example in cross_contact["examples"]],
                 ))
         else:
             missing_info.append("Não foi possível consultar o restante do cardápio para avaliar contato cruzado.")
+
+        # Item etiquetado/declarado "sem" que também é vendido em versão com a substância
+        # (ex.: "Massa Tradicional" na mesma pizza): a cozinha manipula as duas.
+        option_sources = [finding for finding in findings if finding["kind"] == FindingKind.ADD_ON]
+        if has_valid_claim and option_sources and restriction.rigor != Rigor.LOW:
+            findings.append(_finding(
+                FindingKind.CROSS_CONTACT,
+                list(dict.fromkeys(term for finding in option_sources for term in finding["terms"]))[:6],
+                "opções deste mesmo item com a substância",
+                source_label,
+                examples=[finding["optionName"] for finding in option_sources if finding.get("optionName")],
+            ))
 
     # 7. Lacunas de informação.
     has_confirmation = bool(confirmations)
@@ -467,6 +510,17 @@ def _analyze_restriction(product: dict, restriction: Restriction, context: dict)
         "crossContact": cross_contact,
         "explanation": _explain(restriction, verdict, findings),
     }
+
+
+def _cross_contact_alert(results: list[dict]) -> dict | None:
+    """Alerta "Inseguro": item com etiqueta do iFood (ex.: GLUTEN_FREE), mas a loja
+    prepara outros itens com a substância. Traz dois exemplos para a interface e a LLM."""
+    for result in results:
+        tagged = any(finding["kind"] == FindingKind.IFOOD_TAG for finding in result["findings"])
+        examples = _cross_contact_examples(result["findings"])
+        if tagged and examples and result["verdict"] == Verdict.RISK:
+            return {"restriction": result["label"], "substance": result["substance"], "examples": examples}
+    return None
 
 
 def analyze_product(
@@ -510,6 +564,7 @@ def analyze_product(
 
     can_proceed = verdict == Verdict.NO_DECLARED_CONFLICT
     return {
+        "crossContactAlert": _cross_contact_alert(results),
         "itemId": product.get("itemId"),
         "itemName": product.get("itemName"),
         "merchantId": product.get("merchantId"),

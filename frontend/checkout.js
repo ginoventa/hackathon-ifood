@@ -316,4 +316,25 @@ export async function openCheckout(cartId) {
   }
 }
 
+/**
+ * Abre direto a finalização: entrega e pagamento vêm do MCP do iFood
+ * (getCartDeliveryMethods, listPaymentMethods) e o envio usa submitOrder,
+ * sempre depois do clique em "Confirmar pedido".
+ */
+export async function finalizeOrder(cartId) {
+  clearInterval(trackTimer);
+  showMessage('Preparando a finalização…', 'Consultando entrega e pagamento no iFood.');
+  if (!dialog.open) {
+    dialog.showModal();
+  }
+  try {
+    renderReview(cartId, await api.checkout(cartId));
+  } catch (error) {
+    showMessage('Não foi possível finalizar o pedido', error.message);
+    const close = el('button', { className: 'card-button', text: 'Fechar', attrs: { type: 'button' } });
+    close.addEventListener('click', () => dialog.close());
+    body.firstElementChild.append(close);
+  }
+}
+
 dialog.addEventListener('close', () => clearInterval(trackTimer));

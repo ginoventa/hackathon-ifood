@@ -288,6 +288,17 @@
   color: #a35200;
 }
 
+/* "Inseguro": item com etiqueta do iFood, mas com possível contato cruzado na loja. */
+.verdict-badge.unsafe {
+  background: #fff4c2;
+  color: #7a5a00;
+}
+
+.card-note.unsafe {
+  background: #fffaf0;
+  border: 1px solid #f3dc8a;
+}
+
 .verdict-badge.unknown {
   background: #eef1f6;
   color: #46536b;
@@ -571,6 +582,11 @@
   padding: 4px 9px;
   background: #fff0de;
   color: #a35200;
+}
+
+.label-tag.ok {
+  background: #e3f5e8;
+  color: #1e7e34;
 }
 
 .label-tag.muted {
@@ -866,4 +882,27 @@ dialog input[type="checkbox"] {
   display: block;
   color: #717171;
   margin-top: 6px;
+}
+
+/* Comparação nutricional das trocas da receita */
+.swap + .swap {
+  margin-top: 10px;
+}
+
+.nutrition-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin: 8px 0;
+}
+
+.nutrition-table th,
+.nutrition-table td {
+  text-align: left;
+  padding: 4px 6px;
+  border-bottom: 1px solid #ececec;
+}
+
+.nutrition-table th {
+  font-weight: 700;
 }

@@ -7,7 +7,7 @@
 
 import { api } from './api.js';
 import { renderCard } from './chat-cards.js';
-import { openCheckout } from './checkout.js';
+import { finalizeOrder, openCheckout } from './checkout.js';
 
 const $ = selector => document.querySelector(selector);
 const app = $('.app');
@@ -232,6 +232,7 @@ const cardActions = {
   consultRestaurant: (itemId, merchantId) => sendMessage('Quero consultar o restaurante', 'Consultar o restaurante', undefined, { itemId, merchantId }),
   fillComposer,
   openCheckout,
+  finalizeOrder,
   toast,
   saveProfile: async inputs => {
     await api.saveProfile(inputs, true);

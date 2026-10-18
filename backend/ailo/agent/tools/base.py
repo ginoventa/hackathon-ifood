@@ -58,6 +58,11 @@ def summarize_analysis_for_model(analysis: dict) -> dict[str, Any]:
             }
             for result in analysis["restrictions"]
         ],
+        # Etiqueta do iFood + itens com a substância na mesma loja: o card mostra "Inseguro".
+        "alertaContatoCruzado": (
+            {"inseguro": True, "exemplos": analysis["crossContactAlert"]["examples"]}
+            if analysis.get("crossContactAlert") else None
+        ),
         "informacoesAusentes": analysis["missingInfo"],
         "alternativas": analysis["alternatives"],
         "adicionaisObrigatorios": [

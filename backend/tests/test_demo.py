@@ -97,7 +97,9 @@ async def test_adapted_recipe_explains_swaps_and_updates_home_items(monkeypatch)
     session.restrictions = [resolve_restriction({'id': 'alergia_leite'})]
     result, card = await market._register_recipe(session, {'titulo': 'pizza'})
     assert result['receitaId'] == 'pizza'
-    assert result['substituicoes'] == card['data']['substituicoes']
+    # A IA recebe cada troca com a composição e a tabela nutricional para explicar o raciocínio.
+    assert [swap['original'] for swap in result['substituicoes']] == [swap['original'] for swap in card['data']['substituicoes']]
+    assert all(swap['comparacao']['substituto']['tabelaNutricionalPor100g'] for swap in result['substituicoes'])
     session.market_plan = {'old': True}
     result, card = await market._register_recipe(session, {'titulo': result['receitaId'], 'ingredientesEmCasa': ['Creme de mandioca']})
     assert session.market_plan is None
@@ -133,6 +135,10 @@ def test_real_catalog_has_valid_eans_and_source_metadata():
     import json
     from pathlib import Path
     catalog = json.loads((Path(labels.__file__).resolve().parents[1] / 'data/demo_labels.json').read_text())
+    # Produtos fictícios da demonstração usam a faixa interna de EAN (prefixo 2).
+    mocks = {ean: label for ean, label in catalog.items() if label.get('dataKind') == 'mock'}
+    assert mocks and all(ean.startswith('2') and label['nutricaoPor100g'] for ean, label in mocks.items())
+    catalog = {ean: label for ean, label in catalog.items() if ean not in mocks}
     assert len(catalog) == 16
     for ean, label in catalog.items():
         assert not ean.startswith('789000000')
@@ -256,3 +262,17 @@ async def test_non_demo_accepts_agent_recipe_without_local_selection(monkeypatch
     assert result['aceita'] is True
     assert card['data']['titulo'] == 'Salada sugerida pelo agente'
     assert card['data'].get('varianteId') is None
+
+
+
+def test_pizza_sem_gluten_tem_rotulos_verificados_e_sem_risco():
+    from ailo.restrictions.analyzer import Verdict
+    from ailo.services.market import register_recipe
+
+    session = Session(id='pizza-sem-gluten')
+    session.restrictions = [resolve_restriction({'id': 'doenca_celiaca'})]
+    recipe = register_recipe(session, select_demo_recipe('pizza', session.restrictions))['recipe']
+    assert all(item['verificacao']['status'] == Verdict.NO_DECLARED_CONFLICT for item in recipe['ingredientes'])
+    # Industrializados têm rótulo de referência verificado; nada fica como "confira o rótulo".
+    assert not any(item['verificacao']['needsLabelCheck'] for item in recipe['ingredientes'])
+    assert 'modoDePreparo' not in recipe

@@ -13,7 +13,7 @@ from typing import Any
 
 from ..config import config
 from ..errors import AppError, ValidationError
-from ..restrictions.analyzer import KIND_MARKET, Verdict, analyze_product, analyze_recipe_ingredients
+from ..restrictions.analyzer import KIND_MARKET, VERDICT_SEVERITY, Verdict, analyze_product, analyze_recipe_ingredients
 from ..restrictions.catalog import to_ifood_item_restrictions
 from ..restrictions.text_matching import normalize_text
 from ..sessions import Session
@@ -66,6 +66,29 @@ def _is_relevant(item: dict, search_term: str) -> bool:
     return any(_stem(word) == _stem(head) for word in normalize_text(item.get("itemName")).split())
 
 
+def _check_with_labels(ingredient: dict, check: dict) -> dict:
+    """Combina a checagem pelo nome com os rótulos de referência do ingrediente.
+
+    Um termo só "duvidoso" no nome ("farinha") é resolvido por um rótulo de
+    referência compatível (ex.: selo sem glúten). Conflitos no nome nunca são
+    anulados pelo rótulo.
+    """
+    references = ingredient.get("analiseReferencias") or {}
+    eligible = [label for label in references.get("rotulos", []) if label["ean"] in references.get("eansElegiveis", [])]
+    if not eligible:
+        return {**check, "needsLabelCheck": check["needsLabelCheck"] or bool(references.get("rotulos")), "labelChecked": False}
+    best = min((label["parecer"] for label in eligible), key=VERDICT_SEVERITY.__getitem__)
+    status = check["status"]
+    if status == Verdict.RISK and not check["conflicts"]:
+        status = best
+    # Componentes de preparo caseiro também contam (ex.: creme de mandioca).
+    for component in references.get("componentes", []):
+        if VERDICT_SEVERITY[component["parecer"]] > VERDICT_SEVERITY[status]:
+            status = component["parecer"]
+    checked = status == Verdict.NO_DECLARED_CONFLICT
+    return {**check, "status": status, "needsLabelCheck": not checked, "labelChecked": checked}
+
+
 def register_recipe(session: Session, recipe: dict) -> dict[str, Any]:
     """Registra a receita da LLM aplicando a trava determinística nos ingredientes.
 
@@ -89,12 +112,11 @@ def register_recipe(session: Session, recipe: dict) -> dict[str, Any]:
             {
                 **ingredient,
                 "quantidadeCompra": max(1, round(float(ingredient.get("quantidadeCompra") or 1))),
-                "verificacao": {**check, "needsLabelCheck": check["needsLabelCheck"] or bool(ingredient.get("analiseReferencias", {}).get("rotulos"))},
+                "verificacao": _check_with_labels(ingredient, check),
             }
             for ingredient, check in zip(ingredients, checks)
         ],
         "substituicoes": recipe.get("substituicoes") or [],
-        "modoDePreparo": recipe.get("modoDePreparo") or [],
         "cuidados": recipe.get("cuidados") or [],
     }
     if recipe.get("varianteId"):

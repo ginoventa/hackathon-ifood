@@ -11,6 +11,7 @@ from ..restrictions.text_matching import normalize_text
 from ..restrictions.analyzer import analyze_recipe_ingredients, analyze_product, KIND_MARKET, Verdict, VERDICT_SEVERITY
 
 CATALOG_PATH = Path(__file__).resolve().parents[1] / 'data/demo_recipes.json'
+NUTRITION_PATH = Path(__file__).resolve().parents[1] / 'data/nutrition_reference.json'
 
 
 def load_demo_recipes():
@@ -19,6 +20,35 @@ def load_demo_recipes():
 
 def demo_recipe_options():
     return [{'id': recipe['id'], 'titulo': recipe['titulo']} for recipe in load_demo_recipes()]
+
+
+def load_nutrition_reference():
+    return json.loads(NUTRITION_PATH.read_text(encoding='utf-8'))
+
+
+def ingredient_profile(ingredient, labels, nutrition_reference):
+    """Composição e tabela nutricional (por 100 g) de um ingrediente da troca.
+
+    Prioriza o rótulo de referência (EAN); sem tabela no rótulo, usa a tabela
+    aproximada de referência (TACO). Serve de base para a IA explicar a troca.
+    """
+    label = next((labels[ean] for ean in ingredient.get('produtosReferencia', []) if ean in labels), None)
+    composition = (label or {}).get('ingredients') or ', '.join(
+        component['nome'] for component in ingredient.get('componentes', [])
+    ) or None
+    nutrition, source = None, None
+    if label and label.get('nutricaoPor100g'):
+        nutrition, source = label['nutricaoPor100g'], f"Rótulo: {label['productName']}"
+    elif normalize_text(ingredient['nome']) in nutrition_reference:
+        nutrition, source = nutrition_reference[normalize_text(ingredient['nome'])], nutrition_reference['_fonte']
+    return {
+        'nome': ingredient['nome'],
+        'produto': (label or {}).get('productName'),
+        'produtoFicticio': (label or {}).get('dataKind') == 'mock',
+        'composicao': composition,
+        'tabelaNutricionalPor100g': nutrition,
+        'fonteNutricional': source,
+    }
 
 
 def _matches(query, term):
@@ -94,6 +124,11 @@ def select_demo_recipe(query, restrictions, at_home=()):
         substitute = swap.get('ingredienteSubstituto') or next((item for item in ingredients if item['nome'] == swap['substituto']), {'nome': swap['substituto']})
         swap['evidenciasOriginal'] = assess_ingredient(original, restrictions, labels)
         swap['evidenciasSubstituto'] = assess_ingredient(substitute, restrictions, labels)
+        nutrition_reference = load_nutrition_reference()
+        swap['comparacao'] = {
+            'original': ingredient_profile(original, labels, nutrition_reference),
+            'substituto': ingredient_profile(substitute, labels, nutrition_reference),
+        }
         assessment = swap['evidenciasOriginal']
         swap['restricoes'] = list(dict.fromkeys(
             [conflict['label'] for conflict in assessment['checagemNome']['conflicts']]
@@ -138,5 +173,5 @@ def select_demo_recipe(query, restrictions, at_home=()):
     recipe['ingredientes'] = ingredients
     recipe['substituicoes'] = swaps
     recipe['origem'] = 'Catálogo local de demonstração'
-    recipe['cuidados'].insert(0, 'Origem: catálogo local de demonstração. A versão completa e suas justificativas são pré-cadastradas; a IA interpreta o pedido e explica a seleção.')
+    recipe['cuidados'].insert(0, 'Origem: catálogo local de demonstração. As trocas são pré-cadastradas; a explicação de cada troca é feita pela IA a partir da composição e da tabela nutricional.')
     return recipe

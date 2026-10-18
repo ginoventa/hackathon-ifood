@@ -4054,7 +4054,10 @@
         "quantidadeNecessaria": {
           "valor": 150.0,
           "unidade": "g"
-        }
+        },
+        "produtosReferencia": [
+          "2000000000022"
+        ]
       },
       {
         "nome": "Tomate",
@@ -4072,7 +4075,10 @@
         "quantidadeNecessaria": {
           "valor": 5.0,
           "unidade": "g"
-        }
+        },
+        "produtosReferencia": [
+          "2000000000039"
+        ]
       },
       {
         "nome": "Água",
@@ -4114,8 +4120,7 @@
     "cuidados": [
       "Receita e trocas cadastradas para demonstração; não são certificação de segurança alimentar.",
       "Confira ingredientes, declaração de glúten e avisos de pode conter em todos os industrializados.",
-      "Evite contato cruzado em utensílios, superfícies e óleo de fritura.",
-      "Não há formulação sem glúten revisada para esta massa. A troca isolada da farinha foi removida."
+      "Evite contato cruzado em utensílios, superfícies e óleo de fritura."
     ],
     "variantes": [
       {
@@ -4145,7 +4150,10 @@
             "quantidadeNecessaria": {
               "valor": 150.0,
               "unidade": "g"
-            }
+            },
+            "produtosReferencia": [
+              "2000000000022"
+            ]
           },
           {
             "nome": "Tomate",
@@ -4163,7 +4171,10 @@
             "quantidadeNecessaria": {
               "valor": 5.0,
               "unidade": "g"
-            }
+            },
+            "produtosReferencia": [
+              "2000000000039"
+            ]
           },
           {
             "nome": "Água",
@@ -4273,7 +4284,10 @@
             "quantidadeNecessaria": {
               "valor": 5.0,
               "unidade": "g"
-            }
+            },
+            "produtosReferencia": [
+              "2000000000039"
+            ]
           },
           {
             "nome": "Água",
@@ -4325,7 +4339,10 @@
               "quantidadeNecessaria": {
                 "valor": 150.0,
                 "unidade": "g"
-              }
+              },
+              "produtosReferencia": [
+                "2000000000022"
+              ]
             },
             "ingredienteSubstituto": {
               "nome": "Creme de mandioca",
@@ -4380,7 +4397,10 @@
               "valor": 200.0,
               "unidade": "g"
             },
-            "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+            "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo.",
+            "produtosReferencia": [
+              "2000000000015"
+            ]
           },
           {
             "nome": "Queijo muçarela",
@@ -4391,7 +4411,10 @@
             "quantidadeNecessaria": {
               "valor": 150.0,
               "unidade": "g"
-            }
+            },
+            "produtosReferencia": [
+              "2000000000022"
+            ]
           },
           {
             "nome": "Tomate",
@@ -4409,7 +4432,10 @@
             "quantidadeNecessaria": {
               "valor": 5.0,
               "unidade": "g"
-            }
+            },
+            "produtosReferencia": [
+              "2000000000039"
+            ]
           },
           {
             "nome": "Água",
@@ -4476,7 +4502,10 @@
                 "valor": 200.0,
                 "unidade": "g"
               },
-              "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+              "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo.",
+              "produtosReferencia": [
+                "2000000000015"
+              ]
             }
           }
         ]
@@ -4495,7 +4524,10 @@
               "valor": 200.0,
               "unidade": "g"
             },
-            "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+            "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo.",
+            "produtosReferencia": [
+              "2000000000015"
+            ]
           },
           {
             "nome": "Creme de mandioca",
@@ -4549,7 +4581,10 @@
             "quantidadeNecessaria": {
               "valor": 5.0,
               "unidade": "g"
-            }
+            },
+            "produtosReferencia": [
+              "2000000000039"
+            ]
           },
           {
             "nome": "Água",
@@ -4601,7 +4636,10 @@
               "quantidadeNecessaria": {
                 "valor": 150.0,
                 "unidade": "g"
-              }
+              },
+              "produtosReferencia": [
+                "2000000000022"
+              ]
             },
             "ingredienteSubstituto": {
               "nome": "Creme de mandioca",
@@ -4668,7 +4706,10 @@
                 "valor": 200.0,
                 "unidade": "g"
               },
-              "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo."
+              "observacao": "Escolha uma versão sem leite, ovos, soja e castanhas quando essas restrições estiverem presentes; confira o rótulo.",
+              "produtosReferencia": [
+                "2000000000015"
+              ]
             }
           }
         ]
