@@ -280,18 +280,27 @@ Catálogo completo da demo, com fontes e cenários: [docs/demo-catalogo.md](docs
 1. Crie um arquivo `.env` na raiz do repositório:
 
    ```ini
-   # Credenciais do agente no MCP Portal
-   IFOOD_CLIENT_ID=...
-   IFOOD_CLIENT_SECRET=...
-   # Deve ser idêntica à Redirect URL cadastrada no agente
-   IFOOD_REDIRECT_URI=http://localhost:8080/callback
-
-   # LLM: "chatgpt" (padrão) ou "gemini"
    LLM_PROVIDER=gemini
-   GEMINI_API_KEY=...
+   CHATGPT_MODEL=gpt-5.6-terra
 
-   # Recomendado para avaliação: nunca enviar pedidos reais
-   ALLOW_SUBMIT_ORDER=false
+   GEMINI_API_KEY=
+   GEMINI_MODEL=gemini-flash-latest
+
+   IFOOD_CLIENT_ID=
+   IFOOD_CLIENT_SECRET=
+   IFOOD_REDIRECT_URI=http://localhost:8080/callback
+   IFOOD_SCOPES=
+
+   ALLOW_SUBMIT_ORDER=true
+
+   PORT=5173
+
+   IFOOD_MCP_URL=https://consumer-mcp.ifood.com.br/marketplace
+   IFOOD_AUTHORIZE_URL=https://id.ifood.com.br/authorize
+   IFOOD_TOKEN_URL=https://id.ifood.com.br/token
+   IFOOD_REVOKE_URL=https://id.ifood.com.br/revoke
+
+   DEMO_MODE=true
    ```
 
 2. Instale, autentique e suba o servidor:
