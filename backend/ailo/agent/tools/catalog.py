@@ -156,8 +156,8 @@ async def _search_options(session, args):
     query = args["consulta"]
     use_filters = args.get("priorizarComFiltrosDoIfood", True) is not False
     tags = to_ifood_item_restrictions(session.restrictions) if use_filters else []
-    # No demo ou com INCLUDE_CLOSED_STORES, sempre inclui lojas fechadas, mesmo que o modelo peça apenasAbertos.
-    refinements: dict = {"onlyOpen": not config.show_closed_stores and args.get("apenasAbertos", True) is True}
+    # Com INCLUDE_CLOSED_STORES (testes), inclui lojas fechadas mesmo que o modelo peça apenasAbertos.
+    refinements: dict = {"onlyOpen": not config.include_closed_stores and args.get("apenasAbertos", True) is True}
     if args.get("precoMaximo"):
         refinements["maxItemPrice"] = args["precoMaximo"]
     if args.get("ordenarPor"):
@@ -223,7 +223,7 @@ SEARCH_OPTIONS = ToolDefinition(
             "ordenarPor": {"type": "string", "enum": ["RELEVANCE", "PRICE", "DISTANCE", "DELIVERY_TIME", "DELIVERY_FEE"]},
             "apenasAbertos": {
                 "type": "boolean",
-                "description": "Filtra apenas restaurantes abertos. Padrão: true fora do demo e false no demo.",
+                "description": "Filtra apenas restaurantes abertos. Padrão: true (ignorado com INCLUDE_CLOSED_STORES).",
             },
         },
         "required": ["consulta"],

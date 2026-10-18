@@ -72,7 +72,6 @@ class IfoodConfig:
 
 @dataclass(frozen=True)
 class Config:
-    demo_mode: bool = field(default_factory=lambda: _env_flag("DEMO_MODE", True))
     # Apresentação: produtos de mercado sem conflito nem risco aparecem com "rótulo verificado"
     # (verificação SIMULADA, sinalizada no cartão). Desligue com SIMULATE_LABEL_CHECK=false.
     simulate_label_check: bool = field(default_factory=lambda: _env_flag("SIMULATE_LABEL_CHECK", True))
@@ -80,10 +79,6 @@ class Config:
     # Desligue com INCLUDE_CLOSED_STORES=false para mostrar só lojas abertas.
     include_closed_stores: bool = field(default_factory=lambda: _env_flag("INCLUDE_CLOSED_STORES", True))
 
-    @property
-    def show_closed_stores(self) -> bool:
-        """Lojas fechadas entram nas buscas (modo demo ou INCLUDE_CLOSED_STORES)."""
-        return self.demo_mode or self.include_closed_stores
     port: int = field(default_factory=lambda: int(_env("PORT", "5173")))
     frontend_dir: Path = REPO_ROOT / "frontend"
     # Dados locais: tokens do iFood e perfil alimentar (fora do git).

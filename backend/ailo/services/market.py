@@ -13,13 +13,14 @@ from typing import Any
 
 from ..config import config
 from ..errors import AppError, ValidationError
-from ..restrictions.analyzer import KIND_MARKET, VERDICT_SEVERITY, Verdict, analyze_product, analyze_recipe_ingredients
+from ..restrictions.analyzer import KIND_MARKET, Verdict, analyze_product, analyze_recipe_ingredients
 from ..restrictions.catalog import to_ifood_item_restrictions
 from ..restrictions.text_matching import normalize_text
 from ..sessions import Session
 from .catalog import get_item_details, search_offers
 from .labels import fetch_label
-from .packaging import load_local_labels, purchase_quantity
+from .nutrition import swap_comparison
+from .packaging import purchase_quantity
 
 # Quantos resultados buscar por ingrediente.
 RESULTS_PER_INGREDIENT = 10
@@ -100,29 +101,6 @@ def _is_relevant(item: dict, search_term: str) -> bool:
     return not any(_stem(word) in {_stem(kind) for kind in PRODUCT_TYPE_WORDS} for word in words[:positions[0]])
 
 
-def _check_with_labels(ingredient: dict, check: dict) -> dict:
-    """Combina a checagem pelo nome com os rótulos de referência do ingrediente.
-
-    Um termo só "duvidoso" no nome ("farinha") é resolvido por um rótulo de
-    referência compatível (ex.: selo sem glúten). Conflitos no nome nunca são
-    anulados pelo rótulo.
-    """
-    references = ingredient.get("analiseReferencias") or {}
-    eligible = [label for label in references.get("rotulos", []) if label["ean"] in references.get("eansElegiveis", [])]
-    if not eligible:
-        return {**check, "needsLabelCheck": check["needsLabelCheck"] or bool(references.get("rotulos")), "labelChecked": False}
-    best = min((label["parecer"] for label in eligible), key=VERDICT_SEVERITY.__getitem__)
-    status = check["status"]
-    if status == Verdict.RISK and not check["conflicts"]:
-        status = best
-    # Componentes de preparo caseiro também contam (ex.: creme de mandioca).
-    for component in references.get("componentes", []):
-        if VERDICT_SEVERITY[component["parecer"]] > VERDICT_SEVERITY[status]:
-            status = component["parecer"]
-    checked = status == Verdict.NO_DECLARED_CONFLICT
-    return {**check, "status": status, "needsLabelCheck": not checked, "labelChecked": checked}
-
-
 def register_recipe(session: Session, recipe: dict) -> dict[str, Any]:
     """Registra a receita da LLM aplicando a trava determinística nos ingredientes.
 
@@ -146,19 +124,14 @@ def register_recipe(session: Session, recipe: dict) -> dict[str, Any]:
             {
                 **ingredient,
                 "quantidadeCompra": max(1, round(float(ingredient.get("quantidadeCompra") or 1))),
-                "verificacao": _check_with_labels(ingredient, check),
+                "verificacao": check,
             }
             for ingredient, check in zip(ingredients, checks)
         ],
-        "substituicoes": recipe.get("substituicoes") or [],
+        # Cada troca leva a tabela nutricional de referência, base para a IA explicar o raciocínio.
+        "substituicoes": [{**swap, "comparacao": swap_comparison(swap)} for swap in recipe.get("substituicoes") or []],
         "cuidados": recipe.get("cuidados") or [],
     }
-    if recipe.get("varianteId"):
-        normalized["varianteId"] = recipe["varianteId"]
-    if recipe.get("id"):
-        normalized["id"] = recipe["id"]
-    if recipe.get("origem"):
-        normalized["origem"] = recipe["origem"]
     if not conflicts:
         session.recipe = normalized
         session.market_plan = None
@@ -208,8 +181,8 @@ async def _search_ingredient_query(session: Session, query: str, merchant_id: st
     porque o iFood os aplica juntos (E lógico), o que esconderia produtos
     válidos, como carne moída para quem é celíaco e tem APLV.
     """
-    # No demo, lojas fechadas também entram para a apresentação funcionar a qualquer hora.
-    base = {"sort": "PRICE", "onlyOpen": not config.show_closed_stores, **({"merchantId": merchant_id} if merchant_id else {})}
+    # Com INCLUDE_CLOSED_STORES (testes), lojas fechadas também entram na comparação.
+    base = {"sort": "PRICE", "onlyOpen": not config.include_closed_stores, **({"merchantId": merchant_id} if merchant_id else {})}
     tags = to_ifood_item_restrictions(session.restrictions)
     responses = await asyncio.gather(
         _safe_search(session, query, base),
@@ -224,7 +197,7 @@ async def _search_ingredient_query(session: Session, query: str, merchant_id: st
     return [
         {**item, "price": item.get("promotionalUnitPrice") or item.get("unitPrice") or 0, "analysis": _quick_analyze(session, item)}
         for item in unique.values()
-        if (config.show_closed_stores or item.get("isOpen") is not False) and _is_relevant(item, query)
+        if (config.include_closed_stores or item.get("isOpen") is not False) and _is_relevant(item, query)
     ]
 
 
@@ -238,17 +211,13 @@ def _best_candidate(candidates: list[dict]) -> dict | None:
 def _build_merchant_plan(merchant: dict, ingredients: list[dict], candidates_by_ingredient: list[list[dict]]) -> dict:
     """Resumo de um mercado com o melhor produto para cada ingrediente."""
     items, missing = [], []
-    local_labels = load_local_labels()
     for ingredient, candidates in zip(ingredients, candidates_by_ingredient):
         chosen = _best_candidate([candidate for candidate in candidates if candidate["merchantId"] == merchant["merchantId"]])
         if chosen is None:
             missing.append(ingredient["nome"])
             continue
-        # Usa a embalagem do EAN efetivamente encontrado, nunca a da referência
-        # de outra marca. Sem EAN local, usa o tamanho publicado no nome da oferta.
-        local_label = local_labels.get(str(chosen.get("itemEan")))
-        package_text = local_label["quantity"] if local_label else chosen["itemName"]
-        quantity = purchase_quantity(ingredient, package_text)
+        # Usa o tamanho publicado no nome da oferta ("Molho 340g").
+        quantity = purchase_quantity(ingredient, chosen["itemName"])
         items.append({
             "ingrediente": ingredient["nome"],
             "quantidade": quantity,

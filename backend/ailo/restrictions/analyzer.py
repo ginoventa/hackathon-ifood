@@ -143,7 +143,7 @@ def _label_findings(label: dict | None, restriction: Restriction, terms: list[st
         return [], False, False
 
     source = label.get("source") or f"Rótulo do produto (Open Food Facts, EAN {label.get('ean')})"
-    note = label.get("sourceNote") or ("Dados fictícios para demonstração; não representam um rótulo real." if label.get("demo") else "Base colaborativa: confira também a embalagem.")
+    note = label.get("sourceNote") or "Base colaborativa: confira também a embalagem."
     conflict_tags = set(restriction.label_conflict_tags)
     findings = []
 

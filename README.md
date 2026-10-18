@@ -10,7 +10,7 @@ Projeto do **Hackathon SEMCOMP × iFood 2026: Vendendo com Agentes**.
 | **Para quem** | Pessoas com alergias, intolerâncias, doença celíaca, restrições religiosas ou dieta vegetariana/vegana. 18 restrições já vêm cadastradas, e o usuário pode criar outras. |
 | **O que o agente faz** | Conversa, registra as restrições, busca no iFood, analisa cada produto com regras determinísticas, prepara perguntas para o restaurante, adapta receitas, compara mercados e monta o carrinho. |
 | **O que é real** | Conta, endereço, busca, cardápios, preços, carrinhos e checkout vêm do **MCP oficial do iFood**, com o OAuth do agente. |
-| **O que é preparado** | No modo demo, receitas adaptadas (15 pratos, 64 versões) e 16 rótulos de produtos reais conferidos à mão, para a apresentação ser reproduzível. |
+| **O que vem de fora** | Rótulos de industrializados vêm da Open Food Facts (pelo código de barras ou pelo nome e marca). As receitas adaptadas são propostas pela IA e validadas pelas regras. |
 | **Princípio central** | A IA conversa e decide *quais ferramentas usar*. O parecer alimentar sai de regras auditáveis, e **quem confirma o pedido é sempre a pessoa**. |
 
 ---
@@ -161,7 +161,6 @@ A interface é uma aplicação web executável, no estilo visual do iFood, servi
 | **Conversa com o Ailo** | [`index.html`](frontend/index.html) | Tela inicial com sugestões de pedido, alternância **Restaurantes / Mercado**, entrada por texto ou voz e cartões interativos na conversa |
 | **Revisão do pedido** | diálogo em `index.html` + [`checkout.js`](frontend/checkout.js) | Itens, quantidades, alertas, endereço, entrega, pagamento, confirmação explícita e link para abrir o carrinho no app do iFood |
 | **Perfil alimentar** | [`perfil.html`](frontend/perfil.html) | Restrições salvas, consentimento e exclusão do perfil |
-| **Loja e produto** | [`loja.html`](frontend/loja.html), [`produto.html`](frontend/produto.html) | Telas ilustrativas de contexto (catálogo local, separado dos dados do MCP) |
 
 **Cartões que o agente renderiza na conversa** ([`chat-cards.js`](frontend/chat-cards.js)):
 
@@ -201,7 +200,7 @@ flowchart LR
     LLM[(LLM<br/>ChatGPT ou Gemini)]
     MCP[(MCP do iFood<br/>consumer-mcp.ifood.com.br)]
     ID[(id.ifood.com.br<br/>OAuth)]
-    DD[(Dados demo<br/>receitas + rótulos)]
+    OFF[(Open Food Facts<br/>rótulos)]
 
     UI <--> API
     CO -- confirmação explícita --> API
@@ -211,7 +210,7 @@ flowchart LR
     TL --> RU
     TL --> SV
     SV --> CL
-    SV --> DD
+    SV --> OFF
     CL <--> MCP
     API -. login .-> ID
     API -- "submitOrder<br/>somente via rota" --> CL
@@ -256,22 +255,17 @@ Fora do alcance da LLM, acionadas só pela interface: `getUser`, `listAddresses`
 3. **Contornando o E lógico dos filtros do MCP.** Com várias restrições, o Ailo faz uma busca por filtro e mais uma sem filtro, e une os resultados, para não esconder produtos válidos.
 4. **Ações determinísticas na interface.** "Consultar restaurante" gera as perguntas direto do resultado da análise, sem chamar a LLM nem o iFood. É mais rápido, mais barato e sem risco de alucinação.
 5. **Quantidade de embalagens calculada.** A receita informa a necessidade em g/ml; o código lê o tamanho do produto encontrado e arredonda para cima (600 g em pacotes de 250 g = 3 pacotes).
-6. **Rótulos ligados por EAN, não por nome.** Um produto só herda informações de rótulo quando o EAN bate. Nome parecido ou mesma marca não bastam.
+6. **Rótulo do produto certo.** O rótulo é buscado pelo EAN; sem ele (o caso mais comum no iFood), pelo nome, exigindo que a marca também apareça no anúncio. Um produto parecido de outra marca nunca empresta o rótulo.
 7. **Provedor de LLM trocável.** Só [`chat_model.py`](backend/ailo/agent/chat_model.py) conhece o provedor; o resto usa a interface padrão do LangChain.
 
-### Modo demo × modo normal
+### Opções para testes e apresentação
 
-| | `DEMO_MODE=true` (padrão) | `DEMO_MODE=false` |
+| Variável | Padrão | Efeito |
 | --- | --- | --- |
-| Conversa e escolha de ferramentas | LLM | LLM |
-| Receitas adaptadas | Selecionadas entre **64 versões completas** de 15 pratos ([`demo_recipes.json`](backend/ailo/data/demo_recipes.json)) | Propostas pela LLM e validadas pelas regras |
-| Rótulos | **16 produtos reais** com EAN, composição, avisos e fontes ([`demo_labels.json`](backend/ailo/data/demo_labels.json)) | Open Food Facts, consultado pelo EAN |
-| Lojas fechadas | Incluídas, para a demo funcionar a qualquer hora | Apenas lojas abertas |
-| Busca, preços e carrinhos | **MCP real do iFood** | **MCP real do iFood** |
+| `INCLUDE_CLOSED_STORES` | `true` | Inclui lojas fechadas nas buscas, para testar a qualquer hora |
+| `SIMULATE_LABEL_CHECK` | `true` | Produtos de mercado sem conflito nem risco aparecem com "rótulo verificado" (simulado, com aviso no cartão) |
 
-> ⚠️ `DEMO_MODE` **não** é um modo offline: busca e carrinhos sempre usam o iFood de verdade. Para impedir o envio de pedidos, use `ALLOW_SUBMIT_ORDER=false`.
-
-Catálogo completo da demo, com fontes e cenários: [docs/demo-catalogo.md](docs/demo-catalogo.md).
+> ⚠️ Desligue as duas (`false`) fora de testes e apresentações. Busca, preços e carrinhos usam sempre o iFood de verdade; para impedir o envio de pedidos, use `ALLOW_SUBMIT_ORDER=false`.
 
 ### Como rodar
 
@@ -300,7 +294,8 @@ Catálogo completo da demo, com fontes e cenários: [docs/demo-catalogo.md](docs
    IFOOD_TOKEN_URL=https://id.ifood.com.br/token
    IFOOD_REVOKE_URL=https://id.ifood.com.br/revoke
 
-   DEMO_MODE=true
+   INCLUDE_CLOSED_STORES=true
+   SIMULATE_LABEL_CHECK=true
    ```
 
 2. Instale, autentique e suba o servidor:
@@ -333,7 +328,8 @@ Catálogo completo da demo, com fontes e cenários: [docs/demo-catalogo.md](docs
 | `IFOOD_REDIRECT_URI` | `http://localhost:8080/callback` | Redirect URL do OAuth |
 | `IFOOD_SCOPES` | padrão do iFood | Escopos separados por espaço |
 | `IFOOD_MCP_URL` | `https://consumer-mcp.ifood.com.br/marketplace` | Endpoint do MCP |
-| `DEMO_MODE` | `true` | Receitas e rótulos preparados (ver tabela acima) |
+| `INCLUDE_CLOSED_STORES` | `true` | Inclui lojas fechadas nas buscas (testes) |
+| `SIMULATE_LABEL_CHECK` | `true` | Rótulo "verificado" simulado no mercado (apresentação) |
 | `ALLOW_SUBMIT_ORDER` | `true` | Permite o envio do pedido após confirmação humana |
 | `AGENT_MAX_TOOL_ROUNDS` | `10` | Limite de rodadas de ferramenta por mensagem |
 | `PORT` | `5173` | Porta do servidor |
@@ -349,7 +345,7 @@ Catálogo completo da demo, com fontes e cenários: [docs/demo-catalogo.md](docs
 npm test
 ```
 
-Oito arquivos de teste em [`backend/tests/`](backend/tests/) cobrem o analisador de restrições (APLV × lactose, negações, contradições, contato cruzado), a seleção de versões de receita e os rótulos da demo, o cálculo de embalagens, as travas do carrinho e do perfil, o OAuth, a consulta ao restaurante, os prompts e o laço do agente. **O MCP e a LLM são simulados**, então os testes não substituem a homologação de pedidos reais no iFood. A sintaxe do frontend é verificada com `npm run check`.
+Oito arquivos de teste em [`backend/tests/`](backend/tests/) cobrem o analisador de restrições (APLV × lactose, negações, contradições, contato cruzado), a busca de ingredientes no mercado, a consulta de rótulos (EAN e nome), o cálculo de embalagens, as travas do carrinho e do perfil, o OAuth, a consulta ao restaurante, os prompts e o laço do agente. **O MCP e a LLM são simulados**, então os testes não substituem a homologação de pedidos reais no iFood. A sintaxe do frontend é verificada com `npm run check`.
 
 ### Estrutura do repositório
 
@@ -357,13 +353,13 @@ Oito arquivos de teste em [`backend/tests/`](backend/tests/) cobrem o analisador
 backend/ailo/
 ├── agent/            agente LangChain, provedores de LLM, prompts e as 10 ferramentas
 ├── restrictions/     catálogo de 18 restrições, analisador e mensagens ao restaurante
-├── services/         catálogo, análise, receitas, mercado, embalagens, carrinho, conta, rótulos
+├── services/         catálogo, análise, mercado, nutrição, embalagens, carrinho, conta, rótulos
 ├── ifood/            cliente MCP e OAuth do iFood
 ├── api/routes.py     API REST consumida pela interface
-├── data/             receitas e rótulos da demo
+├── data/             tabela nutricional de referência (TACO)
 └── main.py           servidor (interface + API)
-frontend/             interface web (conversa, cartões, revisão, perfil)
-docs/                 restrições, catálogo da demo, mapa de funcionalidades, feedback do MCP
+frontend/             interface web (conversa, cartões, revisão do pedido, perfil)
+docs/                 restrições, mapa de funcionalidades, feedback do MCP
 ```
 
 Material complementar: [mapa de funcionalidades do agente](docs/funcionalidades-agente.md).
@@ -398,20 +394,20 @@ Registramos as dificuldades reais que encontramos durante a integração. O docu
 
 ## Roteiro de demonstração
 
-Sugestões para experimentar, com `DEMO_MODE=true`:
+Sugestões para experimentar:
 
 | # | Diga ao Ailo | O que observar |
 | --- | --- | --- |
 | 1 | *"Não posso comer leite, quero uma pizza"* | O agente pergunta se é alergia ou intolerância antes de buscar |
 | 2 | *"É alergia à proteína do leite"* | Até 3 opções compatíveis perto do endereço da conta |
 | 3 | Escolha um prato | Cartão de análise com parecer, evidências e informações ausentes |
-| 4 | Clique em **Consultar restaurante** | Perguntas prontas sobre ingredientes e contato cruzado, para copiar |
-| 5 | Mude para **Mercado**: *"Quero fazer panqueca"* | Versão sem leite, com cada troca justificada |
-| 6 | *"Também sou celíaca e tenho alergia a ovo"* | Nova versão que atende às três restrições (farinha de arroz, bebida de arroz, linhaça) |
+| 4 | Peça para **preparar em casa** | O modo muda para Mercado e a IA propõe uma receita adaptada |
+| 5 | *"Quero fazer panqueca"* (modo Mercado) | Versão sem leite, com cada troca explicada pela tabela nutricional |
+| 6 | *"Também sou celíaca e tenho alergia a ovo"* | Nova versão validada para as três restrições |
 | 7 | *"Já tenho azeite e sal"* | Os itens saem da lista de compras |
 | 8 | *"Procura os ingredientes"* | Comparação de até 3 mercados reais: cobertura, faltantes, frete e total |
 | 9 | Escolha o mercado | Carrinho criado no iFood e revisão com alertas; o envio só acontece com confirmação |
-| 10 | *"Também tenho alergia a soja"* | O Ailo **recusa** a versão cuja farinha tem aviso de soja, em vez de inventar um substituto |
+| 10 | Peça um produto industrializado (*"biscoito Bauducco"*) | Só a verificação do rótulo, sem opção de receita |
 
 ---
 
@@ -419,12 +415,12 @@ Sugestões para experimentar, com `DEMO_MODE=true`:
 
 - **Não é certificação de segurança alimentar.** "Sem conflito declarado" significa que os dados disponíveis não indicaram conflito. Isso não prova a ausência de alergênicos nem de contato cruzado.
 - A qualidade da análise depende do que o iFood publica, e hoje há pouca informação estruturada (ver [feedback](#06--feedback-sobre-os-mcps)).
-- As receitas da demo cobrem cenários preparados e não passaram por validação culinária ou nutricional formal. Para combinações sem versão compatível, o sistema recusa em vez de improvisar.
+- As receitas são propostas pela IA e validadas por regras de texto; não passaram por validação culinária ou nutricional formal. A tabela nutricional das trocas é uma referência aproximada (TACO).
+- A Open Food Facts tem poucos produtos brasileiros com marca, então muitos rótulos não são encontrados.
 - A presença do EAN nos produtos devolvidos pelo MCP ainda precisa ser validada em escala.
 - Conversas ficam em memória e o perfil é salvo por instalação; não há isolamento de múltiplos usuários para produção.
 - Carrinho, checkout e envio estão implementados, mas não foram homologados por completo no ambiente real. Criar um carrinho não envia o pedido nem cobra nada.
-- As telas de loja e produto usam um catálogo local ilustrativo, separado dos resultados do MCP.
 
 ### Próximos passos
 
-Ampliar a curadoria de receitas e rótulos, testar a experiência com pessoas do público-alvo, persistir sessões e perfis por usuário e, com dados estruturados de alergênicos no MCP, substituir a leitura de descrições por evidências oficiais.
+Ampliar a base de rótulos, testar a experiência com pessoas do público-alvo, persistir sessões e perfis por usuário e, com dados estruturados de alergênicos no MCP, substituir a leitura de descrições por evidências oficiais.

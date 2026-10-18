@@ -1,14 +1,8 @@
 """Quantidade de embalagens a partir da necessidade e do produto identificado."""
 from __future__ import annotations
 
-import json
 import math
 import re
-from pathlib import Path
-
-
-def load_local_labels():
-    return json.loads((Path(__file__).resolve().parents[1] / 'data/demo_labels.json').read_text(encoding='utf-8'))
 
 
 def package_amount(text):

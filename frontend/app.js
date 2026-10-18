@@ -263,7 +263,7 @@ function startChatLayout() {
   $('#welcome').hidden = true;
   $('#conversation').hidden = false;
   $('#suggestions').hidden = true;
-  $('#demo-note').hidden = false;
+  $('#chat-disclaimer').hidden = false;
   app.classList.add('chatting');
 }
 
@@ -357,7 +357,7 @@ $('#new-chat').onclick = async () => {
   $('#conversation').hidden = true;
   $('#welcome').hidden = false;
   $('#suggestions').hidden = false;
-  $('#demo-note').hidden = true;
+  $('#chat-disclaimer').hidden = true;
   app.classList.remove('chatting');
   $('#prompt').value = '';
   updateSend();

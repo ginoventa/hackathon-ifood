@@ -2,10 +2,6 @@
 
 from __future__ import annotations
 
-from dataclasses import replace
-
-from ...config import config
-from ...services.recipes import demo_recipe_options, select_demo_recipe
 from ...errors import ValidationError
 from ...restrictions.analyzer import Verdict
 from ...services.market import plan_grocery_shopping, register_recipe
@@ -19,11 +15,6 @@ from .base import ToolDefinition
 async def _register_recipe(session, args):
     if not session.restrictions:
         raise ValidationError("Registre as restrições do usuário antes de montar a receita.")
-    if config.demo_mode:
-        recipe = select_demo_recipe(args["titulo"], session.restrictions, args.get("ingredientesEmCasa", []))
-        if recipe is None:
-            return {"aceita": False, "motivo": "Não há receita cadastrada com substituições e produtos de referência sem conflito ou aviso de risco para esse pedido. Não gere ingredientes. Ofereça outro prato do catálogo.", "pratosDisponiveis": [option for option in demo_recipe_options() if select_demo_recipe(option["id"], session.restrictions) is not None]}, None
-        args = recipe
     result = register_recipe(session, args)
     recipe = result["recipe"]
 
@@ -40,18 +31,13 @@ async def _register_recipe(session, args):
 
     return {
         "aceita": True,
-        "receitaId": recipe.get("id"),
-        "varianteId": recipe.get("varianteId"),
-        "ingredientes": [{"nome": item["nome"], "quantidade": item["quantidade"], "referenciasDemo": item.get("referenciasDemo", []), "analiseReferencias": item.get("analiseReferencias"), "jaTenhoEmCasa": item.get("jaTenhoEmCasa", False)} for item in recipe["ingredientes"]],
-        "origem": recipe.get("origem"),
-        # Base para a IA explicar cada troca: restrição atendida, nota culinária,
-        # composição e tabela nutricional do original e do substituto.
+        "ingredientes": [{"nome": item["nome"], "quantidade": item["quantidade"], "jaTenhoEmCasa": item.get("jaTenhoEmCasa", False)} for item in recipe["ingredientes"]],
+        # Base para a IA explicar cada troca: motivo e tabela nutricional do original e do substituto.
         "substituicoes": [
             {
                 "original": swap["original"],
                 "substituto": swap["substituto"],
-                "restricoesAtendidas": swap.get("restricoes", []),
-                "notaCulinaria": swap.get("motivo"),
+                "motivo": swap.get("motivo"),
                 "comparacao": swap.get("comparacao"),
             }
             for swap in recipe["substituicoes"]
@@ -129,13 +115,3 @@ GROCERY_PLAN = ToolDefinition(
     execute=_grocery_plan,
 )
 
-
-if config.demo_mode:
-    REGISTER_RECIPE = replace(REGISTER_RECIPE, schema={
-        "type": "object",
-        "properties": {
-            "titulo": {"type": "string", "description": "Prato solicitado ou id do catálogo: " + ", ".join(option["id"] for option in demo_recipe_options()) + ". Para atualizar itens em casa, reutilize receitaId retornado."},
-            "ingredientesEmCasa": {"type": "array", "items": {"type": "string"}, "description": "Lista completa dos nomes dos ingredientes que a pessoa já possui, conforme a receita retornada."},
-        },
-        "required": ["titulo"],
-    })

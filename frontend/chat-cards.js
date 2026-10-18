@@ -263,15 +263,11 @@ function nutrientValue(table, key, unit) {
   return typeof value === 'number' ? `${value.toLocaleString('pt-BR')} ${unit}` : '—';
 }
 
-/** Composição e tabela nutricional do original e do substituto de uma troca. */
+/** Tabela nutricional (referência TACO) do original e do substituto de uma troca. */
 function swapComparison({ original, substituto }) {
   const hasTable = original.tabelaNutricionalPor100g || substituto.tabelaNutricionalPor100g;
   const sources = [...new Set([original.fonteNutricional, substituto.fonteNutricional].filter(Boolean))];
-  return details('Composição e tabela nutricional', [
-    ...[original, substituto].map((side) => el('p', { className: 'card-muted' }, [
-      el('strong', { text: `${side.nome}${side.produto ? ` (${side.produto}${side.produtoFicticio ? ', fictício' : ''})` : ''}: ` }),
-      side.composicao ?? 'composição não disponível',
-    ])),
+  return details('Tabela nutricional', [
     hasTable ? el('table', { className: 'nutrition-table' }, [
       el('thead', {}, [el('tr', {}, [
         el('th', { text: 'Por 100 g' }), el('th', { text: original.nome }), el('th', { text: substituto.nome }),
@@ -293,9 +289,7 @@ function renderRecipe(recipe, actions) {
     if (check.status !== 'SEM_CONFLITO_DECLARADO') {
       tags.push(verdictBadge(check.status));
     }
-    if (check.labelChecked) {
-      tags.push(el('span', { className: 'label-tag ok', text: 'Rótulo verificado' }));
-    } else if (check.needsLabelCheck) {
+    if (check.needsLabelCheck) {
       tags.push(el('span', { className: 'label-tag', text: 'Confira o rótulo' }));
     }
     if (ingredient.jaTenhoEmCasa) {
@@ -303,8 +297,6 @@ function renderRecipe(recipe, actions) {
     }
     return el('li', {}, [
       el('span', { text: `${ingredient.quantidade} · ${ingredient.nome}` }),
-      ingredient.referenciasDemo?.length ? el('span', { className: 'card-muted', text: `Referência: ${ingredient.referenciasDemo.map((item) => `${item.nome} (${item.embalagem})`).join(' ou ')}` }) : null,
-      ingredient.preparacaoCaseira ? el('span', { className: 'card-muted', text: `Para ${ingredient.preparacaoCaseira}` }) : null,
       ingredient.observacao ? el('span', { className: 'card-muted', text: ingredient.observacao }) : null,
       tags.length ? el('span', { className: 'ingredient-tags' }, tags) : null,
     ]);

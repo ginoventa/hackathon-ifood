@@ -4,7 +4,7 @@ import { extname, resolve } from 'node:path';
 const root = process.cwd();
 const portArg = process.argv.indexOf('--port');
 const port = Number(process.env.PORT || (portArg >= 0 ? process.argv[portArg + 1] : 5173));
-const files = new Set(['index.html', 'styles.css', 'app.js', 'ailo.svg', 'icons.svg', 'loja.html', 'produto.html', 'shop.css', 'shop.js', 'product.js', 'catalog.js', 'api.js', 'format.js', 'chat-cards.js', 'chat-cards.css', 'checkout.js', 'perfil.html', 'perfil.js', 'perfil.css']);
+const files = new Set(['index.html', 'styles.css', 'app.js', 'ailo.svg', 'icons.svg', 'api.js', 'format.js', 'chat-cards.js', 'chat-cards.css', 'checkout.js', 'perfil.html', 'perfil.js', 'perfil.css']);
 const types = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',

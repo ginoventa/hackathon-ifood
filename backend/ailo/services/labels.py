@@ -1,7 +1,8 @@
 """Consulta externa de rótulos de produtos industrializados.
 
 Quando a resposta do iFood inclui um código de barras (EAN), ele pode ser
-usado para consultar os alergênicos do rótulo. Fora da demonstração, este serviço busca o rótulo na Open Food Facts
+usado para consultar os alergênicos do rótulo. Sem ele, o produto é procurado pelo
+nome (exigindo a mesma marca). Este serviço busca o rótulo na Open Food Facts
 (https://world.openfoodfacts.org), base aberta e colaborativa, e devolve:
 
 - alergênicos declarados ("contém"): ``allergens``;
@@ -15,18 +16,13 @@ certificação: a interface sempre lembra de conferir a embalagem.
 
 from __future__ import annotations
 
-import json
-from copy import deepcopy
-from pathlib import Path
-
-from ..config import config
-from ..restrictions.text_matching import normalize_text
-
 import logging
 import re
 import time
 
 import httpx
+
+from ..restrictions.text_matching import normalize_text
 
 logger = logging.getLogger(__name__)
 
@@ -69,27 +65,12 @@ def _name_tokens(name: str) -> set[str]:
 
 
 async def fetch_label(ean: str | None, product_name: str | None = None) -> dict | None:
-    """Busca o rótulo pelo código de barras.
+    """Busca o rótulo pelo código de barras ou, sem ele, pelo nome do produto.
 
     Returns:
         O rótulo (``found=True``), ``{"found": False}`` se o produto não está
-        na base, ou ``None`` se não há EAN válido ou a consulta falhou.
+        na base, ou ``None`` se não há EAN nem nome ou a consulta falhou.
     """
-    if config.demo_mode:
-        labels = json.loads((Path(__file__).resolve().parents[1] / "data/demo_labels.json").read_text(encoding="utf-8"))
-        if str(ean) in labels:
-            return deepcopy(labels[str(ean)])
-        tokens = _name_tokens(product_name or "")
-        matches = [label for label in labels.values()
-                   if tokens and tokens == _name_tokens(label.get("productName", ""))]
-        if len(matches) == 1:
-            label = deepcopy(matches[0])
-            label["matchedBy"] = "name"
-            label["sourceNote"] = (label.get("sourceNote", "") +
-                " Correspondência por nome no modo demo; o EAN do anúncio não foi confirmado.").strip()
-            return label
-        return {"found": False, "ean": str(ean), "demo": True} if ean else None
-
     if not ean or not EAN_PATTERN.match(str(ean)):
         # O iFood raramente informa o EAN: procura o produto pelo nome.
         return await _fetch_label_by_name(product_name) if product_name else None
