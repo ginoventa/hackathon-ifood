@@ -1,7 +1,7 @@
 """Consulta externa de rótulos de produtos industrializados.
 
-O iFood informa o código de barras (EAN) dos produtos embalados, mas não os
-alergênicos do rótulo. Este serviço busca o rótulo na Open Food Facts
+Quando a resposta do iFood inclui um código de barras (EAN), ele pode ser
+usado para consultar os alergênicos do rótulo. Fora da demonstração, este serviço busca o rótulo na Open Food Facts
 (https://world.openfoodfacts.org), base aberta e colaborativa, e devolve:
 
 - alergênicos declarados ("contém"): ``allergens``;
@@ -14,6 +14,12 @@ certificação: a interface sempre lembra de conferir a embalagem.
 """
 
 from __future__ import annotations
+
+import json
+from copy import deepcopy
+from pathlib import Path
+
+from ..config import config
 
 import logging
 import re
@@ -59,6 +65,10 @@ async def fetch_label(ean: str | None) -> dict | None:
     """
     if not ean or not EAN_PATTERN.match(str(ean)):
         return None
+
+    if config.demo_mode:
+        labels = json.loads((Path(__file__).resolve().parents[1] / "data/demo_labels.json").read_text(encoding="utf-8"))
+        return deepcopy(labels.get(str(ean), {"found": False, "ean": str(ean), "demo": True}))
 
     cached = _cache.get(ean)
     if cached and cached[0] > time.time():

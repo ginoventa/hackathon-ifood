@@ -139,8 +139,8 @@ def _label_findings(label: dict | None, restriction: Restriction, terms: list[st
     if not label or not label.get("found"):
         return [], False, False
 
-    source = f"Rótulo do produto (Open Food Facts, EAN {label.get('ean')})"
-    note = "Base colaborativa: confira também a embalagem."
+    source = label.get("source") or f"Rótulo do produto (Open Food Facts, EAN {label.get('ean')})"
+    note = label.get("sourceNote") or ("Dados fictícios para demonstração; não representam um rótulo real." if label.get("demo") else "Base colaborativa: confira também a embalagem.")
     conflict_tags = set(restriction.label_conflict_tags)
     findings = []
 
@@ -167,7 +167,7 @@ def _label_findings(label: dict | None, restriction: Restriction, terms: list[st
 
     # O rótulo só "libera" quando traz dados de alergênicos/ingredientes e nada marca a substância.
     has_data = bool(label.get("allergens") or label.get("traces") or ingredients)
-    is_clear = bool(conflict_tags) and has_data and not (declared or traces or from_ingredients)
+    is_clear = bool(conflict_tags) and has_data and label.get("allergenStatementComplete", True) and not (declared or traces or from_ingredients)
     if is_clear:
         findings.append(_finding(
             FindingKind.LABEL_CLEAR, [], f"rótulo sem {restriction.substance} nos alergênicos e no \"pode conter\"", source, note=note,

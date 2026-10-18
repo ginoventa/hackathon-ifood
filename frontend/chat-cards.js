@@ -259,6 +259,18 @@ function renderClarification({ itemName, merchantName, text }, actions) {
 // ------------------------------------------------------------ Receita/mercado
 
 function renderRecipe(recipe, actions) {
+  const labelEvidence = (assessment) => {
+    if (!assessment) return '';
+    const names = { milk: 'leite', gluten: 'glúten', soybeans: 'soja', nuts: 'castanhas', eggs: 'ovos', peanuts: 'amendoim' };
+    const tagName = (tag) => names[tag.split(':').pop()] || tag.split(':').pop();
+    return assessment.rotulos?.length
+      ? assessment.rotulos.map((label) => `${label.nome}: ${[
+        label.contem.length ? `contém ${label.contem.map(tagName).join(', ')}` : '',
+        label.podeConter.length ? `pode conter ${label.podeConter.map(tagName).join(', ')}` : '',
+        !label.contem.length && !label.podeConter.length ? 'sem avisos publicados na fonte; conferir embalagem' : '',
+      ].filter(Boolean).join('; ')}`).join(' · ')
+      : 'Sem rótulo de referência cadastrado; análise pelos ingredientes informados.';
+  };
   const ingredients = el('ul', { className: 'ingredient-list' }, recipe.ingredientes.map((ingredient) => {
     const check = ingredient.verificacao;
     const tags = [];
@@ -273,6 +285,9 @@ function renderRecipe(recipe, actions) {
     }
     return el('li', {}, [
       el('span', { text: `${ingredient.quantidade} · ${ingredient.nome}` }),
+      ingredient.referenciasDemo?.length ? el('span', { className: 'card-muted', text: `Referência: ${ingredient.referenciasDemo.map((item) => `${item.nome} (${item.embalagem})`).join(' ou ')}` }) : null,
+      ingredient.preparacaoCaseira ? el('span', { className: 'card-muted', text: `Para ${ingredient.preparacaoCaseira}` }) : null,
+      ingredient.observacao ? el('span', { className: 'card-muted', text: ingredient.observacao }) : null,
       tags.length ? el('span', { className: 'ingredient-tags' }, tags) : null,
     ]);
   }));
@@ -285,7 +300,11 @@ function renderRecipe(recipe, actions) {
     ingredients,
     recipe.substituicoes.length ? el('div', { className: 'card-note' }, [
       el('strong', { text: 'Substituições' }),
-      list(recipe.substituicoes.map((swap) => `${swap.original} → ${swap.substituto}${swap.motivo ? ` (${swap.motivo})` : ''}`)),
+      list(recipe.substituicoes.map((swap) => [
+        `${swap.original} → ${swap.substituto}${swap.motivo ? ` (${swap.motivo})` : ''}`,
+        swap.evidenciasOriginal ? `Original: ${labelEvidence(swap.evidenciasOriginal)}` : '',
+        swap.evidenciasSubstituto ? `Substituto: ${labelEvidence(swap.evidenciasSubstituto)}` : '',
+      ].filter(Boolean).join(' — '))),
     ]) : null,
     recipe.cuidados.length ? el('div', { className: 'card-note warning' }, [el('strong', { text: 'Cuidados' }), list(recipe.cuidados)]) : null,
     el('div', { className: 'card-actions' }, [

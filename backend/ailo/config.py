@@ -72,6 +72,7 @@ class IfoodConfig:
 
 @dataclass(frozen=True)
 class Config:
+    demo_mode: bool = field(default_factory=lambda: _env_flag("DEMO_MODE", True))
     port: int = field(default_factory=lambda: int(_env("PORT", "5173")))
     frontend_dir: Path = REPO_ROOT / "frontend"
     # Dados locais: tokens do iFood e perfil alimentar (fora do git).

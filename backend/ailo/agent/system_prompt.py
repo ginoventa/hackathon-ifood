@@ -7,6 +7,8 @@ o prompt orienta a conversa e o uso das ferramentas.
 
 from __future__ import annotations
 
+from ..config import config
+from ..services.recipes import demo_recipe_options
 from ..restrictions.catalog import list_restriction_options
 
 _RESTRICTION_LIST = "\n".join(f"- {item['id']}: {item['label']} ({item['type']})" for item in list_restriction_options())
@@ -191,3 +193,26 @@ Não use esta ferramenta para comparar mercados ou atestar segurança alimentar.
 Retorno: opções da loja, com pré-análise pelo nome. Apresente os cartões sem
 listar tudo novamente. Para verificar ingredientes e riscos de um item,
 chame analisar_produto. A consulta não garante leitura integral do cardápio."""
+
+
+if config.demo_mode:
+    _DEMO_CATALOG = ", ".join(f"{item['id']} ({item['titulo']})" for item in demo_recipe_options())
+    SYSTEM_PROMPT = SYSTEM_PROMPT.replace(
+        '1. Gere uma receita adaptada e chame registrar_receita com ingredientes, quantidades, substituições e cuidados (industrializados e contato cruzado na cozinha). Para cada ingrediente informe "busca" (termo curto para achar no mercado, ex.: "massa lasanha sem glúten") e "quantidadeCompra" (número de embalagens/unidades).',
+        '1. Chame registrar_receita somente com o prato solicitado em titulo. Os ingredientes e as alternativas vêm do catálogo local. O código seleciona uma versão completa pré-cadastrada compatível e retorna as justificativas dessa versão; não combina trocas isoladas. Não gere receitas nem pesquise na internet. Informe a origem como receita cadastrada para demonstração.'
+    ).replace(
+        '2. Se o sistema recusar a receita por conflito, corrija os ingredientes e chame de novo.',
+        '2. Se não houver receita compatível cadastrada, explique a limitação e ofereça outro prato do catálogo, sem inventar ingredientes.'
+    ).replace(
+        '3. Pergunte se a pessoa já tem algum ingrediente em casa (marque jaTenhoEmCasa)',
+        '3. Pergunte se a pessoa já tem algum ingrediente em casa (atualize registrar_receita com o id do prato e a lista completa ingredientesEmCasa)'
+    )
+    SYSTEM_PROMPT += "\nModo de demonstração ativo: as informações de rótulos são de produtos reais e estão pré-carregadas de fontes públicas. Informe a origem retornada nas evidências; não diga que houve consulta em tempo real à Open Food Facts. O vínculo com a oferta é pelo EAN, nunca apenas pelo nome. A conversa e as ferramentas do iFood continuam usando suas integrações.\n"
+    SYSTEM_PROMPT += "\nCatálogo de receitas: " + _DEMO_CATALOG + "\nExplique brevemente as trocas retornadas e seus motivos, vinculando às restrições ativas. Use evidenciasOriginal e evidenciasSubstituto: cite o produto, o alergênico ou aviso de pode conter e a fonte retornados. Diferencie a função culinária da evidência do rótulo. Ausência de referência significa informação não verificada, nunca invente rótulo. O código recusa referências conflitantes ou com aviso de risco; receitas sem formulação alternativa revisada podem não estar disponíveis. Não invente justificativas ou equivalência nutricional. Sem conflito, a receita base pode manter seus ingredientes tradicionais. Use receitaId retornado para atualizar itens em casa. Produtos em referenciasDemo são exemplos de marca e embalagem, não ofertas encontradas nem certificação de compatibilidade. Só associe um rótulo à oferta pelo EAN exato. Preparações caseiras já vêm detalhadas em componentes para compra.\n"
+    REGISTRAR_RECEITA_PROMPT = """Objetivo: selecionar e registrar uma receita do catálogo local de demonstração, sem gerar ingredientes.
+Pré-requisito: restrições ativas. Informe em titulo o prato solicitado ou seu id no catálogo.
+O código seleciona a receita, seleciona uma versão completa pré-cadastrada, sem gerar ou combinar trocas isoladas e valida todas as restrições ativas. Retorna receitaId, substituicoes e os motivos culinários cadastrados. Explique essas trocas sem inventar razões. Não envie ingredientes, quantidades ou substituições gerados.
+Para atualizar o que a pessoa já tem, envie o id e a lista completa ingredientesEmCasa com os nomes retornados.
+Se não houver receita compatível cadastrada, ofereça outro prato do catálogo sem inventar uma receita.
+Após a aceitação, use buscar_ingredientes_no_mercado quando a pessoa solicitar a compra.
+A origem é catálogo local de demonstração. Não apresente modo de preparo.""" + "\nCatálogo disponível: " + _DEMO_CATALOG

@@ -1,0 +1,398 @@
+{
+  "7896038350056": {
+    "found": true,
+    "ean": "7896038350056",
+    "productName": "Farinha de arroz Urbano 1 kg",
+    "brand": "Urbano",
+    "quantity": "1 kg",
+    "ingredients": "Farinha obtida da moagem de arroz.",
+    "allergens": [],
+    "traces": [
+      "en:soybeans"
+    ],
+    "labels": [
+      "en:no-gluten"
+    ],
+    "url": "https://apppharma.com.br/produto/farinha-de-arroz-urbano-kg-46628",
+    "source": "Catálogo local de produtos reais — Urbano",
+    "demo": true,
+    "dataKind": "real_product_snapshot",
+    "checkedAt": "2026-10-18",
+    "sources": [
+      "https://apppharma.com.br/produto/farinha-de-arroz-urbano-kg-46628",
+      "https://www.covabra.com.br/farinha-de-arroz-urbano-1kg/p"
+    ],
+    "allergenStatementComplete": false,
+    "sourceNote": "Informações pré-carregadas de fontes públicas; confira a embalagem. Avisos não encontrados na fonte não comprovam ausência de traços."
+  },
+  "7896038305193": {
+    "found": true,
+    "ean": "7896038305193",
+    "productName": "Macarrão de arroz pena Urbano 500 g",
+    "brand": "Urbano",
+    "quantity": "500 g",
+    "ingredients": "Farinha de arroz, corantes naturais cúrcuma e urucum, emulsificante E471.",
+    "allergens": [],
+    "traces": [
+      "en:soybeans"
+    ],
+    "labels": [
+      "en:no-gluten"
+    ],
+    "url": "https://foodclock.com/food/rices/urbano-zero-gl-ten-massa-aliment-cia-de-arroz/7896038305193",
+    "source": "Catálogo local de produtos reais — Urbano",
+    "demo": true,
+    "dataKind": "real_product_snapshot",
+    "checkedAt": "2026-10-18",
+    "sources": [
+      "https://foodclock.com/food/rices/urbano-zero-gl-ten-massa-aliment-cia-de-arroz/7896038305193",
+      "https://www.dietacrua.com.br/massa-de-arroz-penne-sem-gluten-500g-urbano"
+    ],
+    "allergenStatementComplete": false,
+    "sourceNote": "Informações pré-carregadas de fontes públicas; confira a embalagem. Avisos não encontrados na fonte não comprovam ausência de traços. Transcrição da Open Food Facts disponibilizada pelo FoodClock."
+  },
+  "7896038320196": {
+    "found": true,
+    "ean": "7896038320196",
+    "productName": "Macarrão de arroz fusilli Urbano 500 g",
+    "brand": "Urbano",
+    "quantity": "500 g",
+    "ingredients": "Farinha de arroz, beta caroteno, emulsificante E471 e acetato de retinol.",
+    "allergens": [],
+    "traces": [
+      "en:soybeans"
+    ],
+    "labels": [
+      "en:no-gluten"
+    ],
+    "url": "https://data.wireshape.com/registry/0x0000000000000000000000000000000000000000000000000007896038320196",
+    "source": "Catálogo local de produtos reais — Urbano",
+    "demo": true,
+    "dataKind": "real_product_snapshot",
+    "checkedAt": "2026-10-18",
+    "sources": [
+      "https://data.wireshape.com/registry/0x0000000000000000000000000000000000000000000000000007896038320196"
+    ],
+    "allergenStatementComplete": false,
+    "sourceNote": "Informações pré-carregadas de fontes públicas; confira a embalagem. Avisos não encontrados na fonte não comprovam ausência de traços."
+  },
+  "7898215151708": {
+    "found": true,
+    "ean": "7898215151708",
+    "productName": "Leite integral Piracanjuba 1 L",
+    "brand": "Piracanjuba",
+    "quantity": "1 L",
+    "ingredients": "Leite integral e estabilizantes trifosfato de sódio, citrato de sódio, monofosfato de sódio e difosfato de sódio. Contém lactose.",
+    "allergens": [
+      "en:milk"
+    ],
+    "traces": [],
+    "labels": [
+      "en:no-gluten"
+    ],
+    "url": "https://lojavtex.saojoaofarmacias.com.br/leite-integral-piracanjuba-1l-10018948/p",
+    "source": "Catálogo local de produtos reais — Piracanjuba",
+    "demo": true,
+    "dataKind": "real_product_snapshot",
+    "checkedAt": "2026-10-18",
+    "sources": [
+      "https://lojavtex.saojoaofarmacias.com.br/leite-integral-piracanjuba-1l-10018948/p"
+    ],
+    "allergenStatementComplete": false,
+    "sourceNote": "Informações pré-carregadas de fontes públicas; confira a embalagem. Avisos não encontrados na fonte não comprovam ausência de traços."
+  },
+  "7898215151982": {
+    "found": true,
+    "ean": "7898215151982",
+    "productName": "Creme de leite zero lactose Piracanjuba 200 g",
+    "brand": "Piracanjuba",
+    "quantity": "200 g",
+    "ingredients": "Creme de leite, leite em pó desnatado, enzima lactase, espessantes e estabilizantes.",
+    "allergens": [
+      "en:milk"
+    ],
+    "traces": [],
+    "labels": [
+      "en:no-gluten",
+      "en:lactose-free"
+    ],
+    "url": "https://www.piracanjuba.com.br/produto/creme-de-leite-zero-lactose-200-g",
+    "source": "Catálogo local de produtos reais — Piracanjuba",
+    "demo": true,
+    "dataKind": "real_product_snapshot",
+    "checkedAt": "2026-10-18",
+    "sources": [
+      "https://www.piracanjuba.com.br/produto/creme-de-leite-zero-lactose-200-g",
+      "https://amendolate.lojaintegrada.com.br/creme-de-leite-zero-lactose-200g-piracanjuba"
+    ],
+    "allergenStatementComplete": false,
+    "sourceNote": "Informações pré-carregadas de fontes públicas; confira a embalagem. Avisos não encontrados na fonte não comprovam ausência de traços. Ingredientes resumidos; a lista completa está na fonte do fabricante. Zero lactose continua contendo derivados do leite."
+  },
+  "7898955705049": {
+    "found": true,
+    "ean": "7898955705049",
+    "productName": "Bebida de castanha de caju Original A Tal da Castanha 1 L",
+    "brand": "A Tal da Castanha",
+    "quantity": "1 L",
+    "ingredients": "Água e castanha de caju orgânica.",
+    "allergens": [
+      "en:nuts"
+    ],
+    "traces": [],
+    "labels": [
+      "en:no-gluten",
+      "en:vegan"
+    ],
+    "url": "https://apppharma.com.br/produto/bebida-de-castanha-de-caju-original-a-tal-da-castanha-l-110000",
+    "source": "Catálogo local de produtos reais — A Tal da Castanha",
+    "demo": true,
+    "dataKind": "real_product_snapshot",
+    "checkedAt": "2026-10-18",
+    "sources": [
+      "https://apppharma.com.br/produto/bebida-de-castanha-de-caju-original-a-tal-da-castanha-l-110000",
+      "https://www.covabra.com.br/bebida-de-castanha-de-caju-a-tal-da-castanha-organica-original-1lt/p"
+    ],
+    "allergenStatementComplete": false,
+    "sourceNote": "Informações pré-carregadas de fontes públicas; confira a embalagem. Avisos não encontrados na fonte não comprovam ausência de traços."
+  },
+  "7898955705728": {
+    "found": true,
+    "ean": "7898955705728",
+    "productName": "Pasta de castanha orgânica Original A Tal da Castanha 120 g",
+    "brand": "A Tal da Castanha",
+    "quantity": "120 g",
+    "ingredients": "Amêndoas de castanha-de-caju orgânicas.",
+    "allergens": [
+      "en:nuts"
+    ],
+    "traces": [],
+    "labels": [],
+    "url": "https://www.drogasil.com.br/pasta-de-castanha-organica-a-tal-da-castanha-original-120g-1427967.html",
+    "source": "Catálogo local de produtos reais — A Tal da Castanha",
+    "demo": true,
+    "dataKind": "real_product_snapshot",
+    "checkedAt": "2026-10-18",
+    "sources": [
+      "https://www.drogasil.com.br/pasta-de-castanha-organica-a-tal-da-castanha-original-120g-1427967.html"
+    ],
+    "allergenStatementComplete": false,
+    "sourceNote": "Informações pré-carregadas de fontes públicas; confira a embalagem. Avisos não encontrados na fonte não comprovam ausência de traços. Presença de castanha identificada na composição; a fonte não traz declaração completa de alergênicos."
+  },
+  "7896084700294": {
+    "found": true,
+    "ean": "7896084700294",
+    "productName": "Bebida de arroz Original Risovita 1 L",
+    "brand": "Risovita",
+    "quantity": "1 L",
+    "ingredients": "Água, arroz, óleo de girassol, carbonato de cálcio, sal marinho, goma xantana, fosfato tricálcio e citrato de sódio.",
+    "allergens": [],
+    "traces": [],
+    "labels": [
+      "en:no-gluten",
+      "en:lactose-free"
+    ],
+    "url": "https://apppharma.com.br/produto/bebida-de-arroz-sabor-original-risovita-l-109992",
+    "source": "Catálogo local de produtos reais — Risovita",
+    "demo": true,
+    "dataKind": "real_product_snapshot",
+    "checkedAt": "2026-10-18",
+    "sources": [
+      "https://apppharma.com.br/produto/bebida-de-arroz-sabor-original-risovita-l-109992",
+      "https://www.loja.emporiomanjericao.com.br/bebidas/bebida-de-arroz-risovita-original-1l--p"
+    ],
+    "allergenStatementComplete": false,
+    "sourceNote": "Informações pré-carregadas de fontes públicas; confira a embalagem. Avisos não encontrados na fonte não comprovam ausência de traços."
+  },
+  "7896084700584": {
+    "found": true,
+    "ean": "7896084700584",
+    "productName": "Bebida de arroz em pó Original Risovita 300 g",
+    "brand": "Risovita",
+    "quantity": "300 g",
+    "ingredients": "Arroz, polidextrose, carbonato de cálcio, sal marinho, vitaminas A e E, aroma e antiumectante INS 551.",
+    "allergens": [],
+    "traces": [
+      "en:milk"
+    ],
+    "labels": [
+      "en:no-gluten"
+    ],
+    "url": "https://apppharma.com.br/produto/bebida-de-arroz-em-po-sabor-original-risovita-g-33625",
+    "source": "Catálogo local de produtos reais — Risovita",
+    "demo": true,
+    "dataKind": "real_product_snapshot",
+    "checkedAt": "2026-10-18",
+    "sources": [
+      "https://apppharma.com.br/produto/bebida-de-arroz-em-po-sabor-original-risovita-g-33625"
+    ],
+    "allergenStatementComplete": false,
+    "sourceNote": "Informações pré-carregadas de fontes públicas; confira a embalagem. Avisos não encontrados na fonte não comprovam ausência de traços. Composição resumida. Apesar da base de arroz, a fonte declara pode conter leite."
+  },
+  "7896084700607": {
+    "found": true,
+    "ean": "7896084700607",
+    "productName": "Bebida de arroz em pó Chocolate Risovita 300 g",
+    "brand": "Risovita",
+    "quantity": "300 g",
+    "ingredients": "Arroz, cacau, inulina, carbonato de cálcio, sal marinho, vitaminas A e D, aromatizantes, goma xantana, INS 551 e stevia.",
+    "allergens": [],
+    "traces": [
+      "en:milk",
+      "en:soybeans"
+    ],
+    "labels": [
+      "en:no-gluten"
+    ],
+    "url": "https://apppharma.com.br/produto/bebida-de-arroz-em-po-sabor-chocolate-risovita-g-75232",
+    "source": "Catálogo local de produtos reais — Risovita",
+    "demo": true,
+    "dataKind": "real_product_snapshot",
+    "checkedAt": "2026-10-18",
+    "sources": [
+      "https://apppharma.com.br/produto/bebida-de-arroz-em-po-sabor-chocolate-risovita-g-75232"
+    ],
+    "allergenStatementComplete": false,
+    "sourceNote": "Informações pré-carregadas de fontes públicas; confira a embalagem. Avisos não encontrados na fonte não comprovam ausência de traços. Composição resumida; pode conter leite e soja."
+  },
+  "7896084700850": {
+    "found": true,
+    "ean": "7896084700850",
+    "productName": "Mistura para bolo de chocolate Risovita 400 g",
+    "brand": "Risovita",
+    "quantity": "400 g",
+    "ingredients": "Farinha de arroz, açúcar, cacau em pó, fermento, goma xantana e aroma idêntico ao natural de chocolate.",
+    "allergens": [],
+    "traces": [],
+    "labels": [
+      "en:no-gluten",
+      "en:lactose-free",
+      "en:no-soy"
+    ],
+    "url": "https://www.loja.emporiomanjericao.com.br/sem-gluten-sem-lactose/mistura-bolo-chocolate-s-gl-s-lact-400g-risovita--p",
+    "source": "Catálogo local de produtos reais — Risovita",
+    "demo": true,
+    "dataKind": "real_product_snapshot",
+    "checkedAt": "2026-10-18",
+    "sources": [
+      "https://www.loja.emporiomanjericao.com.br/sem-gluten-sem-lactose/mistura-bolo-chocolate-s-gl-s-lact-400g-risovita--p"
+    ],
+    "allergenStatementComplete": false,
+    "sourceNote": "Informações pré-carregadas de fontes públicas; confira a embalagem. Avisos não encontrados na fonte não comprovam ausência de traços. As declarações são da mistura seca; os ingredientes adicionados no preparo devem ser analisados separadamente."
+  },
+  "7897517206116": {
+    "found": true,
+    "ean": "7897517206116",
+    "productName": "Molho de tomate bolonhesa vegano Fugini 300 g",
+    "brand": "Fugini",
+    "quantity": "300 g",
+    "ingredients": "Tomate, cebola, proteína texturizada de soja, sal, amido modificado, extrato de levedura, ácido lático, aroma, alho e salsa.",
+    "allergens": [
+      "en:soybeans"
+    ],
+    "traces": [],
+    "labels": [
+      "en:no-gluten",
+      "en:vegan"
+    ],
+    "url": "https://daksa.com.br/fugini/produtos/linha-vegana/8/molho-de-tomate-bolonhesa-vegano-fugini-sache-300g",
+    "source": "Catálogo local de produtos reais — Fugini",
+    "demo": true,
+    "dataKind": "real_product_snapshot",
+    "checkedAt": "2026-10-18",
+    "sources": [
+      "https://daksa.com.br/fugini/produtos/linha-vegana/8/molho-de-tomate-bolonhesa-vegano-fugini-sache-300g"
+    ],
+    "allergenStatementComplete": false,
+    "sourceNote": "Informações pré-carregadas de fontes públicas; confira a embalagem. Avisos não encontrados na fonte não comprovam ausência de traços. Soja identificada na composição. Não confundir com outras variantes de molho da marca."
+  },
+  "7896005202074": {
+    "found": true,
+    "ean": "7896005202074",
+    "productName": "Farinha de trigo tradicional Dona Benta 1 kg",
+    "brand": "Dona Benta",
+    "quantity": "1 kg",
+    "ingredients": "Farinha de trigo enriquecida com ferro e ácido fólico.",
+    "allergens": [
+      "en:gluten"
+    ],
+    "traces": [],
+    "labels": [],
+    "url": "https://ean.blendo.com.br/farinha-de-trigo/7896005202074-farinha-de-trigo-tipo-1-tradicional-dona-benta-pacote-1kg",
+    "source": "Catálogo local de produtos reais — Dona Benta",
+    "demo": true,
+    "dataKind": "real_product_snapshot",
+    "checkedAt": "2026-10-18",
+    "sources": [
+      "https://ean.blendo.com.br/farinha-de-trigo/7896005202074-farinha-de-trigo-tipo-1-tradicional-dona-benta-pacote-1kg"
+    ],
+    "allergenStatementComplete": false,
+    "sourceNote": "Informações pré-carregadas de fonte pública; confira a embalagem. Avisos não publicados permanecem desconhecidos."
+  },
+  "7896283005268": {
+    "found": true,
+    "ean": "7896283005268",
+    "productName": "Linhaça dourada em grãos Jasmine 150 g",
+    "brand": "Jasmine",
+    "quantity": "150 g",
+    "ingredients": "Sementes de linhaça dourada.",
+    "allergens": [],
+    "traces": [],
+    "labels": [
+      "en:vegan"
+    ],
+    "url": "https://beta.jasminealimentos.com/produto/linhaca-dourada-em-graos-jasmine-pacote-150g-150253",
+    "source": "Catálogo local de produtos reais — Jasmine",
+    "demo": true,
+    "dataKind": "real_product_snapshot",
+    "checkedAt": "2026-10-18",
+    "sources": [
+      "https://beta.jasminealimentos.com/produto/linhaca-dourada-em-graos-jasmine-pacote-150g-150253"
+    ],
+    "allergenStatementComplete": false,
+    "sourceNote": "Informações pré-carregadas de fonte pública; confira a embalagem. Avisos não publicados permanecem desconhecidos."
+  },
+  "5601252106103": {
+    "found": true,
+    "ean": "5601252106103",
+    "productName": "Azeite de oliva tipo único Gallo 500 ml",
+    "brand": "Gallo",
+    "quantity": "500 ml",
+    "ingredients": "Azeite de oliva.",
+    "allergens": [],
+    "traces": [],
+    "labels": [],
+    "url": "https://www.savegnago.com.br/azeite-portugues-gallo-500ml-vidro-tipo-unico/p",
+    "source": "Catálogo local de produtos reais — Gallo",
+    "demo": true,
+    "dataKind": "real_product_snapshot",
+    "checkedAt": "2026-10-18",
+    "sources": [
+      "https://www.savegnago.com.br/azeite-portugues-gallo-500ml-vidro-tipo-unico/p"
+    ],
+    "allergenStatementComplete": false,
+    "sourceNote": "Informações pré-carregadas de fonte pública; confira a embalagem. Avisos não publicados permanecem desconhecidos."
+  },
+  "7896035210001": {
+    "found": true,
+    "ean": "7896035210001",
+    "productName": "Sal refinado tradicional Cisne 1 kg",
+    "brand": "Cisne",
+    "quantity": "1 kg",
+    "ingredients": "Sal refinado extra, iodato de potássio, ferrocianeto de sódio e dióxido de silício.",
+    "allergens": [],
+    "traces": [],
+    "labels": [
+      "en:no-gluten"
+    ],
+    "url": "https://data.wireshape.com/registry/0x0000000000000000000000000000000000000000000000000007896035210001",
+    "source": "Catálogo local de produtos reais — Cisne",
+    "demo": true,
+    "dataKind": "real_product_snapshot",
+    "checkedAt": "2026-10-18",
+    "sources": [
+      "https://data.wireshape.com/registry/0x0000000000000000000000000000000000000000000000000007896035210001"
+    ],
+    "allergenStatementComplete": false,
+    "sourceNote": "Informações pré-carregadas de fonte pública; confira a embalagem. Avisos não publicados permanecem desconhecidos."
+  }
+}

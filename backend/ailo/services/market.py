@@ -18,6 +18,7 @@ from ..restrictions.text_matching import normalize_text
 from ..sessions import Session
 from .catalog import get_item_details, search_offers
 from .labels import fetch_label
+from .packaging import load_local_labels, purchase_quantity
 
 # Quantos resultados buscar por ingrediente.
 RESULTS_PER_INGREDIENT = 10
@@ -87,7 +88,7 @@ def register_recipe(session: Session, recipe: dict) -> dict[str, Any]:
             {
                 **ingredient,
                 "quantidadeCompra": max(1, round(float(ingredient.get("quantidadeCompra") or 1))),
-                "verificacao": check,
+                "verificacao": {**check, "needsLabelCheck": check["needsLabelCheck"] or bool(ingredient.get("analiseReferencias", {}).get("rotulos"))},
             }
             for ingredient, check in zip(ingredients, checks)
         ],
@@ -95,8 +96,15 @@ def register_recipe(session: Session, recipe: dict) -> dict[str, Any]:
         "modoDePreparo": recipe.get("modoDePreparo") or [],
         "cuidados": recipe.get("cuidados") or [],
     }
+    if recipe.get("varianteId"):
+        normalized["varianteId"] = recipe["varianteId"]
+    if recipe.get("id"):
+        normalized["id"] = recipe["id"]
+    if recipe.get("origem"):
+        normalized["origem"] = recipe["origem"]
     if not conflicts:
         session.recipe = normalized
+        session.market_plan = None
     return {"accepted": not conflicts, "recipe": normalized, "conflicts": conflicts}
 
 
@@ -160,15 +168,21 @@ def _best_candidate(candidates: list[dict]) -> dict | None:
 def _build_merchant_plan(merchant: dict, ingredients: list[dict], candidates_by_ingredient: list[list[dict]]) -> dict:
     """Resumo de um mercado com o melhor produto para cada ingrediente."""
     items, missing = [], []
+    local_labels = load_local_labels()
     for ingredient, candidates in zip(ingredients, candidates_by_ingredient):
         chosen = _best_candidate([candidate for candidate in candidates if candidate["merchantId"] == merchant["merchantId"]])
         if chosen is None:
             missing.append(ingredient["nome"])
             continue
-        quantity = ingredient["quantidadeCompra"]
+        # Usa a embalagem do EAN efetivamente encontrado, nunca a da referência
+        # de outra marca. Sem EAN local, usa o tamanho publicado no nome da oferta.
+        local_label = local_labels.get(str(chosen.get("itemEan")))
+        package_text = local_label["quantity"] if local_label else chosen["itemName"]
+        quantity = purchase_quantity(ingredient, package_text)
         items.append({
             "ingrediente": ingredient["nome"],
             "quantidade": quantity,
+            "itemEan": chosen.get("itemEan"),
             "itemId": chosen["itemId"],
             "itemName": chosen["itemName"],
             "imageUrl": chosen.get("imageUrl"),
@@ -248,6 +262,11 @@ async def plan_grocery_shopping(session: Session) -> dict:
                 return  # Mantém a análise rápida (só pelo nome).
             # Produto industrializado: consulta o rótulo (alergênicos e "pode conter") pelo código de barras.
             label = await fetch_label(details.get("itemEan") or item.get("itemEan"))
+            item["itemEan"] = details.get("itemEan") or item.get("itemEan")
+            ingredient = next(entry for entry in ingredients if entry["nome"] == item["ingrediente"])
+            package_text = label.get("quantity") if label and label.get("found") else None
+            item["quantidade"] = purchase_quantity(ingredient, package_text or details.get("itemName") or item["itemName"])
+            item["totalPrice"] = _money(item["unitPrice"] * item["quantidade"])
             item["analysis"] = analyze_product(
                 details, session.restrictions, kind=KIND_MARKET,
                 declared_tags=session.declared_tags.get(item["itemId"], []), label=label,
@@ -261,7 +280,7 @@ async def plan_grocery_shopping(session: Session) -> dict:
         if conflicting:
             recommended["items"] = [item for item in recommended["items"] if item["verdict"] != Verdict.CONFLICT]
             recommended["missing"].extend(item["ingrediente"] for item in conflicting)
-            _with_totals(recommended)
+        _with_totals(recommended)
 
     plan = {
         "recipeTitle": recipe["titulo"],

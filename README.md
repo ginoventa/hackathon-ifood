@@ -1,194 +1,213 @@
-# Ailo · Assistente iFood para restrições alimentares
+# Ailo — pedidos com atenção às restrições alimentares
 
-Agente de IA que ajuda pessoas com **alergias, intolerâncias, doença celíaca e preferências alimentares** a pedir comida no iFood. O Ailo investiga cardápios, reconhece incertezas, explica riscos e oferece caminhos alternativos: consultar o restaurante, escolher outro produto ou preparar em casa com ingredientes do mercado.
+**O Ailo ajuda pessoas com restrições alimentares a decidir o que pedir e a transformar uma receita adaptada em uma lista de compras no iFood.** A conversa identifica as necessidades da pessoa; ferramentas investigam produtos, explicam conflitos e procuram alternativas, mantendo a decisão de compra nas mãos do usuário.
 
-Projeto do Hackathon SEMCOMP × iFood 2026 ("Vendendo com Agentes"). Todos os dados vêm do **MCP do iFood**; não há modo de demonstração.
+Projeto do **Hackathon SEMCOMP × iFood 2026 — Vendendo com Agentes**. A proposta combina um agente conversacional, regras de restrição alimentar e integração com o MCP do iFood.
 
-## Pré-requisitos
+> Exemplo: “Quero panqueca, tenho alergia à proteína do leite.” O Ailo considera a restrição, apresenta uma versão sem leite e explica a escolha dos ingredientes. Se a pessoa acrescentar doença celíaca ou alergia a ovo, o agente pode registrar uma nova versão da lista. Produtos incompatíveis ou com avisos de risco não são escolhidos automaticamente como referências da receita.
 
-- Python 3.11+ e [uv](https://docs.astral.sh/uv/) (gerenciador de pacotes Python).
-- Uma LLM, à escolha (`LLM_PROVIDER` no `.env`):
-  - **ChatGPT (padrão):** usa a sua assinatura do ChatGPT (ex.: Plus), sem pagar tokens de API. Faça login com `npm run login-chatgpt`.
-  - **Gemini:** chave em https://aistudio.google.com/apikey (`LLM_PROVIDER=gemini`).
-- Um **agente aprovado** no [MCP Portal do iFood](https://mcp-developer.ifood.com.br) e uma **conta de teste**:
-  1. [Crie o agente](https://mcp-developer.ifood.com.br/pt-BR/docs/guides/first-steps/agent), com a Redirect URL `http://localhost:8080/callback` (ou outra; veja abaixo).
-  2. Depois da aprovação, copie o **Client ID** e gere o **Client Secret** em *Credenciais de acesso*. O segredo aparece uma única vez.
-  3. [Crie uma conta de teste](https://mcp-developer.ifood.com.br/pt-BR/docs/guides/first-steps/test-account). O login dela usa o OTP exibido no próprio portal.
+## Guia para a banca
 
-## Como rodar
-
-```sh
-npm run setup          # instala as dependências Python (uv sync)
-cp .env.example .env   # preencha IFOOD_CLIENT_ID e IFOOD_CLIENT_SECRET
-npm run login-chatgpt  # entra na conta do ChatGPT (abre o navegador)
-npm run dev            # http://localhost:5173
-```
-
-O login do ChatGPT fica em `backend/.data/chatgpt-auth.json` (fora do git) e é renovado automaticamente. Sem navegador local, use `npm run login-chatgpt -- --device`.
-
-### ChatGPT como LLM: atenção
-
-O modo `chatgpt` usa o `_ChatOpenAICodex` do `langchain-openai`, uma integração **experimental e não oficial**: ela acessa o backend do Codex (`chatgpt.com/backend-api/codex`), e não a API pública da OpenAI.
-
-- O uso conta nos **limites do seu plano** (não é ilimitado) e pode mudar sem aviso. Cabe a quem usa respeitar os termos da OpenAI.
-- Só alguns modelos são aceitos. Numa conta Plus (out/2026): `gpt-5.6-terra` (padrão), `gpt-5.6-luna`, `gpt-5.6-sol`, `gpt-6-luna`, `gpt-6-sol`. Nomes como `gpt-5.5` são recusados. Ajuste em `CHATGPT_MODEL`.
-- Para algo estável, volte ao Gemini (`LLM_PROVIDER=gemini`) ou use a API oficial da OpenAI. Basta trocar `agent/chat_model.py`.
-
-Na interface, clique em **Conectar iFood** e entre com a conta de teste. O e-mail ou telefone dela aparece no portal, assim como o código OTP (*Gerar código*).
-
-### Redirect URL
-
-`IFOOD_REDIRECT_URI` precisa ser **exatamente** a Redirect URL cadastrada no agente.
-
-- `http://localhost:8080/callback` (padrão): durante o login, o Ailo abre um servidor temporário na porta 8080. Feche outros programas que usem essa porta, como o login de MCP do Claude Code.
-- `http://localhost:5173/callback`: o retorno cai no próprio servidor do Ailo. Cadastre essa URL no agente para usar essa opção.
-
-Também é possível logar pelo terminal com `npm run login`.
-
-### Testes
-
-```sh
-npm test
-```
-
-Os testes (pytest) cobrem o analisador de restrições, o login OAuth (com o endpoint de token simulado) e os fluxos completos do agente. Neles, um cliente falso do iFood e um chat model falso do LangChain substituem os serviços reais (`backend/tests/fakes.py`), então rodam sem rede e sem custo. Esses dados fictícios existem **só nos testes**.
-
-## Como funciona
-
-```
-Navegador (frontend/)  ──HTTP──▶  Backend Python (backend/ailo/, FastAPI)
-                                   ├─ agent/         LangChain create_agent + ChatGPT (_ChatOpenAICodex) ou Gemini
-                                   ├─ restrictions/  Regras determinísticas de restrições
-                                   ├─ services/      Busca, análise, mercado, carrinho
-                                   └─ ifood/         MCP do iFood via langchain-mcp-adapters + OAuth do agente
-```
-
-- **Agente:** `create_agent` (pacote `langchain`) com o modelo escolhido em `LLM_PROVIDER`: `_ChatOpenAICodex` (`langchain-openai`, assinatura do ChatGPT) ou `ChatGoogleGenerativeAI` (`langchain-google-genai`). As ferramentas do Ailo são `StructuredTool` com `response_format="content_and_artifact"`: a saída vai para a LLM e o cartão da interface viaja como artefato.
-- **iFood:** o `MultiServerMCPClient` (`langchain-mcp-adapters`) conecta a `https://consumer-mcp.ifood.com.br/marketplace`. O token do agente é injetado por um `httpx.Auth`, que também o renova quando o iFood responde 401.
-- **Login:** OAuth 2.1 com PKCE, como no [guia de implementação](https://mcp-developer.ifood.com.br/pt-BR/docs/guides/authentication/implementacao). A troca do código e a renovação enviam `client_id` + `client_secret`, os tokens são rotacionados a cada renovação e revogados ao desconectar.
-- As ferramentas do iFood **não** vão direto para a LLM: os serviços do Ailo as chamam e aplicam as regras de restrição antes.
-
-Fluxo de uma mensagem:
-
-1. O usuário escreve o que quer comer e suas restrições.
-2. A LLM (ChatGPT ou Gemini), orquestrada pelo agente do LangChain, chama ferramentas: `registrar_restricoes`, `buscar_opcoes`, `analisar_produto`, `preparar_mensagem_restaurante`, `registrar_receita`, `buscar_ingredientes_no_mercado`, `montar_carrinho`…
-3. As ferramentas consultam o MCP do iFood e aplicam o **analisador determinístico**. A LLM não decide sozinha se um produto é seguro.
-4. A interface mostra **cartões** com os dados verificados: opções, parecer com evidências, mensagem ao restaurante, receita, comparação de mercados e carrinho.
-5. O pedido **só é enviado** quando o usuário revisa tudo e clica em "Confirmar pedido". A LLM não tem acesso a `submitOrder`.
-
-### Regras de segurança implementadas no código
-
-| Regra da proposta | Onde |
-| --- | --- |
-| Diferenciar alergia, intolerância, celíaca e preferência (rigor diferente) | `restrictions/catalog.py` |
-| Não afirmar segurança pela ausência de um termo | `analyzer.py` → `INFORMACAO_INSUFICIENTE` para alergias sem evidência positiva |
-| Alergênico em outro item do cardápio = possível contato cruzado, não prova | `analyzer.py` → `_analyze_cross_contact` |
-| "Sem lactose" não serve para APLV | `catalog.py` → `insufficient_claims` |
-| Informar a origem de cada evidência | Cada achado tem `where` e `source` |
-| Receita da IA validada por regras | `analyze_recipe_ingredients`: receita com conflito é recusada |
-| Itens com conflito não entram no carrinho | `services/cart.py` |
-| Confirmação do restaurante é evidência adicional, não certificação | `record_establishment_confirmation`: não anula `CONFLITO` |
-| Compra só com confirmação explícita | Rota `POST /api/orders` + ciência dos alertas |
-| Perfil alimentar só com autorização | `profiles.py` exige `consent=True` |
-| Etiqueta do iFood tem prioridade | `tools/catalog.py`: com etiqueta (ex.: GLUTEN_FREE), só itens etiquetados são recomendados e nomes de prato ("pizza", "massa") não contam; itens etiquetados do cardápio não são contato cruzado |
-| Nunca recomendar item com outra restrição | `tools/catalog.py`: itens com conflito são descartados; sem opção compatível, mostra alternativas que atendem às restrições ou diz que não encontrou (e avisa se as compatíveis estão fechadas) |
-| Rótulo de industrializados | `services/labels.py`: consulta a Open Food Facts pelo código de barras (alergênicos, "pode conter", selos e ingredientes) |
-
-### Restrições religiosas e menos comuns
-
-O catálogo inclui, além das alergias e intolerâncias comuns: **sem carne de porco** (islamismo, judaísmo, adventismo), **halal**, **kosher**, **sem carne bovina** (hinduísmo), **alergia a gergelim** e **intolerância à frutose**. Restrições religiosas usam o tipo `RELIGIOSA` e exigem evidência positiva: no halal, por exemplo, carne sem certificação é "possível risco". Qualquer outra regra (jejum, jainismo, alergia a kiwi...) pode ser cadastrada no perfil como **Outra restrição**, com tipo e palavras-chave.
-
-### Rótulo de produtos industrializados
-
-Quando o item tem código de barras (EAN), o Ailo consulta o rótulo na [Open Food Facts](https://world.openfoodfacts.org):
-
-- alergênico declarado ("contém glúten") → **incompatível**;
-- "pode conter" → **possível risco**;
-- selo de ausência ("sem glúten", "vegano", "halal") → evidência a favor;
-- rótulo com dados e sem a substância → "sem conflito declarado", com o lembrete de conferir a embalagem;
-- produto fora da base ou sem dados → continua o aviso "confira o rótulo".
-
-A Open Food Facts é colaborativa: os dados são tratados como evidência, nunca como certificação.
-
-## Estrutura de pastas
-
-```
-backend/                        Python (uv)
-  pyproject.toml                Dependências: FastAPI, LangChain, langchain-google-genai, langchain-mcp-adapters
-  ailo/
-    main.py                     Entrada: API + arquivos da interface
-    config.py                   Variáveis de ambiente (.env)
-    errors.py, storage.py       Erros padronizados e persistência local
-    sessions.py, profiles.py    Contexto da conversa e perfil alimentar
-    login.py                    Login pelo terminal
-    api/routes.py               Rotas /api
-    agent/
-      agent.py                  create_agent: conversa, ferramentas e cartões
-      chat_model.py             ChatGPT (_ChatOpenAICodex) ou Gemini (trocar de LLM = mudar só aqui)
-    login_chatgpt.py            Login na conta do ChatGPT
-      system_prompt.py          Instruções do agente
-      tools/                    Ferramentas por assunto (restrições, catálogo, mercado, carrinho)
-    restrictions/               Motor de regras (sem IA)
-      catalog.py                Restrições, termos e etiquetas do iFood
-      analyzer.py               Parecer de produtos e receitas
-      clarification.py          Mensagem para o restaurante
-      text_matching.py          Normalização e busca de termos com negação ("sem leite")
-    services/                   Regras de negócio usadas pelas ferramentas e rotas
-    ifood/
-      oauth.py                  Login OAuth 2.1 + PKCE do agente
-      client.py                 MCP do iFood via LangChain
-  tests/                        pytest (com cliente e modelo falsos)
-frontend/
-  index.html, app.js            Conversa com o Ailo
-  chat-cards.js/.css            Cartões da conversa
-  checkout.js                   Revisão e confirmação do pedido
-  perfil.html/.js/.css          Perfil alimentar
-  api.js, format.js             Cliente da API e utilitários
-  loja.html, produto.html…      Loja ilustrativa (protótipo original)
-docs/
-  feedback-mcp.md               Entregável 06: dores reais com o MCP do iFood
-```
-
-## Variáveis de ambiente
-
-Veja `.env.example`. As principais:
-
-- `LLM_PROVIDER`: `chatgpt` (padrão) ou `gemini`.
-- `CHATGPT_MODEL`: modelo do ChatGPT (padrão `gpt-5.6-terra`).
-- `GEMINI_API_KEY` / `GEMINI_MODEL`: só para `LLM_PROVIDER=gemini`.
-- `IFOOD_CLIENT_ID` / `IFOOD_CLIENT_SECRET`: credenciais do agente no MCP Portal.
-- `IFOOD_REDIRECT_URI`: Redirect URL cadastrada no agente.
-- `IFOOD_SCOPES`: escopos técnicos liberados para o agente (opcional).
-- `ALLOW_SUBMIT_ORDER`: `true` permite enviar o pedido após a confirmação do usuário. Pedidos de teste pagos (ex.: via PIX) **não são reembolsados**.
-
-## API
-
-| Método | Rota | Uso |
+| Critério | Como a solução responde | Onde analisar |
 | --- | --- | --- |
-| GET | `/api/status` | Conexão com o iFood e configuração |
-| POST | `/api/auth/ifood/login` | Inicia o login OAuth (retorna a URL) |
-| POST | `/api/auth/ifood/logout` | Revoga os tokens e desconecta |
-| GET | `/api/session` | Usuário, endereço e restrições da sessão |
-| POST | `/api/chat` | Mensagem ao agente → `{ reply, cards, restrictions }` |
-| GET/PUT/DELETE | `/api/profile` | Perfil alimentar (PUT exige `consent: true`) |
-| GET | `/api/carts/{cartId}/checkout` | Dados da tela de revisão |
-| POST | `/api/orders` | Envia o pedido (exige `userConfirmed: true`) |
-| GET | `/api/orders/{orderId}/track` | Acompanhamento |
+| **Visão & Originalidade** | Usa a conversa para acompanhar uma decisão alimentar com restrições combinadas e oferece continuidade entre restaurante e preparo em casa. | [Problema e proposta de valor](#problema-e-proposta-de-valor), [fluxos](#fluxos-da-solução). |
+| **Arquitetura & Engenharia** | Separa interpretação pela LLM, regras determinísticas e operações do MCP. Mantém evidências, estado de sessão e confirmação humana do pedido. | [Arquitetura](#arquitetura-e-responsabilidades), [MCP](#integração-com-o-mcp-do-ifood), [validação](#validação). |
+| **Design & Experiência** | Combina conversa curta com cartões de opções, análise, receita, comparação de mercados e revisão. Reutiliza restrições conhecidas e pergunta quando há ambiguidade. | [Decisões de experiência](#decisões-de-experiência), interface em `frontend/`. |
+| **Impacto** | Busca reduzir o esforço de investigar produtos e reconstruir uma compra quando há restrições, mantendo as incertezas visíveis. | [Impacto e viabilidade](#impacto-e-viabilidade), [limitações](#limitações-do-protótipo). |
+| **Comunicação & Pitch** | Um roteiro demonstra o problema, a adaptação da lista, os motivos das trocas e os produtos encontrados, distinguindo integrações reais e dados preparados. | [Cenário de demonstração](#cenário-de-demonstração). |
 
-Todas as rotas usam o cabeçalho `X-Session-Id`, gerado por aba no navegador.
+### Entregáveis do desafio
 
-## Limitações conhecidas
+| Entregável | Material disponível neste repositório |
+| --- | --- |
+| 01 — Proposta de negócio | Problema, público, proposta de valor e hipótese de impacto neste README. |
+| 02 — Desenho de solução | Fluxos e diagrama de arquitetura neste README. |
+| 03 — Racional da experiência | Decisões de UX e jornada descritas abaixo. |
+| 04 — Interface visual | Aplicação executável em `frontend/`, servida pelo backend. |
+| 05 — Documento técnico resumido | Arquitetura, ferramentas, execução e limites neste README; [mapa de funcionalidades](docs/funcionalidades-agente.md) como material complementar. |
+| 06 — Feedback sobre os MCPs | [Feedback da integração](docs/feedback-mcp.md), com dificuldades registradas durante o desenvolvimento. |
 
-- O MCP do iFood não traz lista de ingredientes nem alergênicos estruturados. A análise usa nome, descrição e adicionais, e por isso alergias graves quase sempre terminam em "informação insuficiente" ou "possível risco". Isso é intencional.
-- A busca de contato cruzado lê até 75 itens do cardápio, só pelo nome (a listagem do MCP não traz descrições).
-- Sessões ficam em memória: reiniciar o servidor apaga as conversas. O perfil alimentar e o login persistem em `backend/.data/`.
-- O formato da resposta de carrinho do MCP ainda não foi validado com um carrinho real. `normalize_cart` aceita variações de nomes de campos.
+## Problema e proposta de valor
 
-## Organização dos prompts
+Quem possui restrições alimentares precisa responder perguntas que uma busca por nome de prato não resolve: há leite na composição? Um produto zero lactose atende à minha restrição? O substituto contém castanhas? A descrição é suficiente ou falta informação?
 
-Todos os prompts ficam em `backend/ailo/agent/system_prompt.py`:
+Quando a primeira opção não atende, a pessoa precisa repetir a investigação, escolher outro prato ou reorganizar a compra para cozinhar em casa. O Ailo conecta essas etapas na mesma conversa.
 
-- `SYSTEM_PROMPT`: papel do Ailo, fluxos e regras compartilhadas.
-- `<NOME_DA_TOOL>_PROMPT`: instruções de cada ferramenta, como `ANALISAR_PRODUTO_PROMPT` e `MONTAR_CARRINHO_DO_MERCADO_PROMPT`.
+O público inclui pessoas com alergias, intolerâncias, doença celíaca, preferências vegetarianas ou veganas e restrições religiosas. O catálogo implementa **18 restrições conhecidas** e permite registrar restrições personalizadas. As regras estão documentadas em [Restrições alimentares](docs/restricoes-alimentares.md).
 
-As ferramentas importam a constante correspondente e usam seu texto como `description` no LangChain. Os schemas e as funções de execução continuam em `backend/ailo/agent/tools/`. Permanece um único agente, sem chamadas extras pela organização dos textos.
+A proposta de valor é **ajudar a formar uma escolha e uma lista coerentes com as restrições, explicando os motivos e as informações ausentes**. O diferencial está na continuidade da decisão: investigar, reconhecer um conflito, propor uma alternativa e relacioná-la a produtos para compra.
+
+O protótipo não certifica segurança alimentar. “Sem conflito declarado” significa que os dados considerados não indicaram conflito; não comprova ausência de alergênicos ou de contato cruzado.
+
+## Fluxos da solução
+
+### 1. Escolher uma refeição de restaurante
+
+1. A pessoa informa o que deseja e suas restrições. Se disser “não posso consumir leite”, o agente deve esclarecer se é APLV ou intolerância à lactose.
+2. O agente registra as restrições e busca opções próximas ao endereço da conta, usando filtros e informações disponíveis no iFood.
+3. Ao escolher um item, a pessoa recebe uma análise com parecer, evidências e lacunas. O analisador considera descrição, declarações e adicionais; quando aplicável, investiga indícios no cardápio.
+4. Se houver conflito ou dúvida, os caminhos incluem procurar outra opção, preparar uma mensagem para o restaurante ou seguir para o preparo em casa.
+5. O agente pode montar um carrinho. A aplicação oferece revisão e, quando habilitado, envio do pedido após confirmação explícita.
+
+A mensagem ao restaurante é preparada para envio manual. O Ailo não afirma ter contatado o estabelecimento. Uma resposta trazida pela pessoa pode ser registrada como evidência adicional.
+
+### 2. Adaptar a receita e formar a lista de compras
+
+1. A pessoa pede um prato para preparar em casa ou chega a esse fluxo a partir da conversa sobre restaurante.
+2. No modo demo, o código seleciona uma **versão completa pré-cadastrada**, com ingredientes, quantidades, justificativas e produtos de referência.
+3. A validação considera os nomes dos ingredientes e os rótulos locais disponíveis. As explicações distinguem a função culinária da troca das evidências sobre restrições.
+4. A pessoa informa o que já possui em casa. Esses itens ficam fora da busca de compra.
+5. O Ailo pesquisa ofertas no MCP e compara até três mercados por cobertura da lista e custo total, incluindo frete e pedido mínimo quando informados.
+6. Quantidades em g/ml permitem calcular embalagens a partir do tamanho identificado no produto escolhido. Por exemplo: 600 g em pacotes de 250 g exigem três pacotes.
+7. A pessoa revisa faltantes, produtos e alertas; montar o carrinho é uma continuação disponível.
+
+O foco da demonstração é a **formação do pedido e da lista para alguém com restrições**, com a integração de compra como continuidade do fluxo.
+
+## Decisões de experiência
+
+- **Conversa com contexto:** prato e restrições já informados são reutilizados; o agente deve perguntar apenas o que falta esclarecer.
+- **Cartões estruturados:** produtos, pareceres, ingredientes e valores são renderizados a partir das ferramentas. O texto do agente explica a escolha sem repetir o catálogo inteiro.
+- **Incerteza explícita:** conflito, risco e informação insuficiente aparecem como situações diferentes, com próximos passos.
+- **Trocas explicáveis:** o cartão da receita mostra a justificativa culinária e os dados disponíveis dos rótulos original e substituto.
+- **Lista ajustável:** ingredientes já disponíveis em casa e preparações caseiras detalhadas em componentes ajudam a aproximar a receita da compra.
+- **Perfil com consentimento:** restrições podem ser salvas localmente para reutilização, sem repetir a autorização para um perfil já salvo.
+- **Controle humano da compra:** o agente organiza a compra; a confirmação do pedido ocorre na interface/API, fora das ferramentas autônomas da LLM.
+
+A interface inclui modos Restaurante e Mercado, cartões de conversa, perfil e revisão da sacola. As páginas visuais de loja e produto também contêm um catálogo local de apresentação; sua sacola local é separada dos carrinhos criados pelo agente via MCP.
+
+## Arquitetura e responsabilidades
+
+```mermaid
+flowchart TD
+    U[Pessoa usuária] --> UI[Interface web: conversa e cartões]
+    UI --> API[API FastAPI e sessão]
+    API --> A[Agente LangChain e LLM]
+    A --> T[Ferramentas do Ailo]
+    T --> R[Regras determinísticas de restrições]
+    T --> S[Serviços: catálogo, análise, receita e compra]
+    S --> MCP[MCP do iFood]
+    S --> D[Modo demo: versões de receitas e rótulos locais]
+    S --> OFF[Modo normal: Open Food Facts por EAN]
+    T --> UI
+    UI --> C[Confirmação explícita de compra]
+    C --> API
+```
+
+Há **um agente conversacional**, com dez ferramentas. O backend usa Python, FastAPI, LangChain e `langchain-mcp-adapters`; o frontend usa HTML, CSS e JavaScript. Um único servidor entrega interface e API.
+
+| Responsabilidade | Implementação |
+| --- | --- |
+| Entender intenção, esclarecer ambiguidades, escolher ferramentas e explicar resultados | LLM e [prompts](backend/ailo/agent/system_prompt.py). |
+| Resolver restrições, detectar conflitos e produzir pareceres | [Catálogo](backend/ailo/restrictions/catalog.py) e [analisador](backend/ailo/restrictions/analyzer.py). |
+| Selecionar versões prontas e confrontar referências de rótulos | [Serviço de receitas](backend/ailo/services/recipes.py). |
+| Consultar ofertas, comparar mercados e calcular quantidades/valores | Serviços em `backend/ailo/services/`. |
+| Executar operações autenticadas no iFood | [Cliente MCP](backend/ailo/ifood/client.py) e OAuth. |
+| Guardar contexto da conversa | Sessão em memória: restrições, endereço, análises, receita e planos. |
+| Mostrar dados estruturados | Artefatos das ferramentas e cartões em `frontend/chat-cards.js`. |
+
+As ferramentas do MCP são encapsuladas pelos serviços do Ailo. A LLM recebe ferramentas de domínio, como `analisar_produto` e `registrar_receita`, em vez de acesso direto irrestrito às operações do iFood.
+
+### Papel da IA e das regras
+
+A IA continua necessária no modo demo: interpreta linguagem natural, diferencia necessidades, organiza a conversa, decide quais ferramentas chamar e explica os resultados. A seleção da receita e o parecer alimentar usam regras e dados estruturados.
+
+Os pareceres são `CONFLITO`, `RISCO`, `INFORMACAO_INSUFICIENTE` e `SEM_CONFLITO_DECLARADO`. APLV e intolerância à lactose têm regras distintas. Declarações como “vegano” ou “sem glúten” são evidências, sem substituir informações de preparo e contato cruzado.
+
+A criação de carrinho bloqueia conflitos conhecidos nas análises da sessão. Ela não garante que todos os produtos já tenham passado por análise completa; itens sem análise e outras pendências são tratados por alertas na revisão. O envio exige confirmação e ciência dos alertas quando aplicáveis.
+
+## Integração com o MCP do iFood
+
+As operações abaixo estão implementadas no projeto. A presença no código não equivale à validação integral de cada ferramenta no ambiente real.
+
+| Etapa | Ferramentas MCP utilizadas |
+| --- | --- |
+| Contexto da conta e localização | `getUser`, `listAddresses` |
+| Descoberta de produtos e estabelecimentos | `searchOffers`, `browseOffers` |
+| Detalhes do produto | `getItem` |
+| Criação e consulta de carrinho | `createCart`, `getCart` |
+| Opções de entrega e pagamento | `getCartDeliveryMethods`, `listPaymentMethods` |
+| Configuração e envio após confirmação | `setCartDelivery`, `setCartPayment`, `submitOrder` |
+| Acompanhamento | `trackOrder` |
+
+Os filtros alimentares ajudam a buscar candidatos. O fluxo de mercado faz buscas sem filtro e por filtro individual para ampliar a cobertura de listas com restrições combinadas. A comparação prioriza cobertura e depois custo total; produtos identificados como conflitantes são excluídos da escolha de candidatos.
+
+O projeto lê `itemEan` quando esse campo está presente nos dados do produto. O EAN permite relacionar uma oferta ao rótulo de um produto específico. **A disponibilidade desse campo nos produtos reais ainda precisa de validação.** Nome semelhante, marca ou foto não bastam para atribuir o rótulo de outro EAN.
+
+A LLM não recebe uma ferramenta `submitOrder`. O envio é feito por uma rota específica da aplicação após ação explícita da pessoa.
+
+## Dados preparados e modo normal
+
+| Componente | `DEMO_MODE=true` — padrão | `DEMO_MODE=false` |
+| --- | --- | --- |
+| Conversa e escolha de ferramentas | LLM | LLM |
+| Receitas | 15 pratos com versões completas cadastradas; sem combinação de trocas durante o chat | Receita proposta pelo agente e validada por regras |
+| Rótulos | 16 produtos reais pré-carregados, com fontes e data de conferência | Consulta à Open Food Facts pelo EAN |
+| Ofertas, disponibilidade, preços e carrinhos do agente | MCP real do iFood | MCP real do iFood |
+| Confirmação de pedido | Ação explícita na interface/API, se o envio estiver habilitado | Mesmo comportamento |
+
+`DEMO_MODE` controla receitas e rótulos; **não é um modo offline do iFood nem impede compras reais**. O envio tem configuração independente: `ALLOW_SUBMIT_ORDER`.
+
+Os arquivos [demo_recipes.json](backend/ailo/data/demo_recipes.json) e [demo_labels.json](backend/ailo/data/demo_labels.json) tornam a demonstração reproduzível. Os rótulos incluem EAN, marca, embalagem, composição publicada, avisos, fontes e data de conferência. Alguns registros resumem a composição e informam isso em `sourceNote`.
+
+Campos vazios não certificam ausência de alergênicos. O catálogo não comprova estoque no iFood e não possui cobertura de todo o mercado. No modo demo, um EAN desconhecido fica sem rótulo local, sem consulta externa automática.
+
+Ao selecionar uma versão, referências com conflito ou risco não são escolhidas automaticamente. Quando não existe versão compatível, o sistema recusa o pedido de receita em vez de inventar ingredientes. Informações incompletas permanecem identificadas como tal.
+
+Leia os [produtos, fontes e cenários de demonstração](docs/demo-catalogo.md).
+
+## Cenário de demonstração
+
+A jornada apresentada parte de uma necessidade concreta e acompanha a formação
+da lista conforme novas informações aparecem:
+
+1. **Pedido inicial:** “Quero preparar panqueca. Tenho alergia à proteína do leite.”
+2. **Adaptação explicada:** apresentação da versão sem leite, com a justificativa e os dados dos produtos de referência.
+3. **Restrições combinadas:** ao acrescentar doença celíaca e alergia a ovo, seleção de uma versão completa compatível.
+4. **Lista personalizada:** exclusão de azeite e sal quando a pessoa informa que já os possui.
+5. **Busca no iFood:** apresentação dos produtos encontrados, cobertura dos ingredientes, valores e faltantes por mercado.
+6. **Reconhecimento de limites:** se houver também alergia a soja, o aviso da farinha de referência impede a seleção automática daquela versão.
+7. **Continuidade da compra:** escolha do mercado e revisão dos itens do carrinho, com confirmação humana para o envio do pedido.
+
+O diferencial está na formação da escolha e da lista. A criação do carrinho é a
+continuidade dessa jornada; ela não equivale ao envio de um pedido.
+
+## Impacto e viabilidade
+
+A hipótese é que uma conversa contextual, com justificativas e lista de compra, reduza o esforço de procurar alternativas e diminua escolhas contraditórias com as restrições informadas. Para o ecossistema iFood, o fluxo também oferece continuidade quando a primeira opção não atende: outro produto ou uma compra de ingredientes.
+
+O protótipo comprova a estrutura técnica da proposta, mas **não há métricas de conversão, redução de tempo ou eficácia clínica medidas**. Uma avaliação posterior pode medir tempo para formar uma lista, cobertura dos ingredientes, quantidade de conflitos detectados, compreensão dos alertas e conclusão da compra.
+
+A evolução inclui ampliar a curadoria de receitas e rótulos, validar os retornos reais do MCP, oferecer isolamento de perfis por usuário e conduzir testes de experiência com o público-alvo. Essas etapas são propostas futuras, não funcionalidades entregues.
+
+## Validação
+
+Foram validados **92 testes automatizados**, cobrindo restrições, rótulos,
+seleção de receitas completas, quantidades de embalagens e itens já disponíveis
+em casa. A verificação de sintaxe do frontend também passou.
+
+A suíte específica do agente não está incluída nesse total: suas execuções
+anteriores não concluíram. Os testes usam serviços simulados e não equivalem
+à homologação de pedidos reais no iFood.
+
+## Limitações do protótipo
+
+- A análise depende das informações publicadas e das evidências disponíveis. Dados ausentes de composição, preparo e fabricação não são preenchidos pela IA.
+- A disponibilidade de EAN no retorno do MCP e a correspondência dos produtos precisam de conferência prática. Um código interno de loja não deve ser presumido como EAN de fabricante.
+- As receitas demo cobrem cenários preparados; nem todo prato possui uma versão para toda combinação de restrições. Elas não foram submetidas a validação culinária ou clínica formal.
+- A busca tem limites de resultados e páginas; não representa uma auditoria integral do cardápio nem do ambiente de preparo.
+- Quantidades sem tamanho de embalagem identificável permanecem estimativas iniciais para revisão. A reanálise detalhada da comparação de mercados se concentra no mercado recomendado.
+- Conversas ficam em memória e são perdidas ao reiniciar. O perfil local é por instalação; não há isolamento de contas de múltiplos usuários para uso em produção.
+- As integrações de carrinho, checkout e envio possuem código implementado, mas sua validação completa no ambiente real não está concluída. Criar um carrinho não envia o pedido nem efetua pagamento.
+- O catálogo visual local das páginas de loja/produto não deve ser apresentado como resultado obtido do MCP.
+
+## Feedback sobre o MCP
+
+O [feedback da integração](docs/feedback-mcp.md) registra dificuldades percebidas
+em informações alimentares, filtros, autenticação e formatos das ferramentas.
+São observações do desenvolvimento, sem pressupor que descrevam todos os
+produtos ou versões do serviço.
+
+A principal oportunidade de evolução identificada é disponibilizar composição,
+alergênicos, avisos de contato cruzado e classificações alimentares de forma
+estruturada e com origem explícita. Isso permitiria ao agente fundamentar mais
+decisões nos dados do próprio iFood.
