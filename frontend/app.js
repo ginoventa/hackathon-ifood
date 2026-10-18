@@ -1,22 +1,39 @@
+/**
+ * Tela principal do Ailo: conversa com o agente.
+ *
+ * Responsável por: modos Restaurantes/Mercado, menu, endereço, ditado por voz,
+ * envio de mensagens à API e exibição das respostas e cartões.
+ */
+
+import { api } from './api.js';
+import { renderCard } from './chat-cards.js';
+import { openCheckout } from './checkout.js';
+
 const $ = selector => document.querySelector(selector);
 const app = $('.app');
 let mode = 'restaurants';
-let replyTimer;
 let toastTimer;
+let isSending = false;
+let status = null;
+
+/** Textos e sugestões de cada modo. As sugestões já trazem uma restrição de exemplo. */
 const config = {
   restaurants: {
     label: 'Restaurantes',
     icon: 'utensils',
     title: 'O que sua fome pede agora?',
-    suggestions: ['50% off', 'Repetir último pedido', 'Sugestões para jantar', 'Quero algo saudável']
+    suggestions: ['Sou celíaca e quero pizza', 'Lasanha sem leite (APLV)', 'Jantar vegano', 'Alergia a amendoim: o que pedir?']
   },
   market: {
     label: 'Mercado',
     icon: 'cart',
-    title: 'Bora de comprinhas da semana?',
-    suggestions: []
+    title: 'Bora cozinhar algo do seu jeito?',
+    suggestions: ['Lasanha sem leite e sem glúten', 'Bolo sem ovo', 'Strogonoff sem lactose']
   }
 };
+
+// ------------------------------------------------------------------ Modos
+
 function setMode(next) {
   if (!config[next]) {
     return;
@@ -31,6 +48,7 @@ function setMode(next) {
   $('#caption-icon').setAttribute('href', `./icons.svg#${current.icon}`);
   $('#suggestions').replaceChildren(...current.suggestions.map((label, index) => {
     const button = document.createElement('button');
+    button.type = 'button';
     button.className = `suggestion${index === 0 ? ' offer' : ''}`;
     if (index === 0) {
       button.append($('#offer-icon-template').content.cloneNode(true));
@@ -43,111 +61,240 @@ function setMode(next) {
   closeMenu();
   updateSend();
 }
+
 function closePopover() {
   $('#mode-popover').hidden = true;
   $('#mode-button').setAttribute('aria-expanded', 'false');
 }
+
 $('#mode-button').onclick = () => {
   const open = $('#mode-popover').hidden;
   $('#mode-popover').hidden = !open;
   $('#mode-button').setAttribute('aria-expanded', String(open));
 };
+
 document.querySelectorAll('[data-mode]').forEach(button => {
   if (button.tagName === 'BUTTON') {
     button.onclick = () => setMode(button.dataset.mode);
   }
 });
+
 document.addEventListener('click', event => {
   if (!event.target.closest('.mode-select-wrapper')) {
     closePopover();
   }
 });
+
+// ------------------------------------------------------------------- Menu
+
 function closeMenu() {
   $('#drawer').hidden = true;
   $('#overlay').hidden = true;
   $('#menu-button').setAttribute('aria-expanded', 'false');
 }
+
 $('#menu-button').onclick = () => {
   $('#drawer').hidden = false;
   $('#overlay').hidden = false;
   $('#menu-button').setAttribute('aria-expanded', 'true');
   $('#close-menu').focus();
 };
+
 $('#close-menu').onclick = () => {
   closeMenu();
   $('#menu-button').focus();
 };
+
 $('#overlay').onclick = closeMenu;
+
 document.addEventListener('keydown', event => {
   if (event.key === 'Escape') {
     closeMenu();
     closePopover();
   }
 });
-$('#address-button').onclick = () => $('#address-dialog').showModal();
-$('#address-dialog').addEventListener('close', () => {
-  if ($('#address-dialog').returnValue === 'save') {
-    const value = $('#address-input').value.trim();
-    if (value) {
-      $('#address-value').textContent = value;
+
+// ---------------------------------------------------------------- Endereço
+
+/** Mostra o endereço no cabeçalho: apelido ("Casa"/"Trabalho") e só rua e número. */
+function showAddress(address) {
+  if (!address) {
+    $('#address-value').textContent = 'Nenhum endereço salvo no iFood';
+    return;
+  }
+  const streetAndNumber = address.formattedAddress.split(',').slice(0, 2).join(',');
+  $('#address-value').textContent = address.alias ? `${address.alias} · ${streetAndNumber}` : streetAndNumber;
+  $('#address-button').title = address.formattedAddress;
+}
+
+/** Abre o diálogo com os endereços salvos na conta do iFood. */
+$('#address-button').onclick = async () => {
+  const options = $('#address-options');
+  const legend = options.querySelector('legend');
+  options.replaceChildren(legend, Object.assign(document.createElement('p'), { className: 'dialog-hint', textContent: 'Carregando endereços…' }));
+  $('#address-dialog').showModal();
+
+  try {
+    const { addresses } = await api.listAddresses();
+    const current = $('#address-value').dataset.addressId;
+    options.replaceChildren(legend, ...addresses.map(address => {
+      const label = document.createElement('label');
+      label.className = 'address-option';
+      const input = Object.assign(document.createElement('input'), { type: 'radio', name: 'address', value: address.addressId });
+      input.checked = address.addressId === current;
+      const text = document.createElement('span');
+      text.append(Object.assign(document.createElement('strong'), { textContent: address.alias ?? 'Endereço' }), address.formattedAddress);
+      label.append(input, text);
+      return label;
+    }));
+    if (addresses.length === 0) {
+      options.append(Object.assign(document.createElement('p'), { className: 'dialog-hint', textContent: 'Nenhum endereço salvo na sua conta.' }));
     }
+  } catch (error) {
+    options.replaceChildren(legend, Object.assign(document.createElement('p'), { className: 'dialog-hint', textContent: error.message }));
+  }
+};
+
+$('#address-dialog').addEventListener('close', async () => {
+  const selected = $('#address-options input:checked')?.value;
+  if ($('#address-dialog').returnValue !== 'save' || !selected) {
+    return;
+  }
+  try {
+    const session = await api.selectAddress(selected);
+    $('#address-value').dataset.addressId = session.address.addressId;
+    showAddress(session.address);
+    toast('Endereço de entrega atualizado.');
+  } catch (error) {
+    toast(error.message);
   }
 });
+
+// -------------------------------------------------------------- Composição
+
 function resizePrompt() {
   const prompt = $('#prompt');
   prompt.rows = 1;
   const lineHeight = Number.parseFloat(getComputedStyle(prompt).lineHeight);
   prompt.rows = Math.min(Math.ceil(prompt.scrollHeight / lineHeight), 3);
 }
+
 function updateSend() {
   const hasText = Boolean($('#prompt').value.trim());
   $('.wave').hidden = hasText;
   $('.send-icon').hidden = !hasText;
   $('#send-label').textContent = !hasText && mode === 'market' ? 'Fale' : '';
   $('#send-button').setAttribute('aria-label', hasText ? 'Enviar mensagem' : 'Falar com o Ailo');
+  $('#send-button').disabled = isSending;
 }
+
 $('#prompt').addEventListener('input', () => {
   updateSend();
   resizePrompt();
 });
+
 $('#prompt').addEventListener('keydown', event => {
   if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
     event.preventDefault();
     $('#chat-form').requestSubmit();
   }
 });
+
+/** Coloca um texto no campo de mensagem para o usuário completar. */
+function fillComposer(text) {
+  $('#prompt').value = text;
+  updateSend();
+  resizePrompt();
+  $('#prompt').focus();
+  $('#prompt').setSelectionRange(text.length, text.length);
+}
+
+// ---------------------------------------------------------------- Conversa
+
+function scrollToBottom() {
+  $('#conversation').scrollTop = $('#conversation').scrollHeight;
+}
+
 function addMessage(text, role) {
   const element = document.createElement('div');
   element.className = `message ${role}`;
   element.textContent = text;
   $('#conversation').append(element);
-  $('#conversation').scrollTop = $('#conversation').scrollHeight;
+  scrollToBottom();
   return element;
 }
-function sendMessage(text) {
-  if (!text.trim()) {
-    return;
+
+/** Ações disponíveis para os botões dos cartões. */
+const cardActions = {
+  send: (message, display) => sendMessage(message, display),
+  fillComposer,
+  openCheckout,
+  toast,
+  saveProfile: async inputs => {
+    await api.saveProfile(inputs, true);
+    toast('Perfil alimentar salvo neste dispositivo.');
   }
-  clearTimeout(replyTimer);
-  document.querySelector('.message.pending')?.remove();
+};
+
+/** Atualiza a barra de restrições ativas acima do campo de mensagem. */
+function showRestrictions(restrictions = []) {
+  $('#restriction-bar').hidden = restrictions.length === 0;
+  $('#restriction-summary').textContent = restrictions.map(restriction => restriction.label).join(' · ');
+}
+
+/** Entra no modo conversa (esconde boas-vindas e sugestões). */
+function startChatLayout() {
   $('#welcome').hidden = true;
   $('#conversation').hidden = false;
   $('#suggestions').hidden = true;
   $('#demo-note').hidden = false;
   app.classList.add('chatting');
-  addMessage(text.trim(), 'user');
+}
+
+/**
+ * Envia uma mensagem ao agente.
+ * @param {string} text Texto enviado ao backend (pode conter identificadores).
+ * @param {string} [display] Texto mostrado na conversa, quando diferente do enviado.
+ */
+async function sendMessage(text, display = text) {
+  if (!text.trim() || isSending) {
+    return;
+  }
+  isSending = true;
+  startChatLayout();
+  addMessage(display.trim(), 'user');
   $('#prompt').value = '';
   $('#prompt').rows = 1;
   updateSend();
-  const pending = addMessage('Pensando no que combina com você…', 'assistant');
+
+  const pending = addMessage(mode === 'market' ? 'Pensando na receita e nos ingredientes…' : 'Investigando os cardápios para você…', 'assistant');
   pending.classList.add('pending');
-  const selectedMode = mode;
-  replyTimer = setTimeout(() => {
+
+  try {
+    const response = await api.sendMessage(text.trim(), mode);
     pending.classList.remove('pending');
-    pending.textContent = getDemoResponse(text, selectedMode);
-    $('#conversation').scrollTop = $('#conversation').scrollHeight;
-  }, 850);
+    pending.textContent = response.reply;
+    for (const cardData of response.cards) {
+      const element = renderCard(cardData, cardActions);
+      if (element) {
+        $('#conversation').append(element);
+      }
+    }
+    showRestrictions(response.restrictions);
+  } catch (error) {
+    pending.classList.remove('pending');
+    pending.classList.add('error');
+    pending.textContent = error.message;
+    if (error.code === 'IFOOD_LOGIN_NECESSARIO') {
+      showConnectBanner(true);
+    }
+  } finally {
+    isSending = false;
+    updateSend();
+    scrollToBottom();
+  }
 }
+
 $('#chat-form').onsubmit = event => {
   event.preventDefault();
   const text = $('#prompt').value;
@@ -155,8 +302,8 @@ $('#chat-form').onsubmit = event => {
     sendMessage(text);
   } else startVoice();
 };
-$('#new-chat').onclick = () => {
-  clearTimeout(replyTimer);
+
+$('#new-chat').onclick = async () => {
   $('#conversation').replaceChildren();
   $('#conversation').hidden = true;
   $('#welcome').hidden = false;
@@ -166,7 +313,15 @@ $('#new-chat').onclick = () => {
   $('#prompt').value = '';
   updateSend();
   closeMenu();
+  try {
+    await api.resetSession();
+  } catch (error) {
+    toast(error.message);
+  }
 };
+
+// ------------------------------------------------------------------ Avisos
+
 function toast(text) {
   clearTimeout(toastTimer);
   $('#toast').textContent = text;
@@ -175,6 +330,9 @@ function toast(text) {
     $('#toast').hidden = true;
   }, 4500);
 }
+
+// -------------------------------------------------------------------- Voz
+
 function startVoice() {
   const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!Recognition) {
@@ -198,17 +356,98 @@ function startVoice() {
     toast('Não foi possível iniciar o microfone. Tente digitar seu pedido.');
   }
 }
+
 $('#mic-button').onclick = startVoice;
-setMode('restaurants');
-function getDemoResponse(text, selectedMode) {
-  if (selectedMode === 'market') {
-    return 'Bora montar sua lista! 🛒\n\nPodemos começar com frutas, verduras, leite, ovos e os básicos da despensa. Para quantas pessoas e quantos dias você quer comprar?\n\nEsta é uma conversa demonstrativa. Os produtos e preços ainda não estão conectados a um mercado.';
-  }
-  if (/50%|off|promo/i.test(text)) {
-    return 'Uma boa oferta deixa tudo mais gostoso! 💗\n\nVocê está com vontade de pizza, hambúrguer ou comida brasileira? Me conta também quanto quer gastar.\n\nEste protótipo ainda não consulta cupons ou ofertas reais.';
-  }
-  if (/repetir|último/i.test(text)) {
-    return 'Vamos de favorito? 💗\n\nAinda não tenho acesso ao seu histórico de pedidos neste protótipo. Me conta qual foi o prato e eu te ajudo a pensar no pedido!';
-  }
-  return 'Vamos encontrar algo gostoso! 💗\n\nVocê prefere uma refeição completa, um lanche ou algo mais leve? Me conta sua preferência e quanto quer gastar.\n\nEsta é uma conversa demonstrativa, ainda sem conexão com restaurantes ou uma IA.';
+
+// ------------------------------------------------------- Conta do iFood
+
+/** Mostra ou esconde o convite para conectar a conta do iFood. */
+function showConnectBanner(visible) {
+  $('#connect-banner').hidden = !visible;
 }
+
+/** Inicia o login OAuth do iFood numa nova aba. */
+async function connectIfood() {
+  try {
+    const { authorizationUrl } = await api.loginIfood();
+    window.open(authorizationUrl, '_blank', 'noopener');
+    toast('Entre na sua conta do iFood na nova aba. Depois volte aqui.');
+  } catch (error) {
+    toast(error.message);
+  }
+}
+
+$('#connect-button').onclick = connectIfood;
+
+$('#ifood-connection').onclick = async () => {
+  if (status?.ifoodMode === 'mock') {
+    toast('Modo demonstração: os dados do iFood são simulados.');
+    return;
+  }
+  if (!status?.ifoodConnected) {
+    connectIfood();
+    return;
+  }
+  try {
+    await api.logoutIfood();
+    toast('Conta do iFood desconectada.');
+    await loadAccount();
+  } catch (error) {
+    toast(error.message);
+  }
+};
+
+/** Carrega o status do servidor, a conta do iFood e as restrições salvas. */
+async function loadAccount() {
+  try {
+    status = await api.status();
+  } catch (error) {
+    toast(error.message);
+    return;
+  }
+
+  $('#ifood-connection-label').textContent = status.ifoodMode === 'mock'
+    ? 'iFood: modo demonstração'
+    : (status.ifoodConnected ? 'Desconectar conta iFood' : 'Conectar conta iFood');
+  $('#drawer-footer').textContent = status.ifoodMode === 'mock'
+    ? 'Modo demonstração · dados simulados'
+    : 'Protótipo Ailo · Hackathon iFood';
+  if (status.ifoodMode === 'mock') {
+    $('#demo-note').textContent = 'Modo demonstração · dados e pedidos simulados';
+  }
+  if (status.problems.length) {
+    toast(status.problems[0]);
+  }
+
+  if (status.ifoodMode === 'live' && !status.ifoodConnected) {
+    showConnectBanner(true);
+    showAddress(null);
+    return;
+  }
+  showConnectBanner(false);
+
+  try {
+    const session = await api.loadSession();
+    const firstName = session.user?.fullName?.split(' ')[0];
+    $('#greeting').textContent = firstName ? `Olá, ${firstName}` : 'Olá!';
+    $('#drawer-greeting').textContent = firstName ? `Olá, ${firstName}` : 'Olá!';
+    $('#address-value').dataset.addressId = session.address?.addressId ?? '';
+    showAddress(session.address);
+    showRestrictions(session.restrictions);
+  } catch (error) {
+    if (error.code === 'IFOOD_LOGIN_NECESSARIO') {
+      showConnectBanner(true);
+    }
+    toast(error.message);
+  }
+}
+
+// Ao voltar do login do iFood (em outra aba), recarrega a conta.
+window.addEventListener('focus', () => {
+  if (status?.ifoodMode === 'live' && !status.ifoodConnected) {
+    loadAccount();
+  }
+});
+
+setMode('restaurants');
+loadAccount();

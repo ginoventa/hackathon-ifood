@@ -10,6 +10,7 @@
     </title>
     <link href="./ailo.svg" rel="icon" type="image/svg+xml"/>
     <link href="./styles.css" rel="stylesheet"/>
+    <link href="./chat-cards.css" rel="stylesheet"/>
   </head>
   <body>
     <div aria-hidden="true" class="splash">
@@ -24,12 +25,12 @@
           </svg>
         </button>
         <button class="address" id="address-button">
-          <span>
-            Olá, Usuário
+          <span id="greeting">
+            Olá!
           </span>
           <strong id="address-text">
             <span id="address-value">
-              Rua Aquidaban, 1 – São Carlos, SP
+              Carregando endereço…
             </span>
             <svg>
               <use href="./icons.svg#chevron">
@@ -59,6 +60,17 @@
         <h1 id="welcome-title">
           O que sua fome pede agora?
         </h1>
+        <p class="welcome-subtitle">
+          Conte o que você quer comer e suas restrições alimentares. Eu investigo os cardápios com você.
+        </p>
+        <div class="connect-banner" hidden="" id="connect-banner">
+          <p id="connect-text">
+            Conecte sua conta do iFood para buscar opções perto de você.
+          </p>
+          <button class="card-button primary" id="connect-button" type="button">
+            Conectar iFood
+          </button>
+        </div>
       </section>
       <section aria-label="Conversa com o Ailo" aria-live="polite" class="conversation" hidden="" id="conversation">
       </section>
@@ -69,6 +81,17 @@
             </use>
           </svg>
         </template>
+        <div class="restriction-bar" hidden="" id="restriction-bar">
+          <svg>
+            <use href="./icons.svg#shield">
+            </use>
+          </svg>
+          <span id="restriction-summary">
+          </span>
+          <a href="./perfil.html">
+            Editar
+          </a>
+        </div>
         <div aria-label="Sugestões de pedidos" class="suggestions" id="suggestions">
         </div>
         <form class="composer" id="chat-form">
@@ -133,7 +156,7 @@
           </div>
         </form>
         <p class="demo-note" hidden="" id="demo-note">
-          Experiência demonstrativa · sem pedidos reais
+          O Ailo apoia sua decisão, mas não substitui orientação médica
         </p>
       </div>
       <div class="overlay" hidden="" id="overlay">
@@ -146,7 +169,9 @@
           </button>
         </div>
         <h2>
-          Olá, Usuário
+          <span class="drawer-name" id="drawer-greeting">
+            Olá!
+          </span>
           <span>
             O que vamos descobrir hoje?
           </span>
@@ -158,7 +183,29 @@
           </svg>
           Nova conversa
         </button>
-        <a class="drawer-item" href="./loja.html">Explorar loja</a>
+        <a class="drawer-item" href="./perfil.html">
+          <svg>
+            <use href="./icons.svg#shield">
+            </use>
+          </svg>
+          Perfil alimentar
+        </a>
+        <a class="drawer-item" href="./loja.html">
+          <svg>
+            <use href="./icons.svg#store">
+            </use>
+          </svg>
+          Explorar loja
+        </a>
+        <button class="drawer-item" id="ifood-connection" type="button">
+          <svg>
+            <use href="./icons.svg#link">
+            </use>
+          </svg>
+          <span id="ifood-connection-label">
+            Conta iFood
+          </span>
+        </button>
       <p class="drawer-label">
           ESCOLHA SEU MODO
         </p>
@@ -176,7 +223,7 @@
           </svg>
           Mercado
         </button>
-        <p class="drawer-footer">
+        <p class="drawer-footer" id="drawer-footer">
           Protótipo Ailo · Hackathon iFood
         </p>
       </aside>
@@ -185,10 +232,14 @@
           <h2>
             Onde você quer receber?
           </h2>
-          <label for="address-input">
-            Endereço de entrega
-          </label>
-          <input id="address-input" required="" value="Rua Aquidaban, 1 – São Carlos, SP"/>
+          <fieldset class="address-options" id="address-options">
+            <legend class="sr-only">
+              Endereços salvos na sua conta do iFood
+            </legend>
+          </fieldset>
+          <p class="dialog-hint">
+            Para cadastrar um novo endereço, use o app do iFood.
+          </p>
           <div class="dialog-actions">
             <button formnovalidate="" value="cancel">
               Cancelar
@@ -198,6 +249,10 @@
             </button>
           </div>
         </form>
+      </dialog>
+      <dialog aria-label="Revisão do pedido" class="checkout-dialog" id="checkout-dialog">
+        <div id="checkout-body">
+        </div>
       </dialog>
       <div class="toast" hidden="" id="toast" role="status">
       </div>

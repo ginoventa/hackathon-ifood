@@ -1,0 +1,359 @@
+/**
+ * Cartões exibidos na conversa com o Ailo.
+ *
+ * O backend devolve, junto do texto do agente, cartões estruturados gerados
+ * pelas ferramentas (`{ type, data }`). Cada tipo tem um renderizador aqui.
+ * Os dados dos cartões vêm de regras determinísticas e do iFood, nunca de
+ * texto livre da IA.
+ *
+ * Os botões dos cartões disparam "ações" recebidas por parâmetro, para que
+ * este módulo não dependa da lógica da tela (app.js).
+ */
+
+import { el, formatMinutes, formatPrice, icon, RESTRICTION_TYPE_LABELS, VERDICT_INFO, verdictBadge } from './format.js';
+
+/**
+ * @typedef {object} CardActions
+ * @property {(message: string, display: string) => void} send Envia uma mensagem ao agente.
+ * @property {(text: string) => void} fillComposer Preenche o campo de mensagem.
+ * @property {(cartId: string) => void} openCheckout Abre a revisão do pedido.
+ * @property {(inputs: object[]) => Promise<void>} saveProfile Salva o perfil alimentar.
+ * @property {(text: string) => void} toast Mostra um aviso rápido.
+ */
+
+/** Botão padrão dos cartões. */
+function actionButton(label, onClick, variant = 'secondary') {
+  const button = el('button', { className: `card-button ${variant}`, text: label, attrs: { type: 'button' } });
+  button.addEventListener('click', onClick);
+  return button;
+}
+
+/** Contêiner base de um cartão. */
+function card(className, children) {
+  return el('article', { className: `chat-card ${className}` }, children);
+}
+
+/** Lista simples de textos. */
+function list(items, className = 'card-list') {
+  return el('ul', { className }, items.map((item) => el('li', { text: item })));
+}
+
+/** Bloco recolhível (detalhes técnicos, evidências). */
+function details(summary, children) {
+  return el('details', { className: 'card-details' }, [el('summary', { text: summary }), ...children]);
+}
+
+// ---------------------------------------------------------------- Restrições
+
+function renderRestrictions({ restrictions, inputs }, actions) {
+  const chips = el('div', { className: 'restriction-chips' }, restrictions.map((restriction) => (
+    el('span', { className: 'restriction-chip' }, [
+      el('strong', { text: restriction.label }),
+      el('small', { text: RESTRICTION_TYPE_LABELS[restriction.tipo] ?? restriction.tipo }),
+    ])
+  )));
+
+  // Consentimento explícito antes de guardar dados de saúde (seção 1.1).
+  const consent = el('input', { attrs: { type: 'checkbox', id: `consent-${Date.now()}` } });
+  const save = actionButton('Salvar no meu perfil', async () => {
+    if (!consent.checked) {
+      actions.toast('Marque a autorização para salvar seu perfil alimentar.');
+      return;
+    }
+    save.disabled = true;
+    try {
+      await actions.saveProfile(inputs);
+      save.textContent = 'Perfil salvo';
+    } catch (error) {
+      save.disabled = false;
+      actions.toast(error.message);
+    }
+  });
+
+  return card('restrictions-card', [
+    el('p', { className: 'card-kicker' }, [icon('shield'), 'Restrições consideradas']),
+    chips,
+    el('label', { className: 'consent-line', attrs: { for: consent.id } }, [
+      consent,
+      el('span', { text: 'Autorizo guardar estas restrições neste dispositivo para os próximos pedidos.' }),
+    ]),
+    save,
+  ]);
+}
+
+// ------------------------------------------------------------------- Busca
+
+function renderOptions({ title, items, filtersUsed }, actions) {
+  if (items.length === 0) {
+    return card('options-card', [el('p', { className: 'card-muted', text: 'Nenhuma opção encontrada por perto.' })]);
+  }
+
+  const carousel = el('div', { className: 'option-carousel' }, items.map((item) => {
+    const choose = actionButton('Analisar este', () => actions.send(
+      `Escolhi "${item.itemName}" de ${item.merchantName}. Analise para as minhas restrições. [itemId=${item.itemId}, merchantId=${item.merchantId}]`,
+      `Quero o ${item.itemName}, de ${item.merchantName}`,
+    ), 'primary');
+
+    const price = item.promotionalUnitPrice < item.unitPrice
+      ? [el('strong', { text: formatPrice(item.promotionalUnitPrice) }), el('del', { text: formatPrice(item.unitPrice) })]
+      : [el('strong', { text: formatPrice(item.unitPrice) })];
+
+    return el('div', { className: 'option-item' }, [
+      el('img', { attrs: { src: item.imageUrl ?? './ailo.svg', alt: '', loading: 'lazy' } }),
+      el('div', { className: 'option-body' }, [
+        item.quickVerdict === 'CONFLITO' ? el('span', { className: 'quick-warning', text: 'Provável conflito pelo nome' }) : null,
+        el('h3', { text: item.itemName }),
+        el('p', { className: 'option-store', text: item.merchantName }),
+        el('p', { className: 'option-meta', text: [
+          item.merchantRating ? `★ ${item.merchantRating.toFixed(1)}` : '',
+          formatMinutes(item.deliveryMinutes),
+          item.deliveryFee === 0 ? 'Entrega grátis' : '',
+        ].filter(Boolean).join(' · ') }),
+        el('div', { className: 'option-price' }, price),
+        choose,
+      ]),
+    ]);
+  }));
+
+  return card('options-card', [
+    el('p', { className: 'card-kicker' }, [icon('search'), title]),
+    filtersUsed?.length ? el('p', { className: 'card-muted', text: `Priorizado com filtros do iFood: ${filtersUsed.join(', ')}` }) : null,
+    carousel,
+  ]);
+}
+
+function renderMerchants({ title, merchants }, actions) {
+  return card('options-card', [
+    el('p', { className: 'card-kicker' }, [icon('store'), title]),
+    el('div', { className: 'merchant-list' }, merchants.map((merchant) => el('div', { className: 'merchant-row' }, [
+      el('div', {}, [
+        el('strong', { text: merchant.merchantName }),
+        el('p', { className: 'card-muted', text: [merchant.rating ? `★ ${merchant.rating.toFixed(1)}` : '', formatMinutes(merchant.deliveryMinutes)].filter(Boolean).join(' · ') }),
+      ]),
+      actionButton('Ver cardápio', () => actions.send(
+        `Mostre o cardápio de ${merchant.merchantName}. [merchantId=${merchant.merchantId}]`,
+        `Ver o cardápio de ${merchant.merchantName}`,
+      )),
+    ]))),
+  ]);
+}
+
+// ------------------------------------------------------------------ Análise
+
+/** Nome amigável de cada tipo de evidência do analisador. */
+const FINDING_LABELS = {
+  INGREDIENTE: 'Ingrediente incompatível',
+  INGREDIENTE_INCERTO: 'Pode conter',
+  ADICIONAL: 'Adicional a evitar',
+  CONTRADICAO: 'Informação contraditória',
+  DECLARACAO_DE_AUSENCIA: 'Declaração de ausência',
+  DECLARACAO_INSUFICIENTE: 'Declaração que não basta',
+  ETIQUETA_IFOOD: 'Etiqueta do iFood',
+  POSSIVEL_CONTATO_CRUZADO: 'Possível contato cruzado',
+  CONFIRMACAO_DO_ESTABELECIMENTO: 'Resposta do estabelecimento',
+};
+
+function renderAnalysis(analysis, actions) {
+  const ids = `[itemId=${analysis.itemId}, merchantId=${analysis.merchantId}]`;
+
+  const restrictionBlocks = analysis.restrictions.map((result) => el('section', { className: 'analysis-restriction' }, [
+    el('div', { className: 'analysis-restriction-header' }, [
+      el('strong', { text: result.label }),
+      verdictBadge(result.verdict),
+    ]),
+    el('p', { text: result.explanation }),
+    result.findings.length > 0 ? details(`Evidências (${result.findings.length})`, [
+      el('ul', { className: 'evidence-list' }, result.findings.map((finding) => el('li', {}, [
+        el('strong', { text: FINDING_LABELS[finding.kind] ?? finding.kind }),
+        el('span', { text: [finding.terms.join(', '), finding.note].filter(Boolean).join(' — ') }),
+        el('small', { text: `${finding.where} · Fonte: ${finding.source}` }),
+      ]))),
+      result.crossContact?.examples?.length
+        ? el('p', { className: 'card-muted', text: `Exemplos no cardápio: ${result.crossContact.examples.map((example) => example.itemName).join(', ')}.` })
+        : null,
+    ]) : null,
+  ]));
+
+  const buttons = analysis.canProceed
+    ? [actionButton('Seguir para o pedido', () => actions.send(
+      `Quero pedir este item. Monte o carrinho com 1 unidade. ${ids}`,
+      'Quero seguir com o pedido',
+    ), 'primary')]
+    : [
+      actionButton('Consultar o restaurante', () => actions.send(`Quero consultar o restaurante sobre este item. ${ids}`, 'Quero consultar o restaurante')),
+      actionButton('Escolher outro produto', () => actions.send('Quero escolher outro produto compatível com as minhas restrições.', 'Quero escolher outro produto')),
+      actionButton('Preparar em casa', () => actions.send(
+        `Prefiro preparar em casa uma versão de "${analysis.itemName}" adaptada às minhas restrições.`,
+        'Prefiro preparar em casa',
+      ), 'primary'),
+    ];
+
+  return card(`analysis-card ${VERDICT_INFO[analysis.verdict]?.className ?? ''}`, [
+    el('div', { className: 'analysis-header' }, [
+      analysis.imageUrl ? el('img', { attrs: { src: analysis.imageUrl, alt: '' } }) : null,
+      el('div', {}, [
+        el('p', { className: 'card-kicker', text: analysis.merchantName }),
+        el('h3', { text: analysis.itemName }),
+        verdictBadge(analysis.verdict),
+      ]),
+    ]),
+    ...restrictionBlocks,
+    analysis.addOnsToAvoid.length ? el('div', { className: 'card-note' }, [el('strong', { text: 'Evite estes adicionais' }), list(analysis.addOnsToAvoid)]) : null,
+    analysis.missingInfo.length ? el('div', { className: 'card-note' }, [el('strong', { text: 'O que ainda não sabemos' }), list(analysis.missingInfo)]) : null,
+    el('div', { className: 'card-actions' }, buttons),
+    !analysis.canProceed
+      ? actionButton('O restaurante me respondeu', () => actions.fillComposer('O restaurante respondeu que '), 'link')
+      : null,
+    el('p', { className: 'card-disclaimer', text: analysis.disclaimer }),
+  ]);
+}
+
+function renderClarification({ itemName, merchantName, text }, actions) {
+  const copy = actionButton('Copiar mensagem', async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      actions.toast('Mensagem copiada. Envie pelo chat do pedido ou pelo telefone do restaurante.');
+    } catch {
+      actions.toast('Não consegui copiar automaticamente. Selecione o texto e copie.');
+    }
+  }, 'primary');
+  copy.prepend(icon('copy'));
+
+  return card('clarification-card', [
+    el('p', { className: 'card-kicker' }, [icon('chat'), `Mensagem para ${merchantName}`]),
+    el('p', { className: 'card-muted', text: `Sobre: ${itemName}` }),
+    el('pre', { className: 'clarification-text', text }),
+    el('div', { className: 'card-actions' }, [
+      copy,
+      actionButton('O restaurante me respondeu', () => actions.fillComposer('O restaurante respondeu que ')),
+    ]),
+    el('p', { className: 'card-disclaimer', text: 'A resposta do restaurante é uma evidência adicional, não uma certificação de segurança.' }),
+  ]);
+}
+
+// ------------------------------------------------------------ Receita/mercado
+
+function renderRecipe(recipe, actions) {
+  const ingredients = el('ul', { className: 'ingredient-list' }, recipe.ingredientes.map((ingredient) => {
+    const check = ingredient.verificacao;
+    const tags = [];
+    if (check.status !== 'SEM_CONFLITO_DECLARADO') {
+      tags.push(verdictBadge(check.status));
+    }
+    if (check.needsLabelCheck) {
+      tags.push(el('span', { className: 'label-tag', text: 'Confira o rótulo' }));
+    }
+    if (ingredient.jaTenhoEmCasa) {
+      tags.push(el('span', { className: 'label-tag muted', text: 'Já tenho' }));
+    }
+    return el('li', {}, [
+      el('span', { text: `${ingredient.quantidade} · ${ingredient.nome}` }),
+      tags.length ? el('span', { className: 'ingredient-tags' }, tags) : null,
+    ]);
+  }));
+
+  return card('recipe-card', [
+    el('p', { className: 'card-kicker' }, [icon('home'), 'Receita adaptada']),
+    el('h3', { text: recipe.titulo }),
+    el('p', { className: 'card-muted', text: [recipe.porcoes ? `${recipe.porcoes} porções` : '', recipe.tempoMinutos ? `${recipe.tempoMinutos} min` : ''].filter(Boolean).join(' · ') }),
+    el('h4', { text: 'Ingredientes' }),
+    ingredients,
+    recipe.substituicoes.length ? el('div', { className: 'card-note' }, [
+      el('strong', { text: 'Substituições' }),
+      list(recipe.substituicoes.map((swap) => `${swap.original} → ${swap.substituto}${swap.motivo ? ` (${swap.motivo})` : ''}`)),
+    ]) : null,
+    details('Modo de preparo', [el('ol', { className: 'card-list' }, recipe.modoDePreparo.map((step) => el('li', { text: step })))]),
+    recipe.cuidados.length ? el('div', { className: 'card-note warning' }, [el('strong', { text: 'Cuidados' }), list(recipe.cuidados)]) : null,
+    el('div', { className: 'card-actions' }, [
+      actionButton('Buscar ingredientes no mercado', () => actions.send('Pode buscar os ingredientes no mercado.', 'Buscar os ingredientes no mercado'), 'primary'),
+    ]),
+    el('p', { className: 'card-disclaimer', text: 'Receita sugerida pela IA e verificada por regras do Ailo. Confira sempre os rótulos dos produtos.' }),
+  ]);
+}
+
+function renderMarket(plan, actions) {
+  if (plan.merchants.length === 0) {
+    return card('market-card', [el('p', { className: 'card-muted', text: 'Não encontrei esses ingredientes nos mercados próximos.' })]);
+  }
+
+  const merchantBlock = (merchant, isRecommended) => el('section', { className: `market-merchant${isRecommended ? ' recommended' : ''}` }, [
+    el('div', { className: 'market-merchant-header' }, [
+      el('div', {}, [
+        isRecommended ? el('span', { className: 'recommended-tag', text: 'Melhor combinação' }) : null,
+        el('h3', { text: merchant.merchantName }),
+        el('p', { className: 'card-muted', text: [
+          `${merchant.coverage}/${merchant.totalIngredients} ingredientes`,
+          formatMinutes(merchant.deliveryMinutes),
+          merchant.deliveryFee === 0 ? 'Entrega grátis' : `Entrega ${formatPrice(merchant.deliveryFee)}`,
+        ].filter(Boolean).join(' · ') }),
+      ]),
+      el('strong', { className: 'market-total', text: formatPrice(merchant.total) }),
+    ]),
+    el('ul', { className: 'market-items' }, merchant.items.map((item) => el('li', {}, [
+      el('div', {}, [
+        el('span', { className: 'market-ingredient', text: item.ingrediente }),
+        el('strong', { text: `${item.quantidade}× ${item.itemName}` }),
+        item.verdict !== 'SEM_CONFLITO_DECLARADO' ? verdictBadge(item.verdict) : null,
+      ]),
+      el('span', { text: formatPrice(item.totalPrice) }),
+    ]))),
+    merchant.missing.length ? el('p', { className: 'card-note warning', text: `Não encontrado aqui: ${merchant.missing.join(', ')}` }) : null,
+    !merchant.meetsMinimum ? el('p', { className: 'card-note warning', text: `Pedido mínimo deste mercado: ${formatPrice(merchant.minimumOrderAmount)}.` }) : null,
+    actionButton(isRecommended ? 'Montar carrinho aqui' : 'Escolher este mercado', () => actions.send(
+      `Monte o carrinho no mercado ${merchant.merchantName}. [merchantId=${merchant.merchantId}]`,
+      `Montar o carrinho no ${merchant.merchantName}`,
+    ), isRecommended ? 'primary' : 'secondary'),
+  ]);
+
+  const [recommended, ...others] = plan.merchants;
+  return card('market-card', [
+    el('p', { className: 'card-kicker' }, [icon('cart'), `Ingredientes para ${plan.recipeTitle}`]),
+    merchantBlock(recommended, true),
+    others.length ? details(`Comparar com outros ${others.length} mercado(s)`, others.map((merchant) => merchantBlock(merchant, false))) : null,
+    plan.ingredientsWithoutOption.length
+      ? el('p', { className: 'card-note warning', text: `Sem opção nos mercados próximos: ${plan.ingredientsWithoutOption.join(', ')}.` })
+      : null,
+    el('p', { className: 'card-disclaimer', text: 'Os anúncios de mercado raramente trazem a lista de ingredientes. Produtos sinalizados devem ter o rótulo conferido.' }),
+  ]);
+}
+
+// ----------------------------------------------------------------- Carrinho
+
+function renderCart(cart, actions) {
+  return card('cart-card', [
+    el('p', { className: 'card-kicker' }, [icon('cart'), 'Carrinho montado']),
+    el('h3', { text: cart.merchantName ?? 'Seu carrinho' }),
+    el('ul', { className: 'market-items' }, cart.items.map((item) => el('li', {}, [
+      el('strong', { text: `${item.quantity}× ${item.name}` }),
+      el('span', { text: formatPrice(item.totalPrice) }),
+    ]))),
+    el('div', { className: 'cart-total' }, [el('span', { text: 'Total' }), el('strong', { text: formatPrice(cart.total ?? cart.subtotal) })]),
+    cart.alerts.length ? el('p', { className: 'card-note warning', text: `${cart.alerts.length} alerta(s) alimentar(es) para revisar antes de finalizar.` }) : null,
+    el('div', { className: 'card-actions' }, [
+      actionButton('Revisar e finalizar', () => actions.openCheckout(cart.cartId), 'primary'),
+    ]),
+    el('p', { className: 'card-disclaimer', text: 'Nada é enviado ao iFood sem a sua confirmação na tela de revisão.' }),
+  ]);
+}
+
+const RENDERERS = {
+  restrictions: renderRestrictions,
+  options: renderOptions,
+  merchants: renderMerchants,
+  analysis: renderAnalysis,
+  clarification: renderClarification,
+  recipe: renderRecipe,
+  market: renderMarket,
+  cart: renderCart,
+};
+
+/**
+ * Cria o elemento de um cartão. Tipos desconhecidos são ignorados.
+ * @param {{ type: string, data: object }} cardData
+ * @param {CardActions} actions
+ * @returns {HTMLElement | null}
+ */
+export function renderCard(cardData, actions) {
+  const renderer = RENDERERS[cardData.type];
+  return renderer ? renderer(cardData.data, actions) : null;
+}

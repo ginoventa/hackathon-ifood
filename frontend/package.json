@@ -7,6 +7,6 @@
     "dev": "node server.mjs",
     "start": "node server.mjs",
     "build": "node build.mjs",
-    "check": "node --check app.js && node --check server.mjs && node --check build.mjs && node --check shop.js && node --check product.js && node --check catalog.js"
+    "check": "node --check app.js && node --check server.mjs && node --check build.mjs && node --check shop.js && node --check product.js && node --check catalog.js && node --check api.js && node --check format.js && node --check chat-cards.js && node --check checkout.js && node --check perfil.js"
   }
 }
